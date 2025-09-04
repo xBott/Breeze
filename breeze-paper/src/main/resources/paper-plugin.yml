@@ -1,0 +1,4 @@
+name: BreezePaper
+version: '${version}'
+main: me.bottdev.breezepaper.BreezePaper
+api-version: '1.21'
