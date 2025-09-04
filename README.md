@@ -1,0 +1,13 @@
+# Breeze Framework
+
+At the moment Breeze is a simple java framework for developing common applications and especially minecraft servers. It provides such things as annotation based Dependency Injection, Module system with jar loaders and some other stuff like central serialization and so on.
+
+## About Modules
+1. **breeze-api** - interfaces for all the objects
+2. **breeze-core** - realization of the main things from breeze-api
+3. **breeze-processor** - annotation processor for breeze-api
+4. **breeze-paper** - minecraft related module that adds abstraction above bukkit and provides support for breeze DI and modules.
+5. **breeze-admin** - a test module for breeze engine
+
+## Future Plans
+1. **breeze-data** - centralized data base management with support of multiple data bases and other infrastructure stuff like MySql, PostgresDB, MongoDB, Neo4j, Redis and so.  
