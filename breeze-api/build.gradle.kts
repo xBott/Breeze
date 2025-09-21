@@ -5,6 +5,7 @@ plugins {
 dependencies {
     implementation("com.fasterxml.jackson.core:jackson-core:2.19.1")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.19.1")
+    implementation("org.apache.commons:commons-lang3:3.18.0")
 }
 
 

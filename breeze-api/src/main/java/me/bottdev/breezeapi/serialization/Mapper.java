@@ -10,6 +10,8 @@ public interface Mapper {
 
     String serialize(Object object);
 
-    <T> Optional<T> deserialize(Class<T> clazz, String json);
+    <T> Optional<T> deserialize(Class<T> clazz, String serialized);
+
+    Optional<ObjectNode> deserializeTree(String serialized);
 
 }

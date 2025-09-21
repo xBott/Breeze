@@ -1,7 +1,6 @@
 plugins {
     id("xyz.jpenilla.run-paper") version "2.3.1"
     id("io.papermc.paperweight.userdev") version "2.0.0-beta.17"
-    kotlin("jvm")
 }
 
 repositories {
@@ -17,9 +16,4 @@ dependencies {
     annotationProcessor(project(":breeze-processor"))
 
     paperweight.paperDevBundle("1.21.7-R0.1-SNAPSHOT")
-    implementation(kotlin("stdlib-jdk8"))
-
-}
-kotlin {
-    jvmToolchain(23)
 }
