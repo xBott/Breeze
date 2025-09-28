@@ -4,9 +4,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import lombok.*;
 
+import javax.swing.text.html.Option;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -64,4 +66,7 @@ public class ObjectNode {
     @Singular
     private List<ObjectNode> children = new ArrayList<>();
 
+    public Optional<ObjectNode> getChild(String name) {
+        return children.stream().filter(child -> child.name.equals(name)).findFirst();
+    }
 }
