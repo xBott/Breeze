@@ -20,7 +20,16 @@ public class ConfigValidator {
 
         Field[] fields = clazz.getDeclaredFields();
         for (Field field : fields) {
-            configStatus = validateFieldInFile(node, field);
+            Optional<ObjectNode> fieldNodeOptional = node.getChild(field.getName());
+
+            if (fieldNodeOptional.isEmpty()) {
+                configStatus = ConfigStatus.ERROR;
+                break;
+            }
+
+            ObjectNode fieldNode = fieldNodeOptional.get();
+
+            configStatus = validateFieldInFile(fieldNode, field);
             if (configStatus == ConfigStatus.ERROR) break;
         }
 
@@ -39,7 +48,8 @@ public class ConfigValidator {
 
         for (Annotation annotation : annotations) {
 
-            Optional<AnnotationValidator<?>> validatorOptional = registry.getValidator(annotation.getClass());
+            Optional<AnnotationValidator<?>> validatorOptional = registry.getValidator(annotation.annotationType());
+
             if (validatorOptional.isEmpty()) continue;
 
             AnnotationValidator<?> validator = validatorOptional.get();
