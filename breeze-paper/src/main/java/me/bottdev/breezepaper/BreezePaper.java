@@ -7,11 +7,12 @@ import me.bottdev.breezecore.modules.loaders.FolderModuleLoader;
 import me.bottdev.breezecore.SimpleBreezeEngine;
 import me.bottdev.breezepaper.entity.BreezePlayer;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -43,8 +44,8 @@ public class BreezePaper extends JavaPlugin {
 
     private void addFolderModuleLoader() {
         ModuleManager moduleManager = engine.getModuleManager();
-        ClassLoader parentClassLoader = engine.getClass().getClassLoader();
-        Path directory = Paths.get("").toAbsolutePath().resolve("modules");
+        ClassLoader parentClassLoader = getClassLoader();
+        Path directory = getDataFolder().toPath().resolve("modules");
         FolderModuleLoader loader = new FolderModuleLoader(parentClassLoader, directory);
         moduleManager.addModuleLoader(loader);
     }
@@ -53,12 +54,20 @@ public class BreezePaper extends JavaPlugin {
         return Bukkit.getOnlinePlayers().stream().map(BreezePlayer::new).collect(Collectors.toList());
     }
 
-    public static BreezePlayer getPlayerByUUID(UUID uuid) {
-        return new BreezePlayer(Bukkit.getPlayer(uuid));
+    public static Optional<BreezePlayer> getPlayerByUUID(UUID uuid) {
+        Player player = Bukkit.getPlayer(uuid);
+        if (player == null) {
+            return Optional.empty();
+        }
+        return Optional.of(new BreezePlayer(player));
     }
 
-    public static BreezePlayer getPlayerByName(String name) {
-        return new BreezePlayer(Bukkit.getPlayer(name));
+    public static Optional<BreezePlayer> getPlayerByName(String name) {
+        Player player = Bukkit.getPlayer(name);
+        if (player == null) {
+            return Optional.empty();
+        }
+        return Optional.of(new BreezePlayer(player));
     }
 
 }
