@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.log.BreezeLogger;
 import me.bottdev.breezeapi.log.SimpleLogger;
 import me.bottdev.breezeapi.modules.Module;
+import me.bottdev.breezeapi.modules.ModuleClassLoader;
 import me.bottdev.breezeapi.modules.ModuleLoader;
 import me.bottdev.breezeapi.modules.ModulePreLoad;
 import me.bottdev.breezeapi.di.index.ComponentIndex;
@@ -63,7 +64,7 @@ public class FolderModuleLoader implements ModuleLoader {
         try {
 
             URL jarUrl = jarPath.toUri().toURL();
-            URLClassLoader loader = new URLClassLoader(new URL[]{jarUrl}, parentClassLoader);
+            URLClassLoader loader = new ModuleClassLoader(new URL[]{jarUrl}, parentClassLoader);
 
             try (JarFile jarFile = new JarFile(jarPath.toFile())) {
 
@@ -110,8 +111,9 @@ public class FolderModuleLoader implements ModuleLoader {
                 return Optional.empty();
             }
 
-            Constructor<?> constructor = clazz.getDeclaredConstructor();
-            Module module = (Module) constructor.newInstance();
+            File dataFolder = createDataFolder(name);
+            Constructor<?> constructor = clazz.getDeclaredConstructor(File.class);
+            Module module = (Module) constructor.newInstance(dataFolder);
 
             SupplierIndex supplierIndex = readSupplierIndex(jarFile)
                     .orElseThrow(() -> new RuntimeException("Supplier index is null"));
@@ -126,6 +128,12 @@ public class FolderModuleLoader implements ModuleLoader {
             logger.error("Failed to load module " + name + " " + version, ex);
         }
         return Optional.empty();
+    }
+
+    private File createDataFolder(String moduleName) {
+        File dataFolder = targetDirectory.resolve(moduleName).toFile();
+        if (!dataFolder.exists()) dataFolder.mkdir();
+        return dataFolder;
     }
 
     private Optional<SupplierIndex> readSupplierIndex(JarFile jarFile) {
