@@ -15,9 +15,9 @@ public class ValidatorRegistry {
     public static ValidatorRegistry createDefault() {
         ValidatorRegistry registry = new ValidatorRegistry();
 
-        registry.register(Ignore.class, (_, _, _) -> FieldStatus.SUCCESS);
+        registry.register(Ignore.class, (annotation, node, field) -> FieldStatus.SUCCESS);
 
-        registry.register(NotEmpty.class, (_, node, field) -> {
+        registry.register(NotEmpty.class, (annotation, node, field) -> {
 
             Class<?> fieldType = field.getType();
 
@@ -36,7 +36,7 @@ public class ValidatorRegistry {
 
         });
 
-        registry.register(Range.class, (range, node, _) -> {
+        registry.register(Range.class, (range, node, field) -> {
 
             double min = range.min();
             double max = range.max();
