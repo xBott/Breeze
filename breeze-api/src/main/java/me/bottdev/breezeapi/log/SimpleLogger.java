@@ -18,29 +18,32 @@ public class SimpleLogger implements BreezeLogger {
         this.logger = LoggerFactory.getLogger(name);
     }
 
-    @Override
-    public void info(String message) {
-        logger.info(message);
+    private String format(String message) {
+        return "[" + name + "] " + message;
     }
 
     @Override
-    public void info (String message, Object... args) {
-        logger.info(message, args);
+    public void info(String message) {
+        logger.info(format(message));
+    }
+
+    @Override
+    public void info(String message, Object... args) {
+        logger.info(format(message), args);
     }
 
     @Override
     public void warn(String message) {
-        logger.warn(message);
+        logger.warn(format(message));
     }
 
     @Override
     public void warn(String message, Object... args) {
-        logger.warn(message, args);
+        logger.warn(format(message), args);
     }
 
     @Override
     public void error(String message, Throwable throwable) {
-        logger.error(message, throwable);
+        logger.error(format(message), throwable);
     }
-
 }
