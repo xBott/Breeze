@@ -15,7 +15,7 @@ import java.io.File;
 
 @ModuleInfo(name = "Admin", version = "0.0.1")
 @RequiredArgsConstructor
-public class AdminModule implements Module {
+public class AdminModule extends Module {
 
     private ModuleStatus moduleStatus = ModuleStatus.DISABLED;
     private final BreezeLogger logger = new SimpleLogger("BreezeAdmin");
@@ -33,14 +33,14 @@ public class AdminModule implements Module {
     @Override
     public void onEnable() {
         ConfigLoader jsonConfigLoader = new ConfigLoader(new JsonMapper(), new ConfigValidator());
-        File file = new File("/Users/romanplakhotniuk/java/Breeze/modules/admin/conf.json");
-        jsonConfigLoader.loadConfig(file, AdminsConfiguration.class).ifPresent(config -> {
+        jsonConfigLoader.loadConfig(getDataFolder(), AdminsConfiguration.class).ifPresent(config -> {
             logger.info("Max admin count is {}", config.getMaxCount());
         });
     }
 
     @Override
     public void onRestart() {
+
     }
 
     @Override
