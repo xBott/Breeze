@@ -1,5 +1,7 @@
 package me.bottdev.breezeapi.serialization.mappers;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import lombok.Getter;
@@ -21,6 +23,7 @@ public class JsonMapper implements JacksonMapper {
         registry.getTypes().forEach(type -> {
             SimpleModule module = type.getModule();
             objectMapper.registerModule(module);
+            objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
         });
         return objectMapper;
     }
