@@ -17,7 +17,7 @@ import java.lang.annotation.Annotation;
 
 @AutoService(Processor.class)
 @SupportedAnnotationTypes("me.bottdev.breezeapi.di.annotations.Supplier")
-@SupportedSourceVersion(SourceVersion.RELEASE_23)
+@SupportedSourceVersion(SourceVersion.RELEASE_21)
 public class BreezeSupplierProcessor extends AbstractBreezeAnnotationProcessor {
 
     @Override
