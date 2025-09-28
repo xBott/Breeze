@@ -15,7 +15,7 @@ public class PolymorphicRegistry {
 
     @SuppressWarnings("unchecked")
     public <T> PolymorphicType<T> getType(Class<T> clazz) {
-        return (PolymorphicType<T>) types.computeIfAbsent(clazz, _ -> new PolymorphicType<>(clazz));
+        return (PolymorphicType<T>) types.computeIfAbsent(clazz, c -> new PolymorphicType<>(clazz));
     }
 
     public <T> void registerType(Class<T> clazz, PolymorphicType<T> type) {
