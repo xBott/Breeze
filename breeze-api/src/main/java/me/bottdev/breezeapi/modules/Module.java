@@ -1,15 +1,21 @@
 package me.bottdev.breezeapi.modules;
 
-public interface Module {
+import lombok.Getter;
+import lombok.Setter;
 
-    ModuleStatus getStatus();
+import java.io.File;
 
-    void setStatus(ModuleStatus status);
+@Getter
+@Setter
+public abstract class Module {
 
-    void onEnable();
+    private ModuleStatus status;
+    private File dataFolder;
 
-    void onRestart();
+    public abstract void onEnable();
 
-    void onDisable();
+    public abstract void onRestart();
+
+    public abstract void onDisable();
 
 }
