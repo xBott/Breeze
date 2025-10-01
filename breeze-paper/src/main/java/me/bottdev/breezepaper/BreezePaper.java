@@ -46,7 +46,7 @@ public class BreezePaper extends JavaPlugin {
         ModuleManager moduleManager = engine.getModuleManager();
         ClassLoader parentClassLoader = getClassLoader();
         Path directory = getDataFolder().toPath().resolve("modules");
-        FolderModuleLoader loader = new FolderModuleLoader(parentClassLoader, directory);
+        FolderModuleLoader loader = new FolderModuleLoader(parentClassLoader, engine.getContext(), directory);
         moduleManager.addModuleLoader(loader);
     }
 
