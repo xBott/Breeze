@@ -11,6 +11,7 @@ import me.bottdev.breezeapi.log.SimpleLogger;
 import me.bottdev.breezeapi.modules.Module;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 @RequiredArgsConstructor
 public class SimpleModuleManager implements ModuleManager {
@@ -73,6 +74,9 @@ public class SimpleModuleManager implements ModuleManager {
     }
 
     private void loadContextFromModule(ModulePreLoad modulePreLoad) {
+
+        logger.info("Loading context from module {}...", modulePreLoad.getModuleClass().getSimpleName());
+
         BreezeContext context = engine.getContext();
 
         ClassLoader classLoader = modulePreLoad.getClassLoader();
@@ -81,22 +85,37 @@ public class SimpleModuleManager implements ModuleManager {
 
         context.loadSuppliersFromIndex(supplierIndex, classLoader);
         context.loadComponentsFromIndex(componentIndex, classLoader);
+
     }
 
     @Override
     public void load(ModulePreLoad modulePreLoad) {
 
-        Module module = modulePreLoad.getModule();
-        String moduleName = modulePreLoad.getClass().getSimpleName();
+        String moduleName = modulePreLoad.getModuleClass().getSimpleName();
 
-        if (isModuleLoaded(module.getClass())) {
+        if (isModuleLoaded(modulePreLoad.getModuleClass())) {
             logger.info("Module {} is already loaded. Unloading previously loaded module...", moduleName);
             return;
         }
+
+        Supplier<Optional<Module>> supplier = modulePreLoad.getModuleSupplier();
+
+        loadContextFromModule(modulePreLoad);
+
+        Optional<Module> moduleOptional = supplier.get();
+        if (moduleOptional.isEmpty()) {
+            logger.info("Could not load Module, supplier is empty.");
+            return;
+        }
+
+        Module module = moduleOptional.get();
+        engine.getContext().injectFields(module);
+
         logger.info("Loading module {}...", moduleName);
         Class<? extends Module> moduleClass = module.getClass();
+
         loadedModules.put(moduleClass, module);
-        loadContextFromModule(modulePreLoad);
+
         logger.info("Successfully loaded module {}.", moduleName);
 
         enable(module);
@@ -116,11 +135,27 @@ public class SimpleModuleManager implements ModuleManager {
             List<ModulePreLoad> modulePreLoads = loader.load();
             for (ModulePreLoad modulePreLoad : modulePreLoads) {
 
-                Module module = modulePreLoad.getModule();
-                String moduleName = module.getClass().getSimpleName();
+                String moduleName = modulePreLoad.getModuleClass().getSimpleName();
+
+                if (isModuleLoaded(modulePreLoad.getModuleClass())) {
+                    logger.info("Module {} is already loaded. Unloading previously loaded module...", moduleName);
+                    continue;
+                }
+
+                Supplier<Optional<Module>> supplier = modulePreLoad.getModuleSupplier();
+
+                loadContextFromModule(modulePreLoad);
+
+                Optional<Module> moduleOptional = supplier.get();
+                if (moduleOptional.isEmpty()) {
+                    logger.info("Could not load Module, supplier is empty.");
+                    continue;
+                }
+
+                Module module = moduleOptional.get();
+                engine.getContext().injectFields(module);
 
                 loadedModules.put(module.getClass(), module);
-                loadContextFromModule(modulePreLoad);
 
                 logger.info("Successfully loaded module {} from module loader {}.", moduleName, loaderName);
             }

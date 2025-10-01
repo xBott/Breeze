@@ -2,6 +2,7 @@ package me.bottdev.breezecore.modules.loaders;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import me.bottdev.breezeapi.di.BreezeContext;
 import me.bottdev.breezeapi.log.BreezeLogger;
 import me.bottdev.breezeapi.log.SimpleLogger;
 import me.bottdev.breezeapi.modules.Module;
@@ -20,6 +21,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -28,6 +30,8 @@ public class FolderModuleLoader implements ModuleLoader {
 
     @Getter
     private final ClassLoader parentClassLoader;
+    @Getter
+    private final BreezeContext context;
     @Getter
     private final Path targetDirectory;
 
@@ -93,6 +97,7 @@ public class FolderModuleLoader implements ModuleLoader {
         return Optional.empty();
     }
 
+    @SuppressWarnings("unchecked")
     private Optional<ModulePreLoad> loadModuleFromLine(JarFile jarFile, ClassLoader classLoader, String line) {
         String[] options = line.split(",");
         if (options.length < 3) {
@@ -105,7 +110,8 @@ public class FolderModuleLoader implements ModuleLoader {
         String version = options[2];
 
         try {
-            Class<?> clazz = classLoader.loadClass(classPath);
+
+            Class<? extends Module> clazz = (Class<? extends Module>) classLoader.loadClass(classPath);
             if (!Module.class.isAssignableFrom(clazz)) {
                 logger.warn("{} does not implement Module.", clazz);
                 return Optional.empty();
@@ -113,7 +119,14 @@ public class FolderModuleLoader implements ModuleLoader {
 
             File dataFolder = createDataFolder(name);
             Constructor<?> constructor = clazz.getDeclaredConstructor(File.class);
-            Module module = (Module) constructor.newInstance(dataFolder);
+            Supplier<Optional<Module>> moduleSupplier = () -> {
+                try {
+                    return Optional.of((Module) constructor.newInstance(dataFolder));
+                } catch (Exception ex) {
+                    logger.error("Failed to create module " + name + " from " + classPath, ex);
+                }
+                return Optional.empty();
+            };
 
             SupplierIndex supplierIndex = readSupplierIndex(jarFile)
                     .orElseThrow(() -> new RuntimeException("Supplier index is null"));
@@ -122,7 +135,7 @@ public class FolderModuleLoader implements ModuleLoader {
 
             logger.info("Loaded module {} {} from {}", name, version, classPath);
 
-            return Optional.of(new ModulePreLoad(classLoader, module, supplierIndex, componentIndex));
+            return Optional.of(new ModulePreLoad(classLoader, supplierIndex, componentIndex, clazz, moduleSupplier));
 
         } catch (Exception ex) {
             logger.error("Failed to load module " + name + " " + version, ex);
