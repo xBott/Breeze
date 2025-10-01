@@ -11,3 +11,20 @@ At the moment Breeze is a simple java framework for developing common applicatio
 
 ## Future Plans
 1. **breeze-data** - centralized data base management with support of multiple data bases and other infrastructure stuff like MySql, PostgresDB, MongoDB, Neo4j, Redis and so.  
+
+### How to integrate into your project?
+
+Repository
+```kotlin
+maven {
+    url = uri("https://repo.the-light.online/releases")
+}
+```
+
+Dependencies
+```kotlin
+annotationProcessor("me.bottdev:breeze-processor:<version>")
+compileOnly("me.bottdev:breeze-api:<version>")
+compileOnly("me.bottdev:breeze-core:<version>")
+compileOnly("me.bottdev:breeze-paper:<version>")
+```
