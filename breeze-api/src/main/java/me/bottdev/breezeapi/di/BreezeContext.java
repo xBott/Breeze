@@ -23,6 +23,8 @@ public interface BreezeContext {
 
     <T> Optional<T> get(Class<T> clazz, String key);
 
-    <T> T inject(Class<T> clazz);
+    <T> T injectConstructor(Class<T> clazz);
+
+    void injectFields(Object object);
 
 }

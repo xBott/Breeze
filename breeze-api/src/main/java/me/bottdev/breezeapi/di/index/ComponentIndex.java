@@ -26,6 +26,7 @@ public class ComponentIndex {
     public static class Entry {
         private String classPath;
         private SupplyType supplyType;
+        private List<String> dependencies;
     }
 
     @Getter

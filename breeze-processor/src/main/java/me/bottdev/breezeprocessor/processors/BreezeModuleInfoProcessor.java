@@ -1,12 +1,11 @@
 package me.bottdev.breezeprocessor.processors;
 
 import com.google.auto.service.AutoService;
-import me.bottdev.breezeapi.di.SupplyType;
-import me.bottdev.breezeapi.di.annotations.Component;
 import me.bottdev.breezeapi.modules.annotations.ModuleInfo;
 import me.bottdev.breezeprocessor.AbstractBreezeAnnotationProcessor;
 import me.bottdev.breezeprocessor.ClassInfo;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;

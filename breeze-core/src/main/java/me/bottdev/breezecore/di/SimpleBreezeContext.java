@@ -13,6 +13,7 @@ import me.bottdev.breezeapi.di.index.SupplierIndex;
 
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.nio.charset.StandardCharsets;
@@ -78,7 +79,7 @@ public class SimpleBreezeContext implements BreezeContext {
 
     @Override
     public void loadComponentsFromClassLoader(ClassLoader classLoader) {
-        try (InputStream in = classLoader.getResourceAsStream("META-INF/breeze-components-index.txt")) {
+        try (InputStream in = classLoader.getResourceAsStream("META-INF/breeze-components-index.json")) {
 
             if (in == null) return;
             String content = new String(in.readAllBytes(), StandardCharsets.UTF_8);
@@ -93,20 +94,24 @@ public class SimpleBreezeContext implements BreezeContext {
 
     @Override
     public void loadComponentsFromIndex(ComponentIndex index, ClassLoader classLoader) {
-        index.getEntries().forEach(entry -> {
+
+        List<ResolvedDependency> resolvedDependencies = DependencyResolver.resolve(index);
+
+        resolvedDependencies.forEach(dependency -> {
 
             try {
-                String path = entry.getClassPath();
-                SupplyType supplyType = entry.getSupplyType();
+                String path = dependency.getClassPath();
+                SupplyType supplyType = dependency.getSupplyType();
                 Class<?> clazz = classLoader.loadClass(path);
 
-                ObjectSupplier supplier = SupplierFactory.create(supplyType, () -> inject(clazz));
+                ObjectSupplier supplier = SupplierFactory.create(supplyType, () -> injectConstructor(clazz));
 
-                String name = clazz.getSimpleName().toLowerCase();
+                String name = clazz.getSimpleName();
+                name = name.substring(0, 1).toLowerCase() + name.substring(1);
                 addObjectSupplier(name, supplier);
 
             } catch (Exception ex) {
-                throw new RuntimeException("Could not find class " + entry, ex);
+                throw new RuntimeException("Could not find class " + dependency, ex);
             }
 
         });
@@ -165,9 +170,11 @@ public class SimpleBreezeContext implements BreezeContext {
     }
 
     @Override
-    public <T> T inject(Class<T> clazz) {
+    public <T> T injectConstructor(Class<T> clazz) {
 
-        List<Constructor<?>> injectConstructors = Arrays.stream(clazz.getDeclaredConstructors())
+        Constructor<?>[] constructors = clazz.getDeclaredConstructors();
+
+        List<Constructor<?>> injectConstructors = Arrays.stream(constructors)
                 .filter(c -> c.isAnnotationPresent(Inject.class))
                 .toList();
 
@@ -176,6 +183,20 @@ public class SimpleBreezeContext implements BreezeContext {
         }
 
         if (injectConstructors.isEmpty()) {
+
+            List<Constructor<?>> noArgConstructors = Arrays.stream(constructors)
+                    .filter(c -> c.getParameterCount() == 0)
+                    .toList();
+
+            try {
+                if (noArgConstructors.size() == 1) {
+                    Constructor<?> noArgConstructor = noArgConstructors.getFirst();
+                    return clazz.cast(noArgConstructor.newInstance());
+                }
+            } catch (Exception ex) {
+                throw new RuntimeException("Failed to use no args constructor", ex);
+            }
+
             throw new RuntimeException("No @Inject constructor found in " + clazz.getName());
         }
 
@@ -210,10 +231,36 @@ public class SimpleBreezeContext implements BreezeContext {
             } else {
                 return clazz.getDeclaredConstructor().newInstance();
             }
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to inject dependencies for " + clazz.getName(), e);
+        } catch (Exception ex) {
+            throw new RuntimeException("Failed to inject dependencies for " + clazz.getName(), ex);
         }
     }
 
+    @Override
+    public void injectFields(Object object) {
+        Class<?> clazz = object.getClass();
+
+        for (Field field : clazz.getDeclaredFields()) {
+
+            if (!field.isAnnotationPresent(Inject.class)) continue;
+
+            String key = field.getName();
+            Class<?> type = field.getType();
+
+            Optional<?> valueOptional = get(type, key);
+
+            if (valueOptional.isEmpty()) continue;
+
+            Object value = valueOptional.get();
+            field.setAccessible(true);
+
+            try {
+                field.set(object, value);
+            } catch (Exception ex) {
+                throw new RuntimeException("Failed to inject dependency into field " + key + " of " + object, ex);
+            }
+
+        }
+    }
 
 }

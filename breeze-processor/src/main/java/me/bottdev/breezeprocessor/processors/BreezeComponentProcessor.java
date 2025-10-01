@@ -12,6 +12,7 @@ import javax.lang.model.SourceVersion;
 import javax.tools.StandardLocation;
 import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
+import java.util.List;
 
 @AutoService(Processor.class)
 @SupportedAnnotationTypes("me.bottdev.breezeapi.di.annotations.Component")
@@ -39,11 +40,12 @@ public class BreezeComponentProcessor extends AbstractBreezeAnnotationProcessor 
             );
 
             ComponentIndex index = new ComponentIndex(
-                    classInfoSet.stream().map(info -> {
+                    collectedClassInfo.stream().map(info -> {
                                 Component component = (Component) info.getAnnotation();
                                 String classPath = info.getClassName();
                                 SupplyType supplyType = component.type();
-                                return new ComponentIndex.Entry(classPath, supplyType);
+                                List<String> dependencies = info.getDependencies();
+                                return new ComponentIndex.Entry(classPath, supplyType, dependencies);
                             }
                     ).toList()
             );

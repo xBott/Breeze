@@ -7,6 +7,7 @@ import me.bottdev.breezeapi.serialization.mappers.JsonMapper;
 import me.bottdev.breezeprocessor.AbstractBreezeAnnotationProcessor;
 import me.bottdev.breezeprocessor.ClassInfo;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
@@ -33,6 +34,7 @@ public class BreezeSupplierProcessor extends AbstractBreezeAnnotationProcessor {
     @Override
     protected void writeFile() {
         try {
+
             String name = getOutputFileName();
             PrintWriter writer = new PrintWriter(
                     processingEnv.getFiler()
@@ -41,7 +43,7 @@ public class BreezeSupplierProcessor extends AbstractBreezeAnnotationProcessor {
             );
 
             SupplierIndex index = new SupplierIndex(
-                    classInfoSet.stream().map(ClassInfo::getClassName).toList()
+                    collectedClassInfo.stream().map(ClassInfo::getClassName).toList()
             );
             JsonMapper mapper = new JsonMapper();
             String jsonString = mapper.serialize(index);
