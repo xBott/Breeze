@@ -8,7 +8,7 @@ plugins {
 
 allprojects {
     group = "me.bottdev"
-    version = "0.1.4"
+    version = "0.1.8"
 
     repositories {
         mavenCentral()
