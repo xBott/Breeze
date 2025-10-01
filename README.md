@@ -10,7 +10,9 @@ At the moment Breeze is a simple java framework for developing common applicatio
 5. **breeze-admin** - a test module for breeze engine
 
 ## Future Plans
-1. **breeze-data** - centralized data base management with support of multiple data bases and other infrastructure stuff like MySql, PostgresDB, MongoDB, Neo4j, Redis and so.  
+1. Dependency resolving on the level of modules: evaluating the order of module loading. Dependencies list in @ModuleInfo
+2. Cycle-Dependency logging
+3. **breeze-data** - centralized data base management with support of multiple data bases and other infrastructure stuff like MySql, PostgresDB, MongoDB, Neo4j, Redis and so.  
 
 ### How to integrate into your project?
 
