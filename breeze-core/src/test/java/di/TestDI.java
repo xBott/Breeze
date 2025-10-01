@@ -17,7 +17,7 @@ public class TestDI {
     public void testInject() {
         SimpleBreezeEngine breezeEngine = new SimpleBreezeEngine();
         breezeEngine.getContext().addSupplier(new TestSupplier());
-        TestInject injected = breezeEngine.getContext().inject(TestInject.class);
+        TestInject injected = breezeEngine.getContext().injectConstructor(TestInject.class);
         assert injected.getAge() == 10;
     }
 
