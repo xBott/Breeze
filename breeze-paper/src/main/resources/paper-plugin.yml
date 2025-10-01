@@ -2,3 +2,10 @@ name: BreezePaper
 version: '${version}'
 main: me.bottdev.breezepaper.BreezePaper
 api-version: '1.21'
+
+dependencies:
+  server:
+    ASPaperPlugin:
+      join-classpath: true
+      required: false
+      load: BEFORE
