@@ -144,7 +144,8 @@ public class SimpleBreezeContext implements BreezeContext {
         }
     }
 
-    private void addObjectSupplier(String key, ObjectSupplier supplier) {
+    @Override
+    public void addObjectSupplier(String key, ObjectSupplier supplier) {
         suppliers.put(key, supplier);
     }
 

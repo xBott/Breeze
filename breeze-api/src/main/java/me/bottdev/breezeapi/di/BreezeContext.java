@@ -21,6 +21,8 @@ public interface BreezeContext {
 
     void addSupplier(Object object);
 
+    void addObjectSupplier(String key, ObjectSupplier supplier);
+
     <T> Optional<T> get(Class<T> clazz, String key);
 
     <T> T injectConstructor(Class<T> clazz);
