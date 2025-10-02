@@ -10,6 +10,8 @@ import me.bottdev.breezeapi.serialization.mappers.JsonMapper;
 import me.bottdev.breezecore.di.SimpleBreezeContext;
 import me.bottdev.breezecore.modules.SimpleModuleManager;
 
+import java.nio.file.Path;
+
 @Getter
 public class SimpleBreezeEngine implements BreezeEngine {
 
@@ -17,6 +19,12 @@ public class SimpleBreezeEngine implements BreezeEngine {
     private final ModuleManager moduleManager = new SimpleModuleManager(this);
     private final BreezeLogger logger = new SimpleLogger("SimpleBreezeEngine");
     private final JsonMapper jsonMapper = new JsonMapper();
+
+    private final Path dataFolder;
+
+    public SimpleBreezeEngine(Path dataFolder) {
+        this.dataFolder = dataFolder;
+    }
 
     @Override
     public void start() {

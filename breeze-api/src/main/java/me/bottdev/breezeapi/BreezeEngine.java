@@ -5,6 +5,8 @@ import me.bottdev.breezeapi.log.BreezeLogger;
 import me.bottdev.breezeapi.modules.ModuleManager;
 import me.bottdev.breezeapi.serialization.mappers.JsonMapper;
 
+import java.nio.file.Path;
+
 public interface BreezeEngine {
 
     BreezeContext getContext();
@@ -14,6 +16,8 @@ public interface BreezeEngine {
     BreezeLogger getLogger();
 
     JsonMapper getJsonMapper();
+
+    Path getDataFolder();
 
     void start();
 

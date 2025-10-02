@@ -26,7 +26,7 @@ public class BreezePaper extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
-        engine = new SimpleBreezeEngine();
+        engine = new SimpleBreezeEngine(getDataPath());
         addFolderModuleLoader();
         engine.start();
 
