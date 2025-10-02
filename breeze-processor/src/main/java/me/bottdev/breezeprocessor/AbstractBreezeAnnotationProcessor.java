@@ -63,8 +63,6 @@ public abstract class AbstractBreezeAnnotationProcessor extends AbstractProcesso
                         varElement -> varElement.asType().toString()
                 ).toList();
 
-                System.out.println(Arrays.toString(dependencies.toArray()));
-
                 collectedClassInfo.add(new ClassInfo(className, classAnnotations, dependencies));
 
             }
