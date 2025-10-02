@@ -2,6 +2,7 @@ package me.bottdev.breezecore.modules.loaders;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import me.bottdev.breezeapi.config.autoload.AutoLoadIndex;
 import me.bottdev.breezeapi.di.BreezeContext;
 import me.bottdev.breezeapi.log.BreezeLogger;
 import me.bottdev.breezeapi.log.SimpleLogger;
@@ -128,6 +129,8 @@ public class FolderModuleLoader implements ModuleLoader {
                 return Optional.empty();
             };
 
+            AutoLoadIndex autoLoadIndex = readAutoLoadIndex(jarFile)
+                    .orElseThrow(() -> new RuntimeException("Autoload configuration index is null"));
             SupplierIndex supplierIndex = readSupplierIndex(jarFile)
                     .orElseThrow(() -> new RuntimeException("Supplier index is null"));
             ComponentIndex componentIndex = readComponentIndex(jarFile)
@@ -135,7 +138,15 @@ public class FolderModuleLoader implements ModuleLoader {
 
             logger.info("Loaded module {} {} from {}", name, version, classPath);
 
-            return Optional.of(new ModulePreLoad(classLoader, supplierIndex, componentIndex, clazz, moduleSupplier));
+            return Optional.of(new ModulePreLoad(
+                    classLoader,
+                    autoLoadIndex,
+                    supplierIndex,
+                    componentIndex,
+                    dataFolder.toPath(),
+                    clazz,
+                    moduleSupplier
+            ));
 
         } catch (Exception ex) {
             logger.error("Failed to load module " + name + " " + version, ex);
@@ -148,6 +159,27 @@ public class FolderModuleLoader implements ModuleLoader {
         if (!dataFolder.exists()) dataFolder.mkdir();
         return dataFolder;
     }
+
+    private Optional<AutoLoadIndex> readAutoLoadIndex(JarFile jarFile) {
+        try {
+
+            JarEntry entry = jarFile.getJarEntry("META-INF/breeze-autoload-configuration-index.json");
+            if (entry == null) {
+                logger.warn("{} not found in {}", "META-INF/breeze-autoload-configuration-index.json", jarFile.getName());
+                return Optional.of(new AutoLoadIndex());
+            }
+
+            try (InputStream in = jarFile.getInputStream(entry)) {
+                String content = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+                return AutoLoadIndex.fromJson(content);
+            }
+
+        } catch (Exception ex) {
+            logger.error("Failed to read supplier index " + "META-INF/breeze-supplier-index.json" + " in " + jarFile.getName(), ex);
+            return Optional.of(new AutoLoadIndex());
+        }
+    }
+
 
     private Optional<SupplierIndex> readSupplierIndex(JarFile jarFile) {
         try {
