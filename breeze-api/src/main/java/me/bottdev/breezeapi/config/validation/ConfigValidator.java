@@ -23,6 +23,7 @@ public class ConfigValidator {
             Optional<ObjectNode> fieldNodeOptional = node.getChild(field.getName());
 
             if (fieldNodeOptional.isEmpty()) {
+                logger.info("Field " + field.getName() + " has no child.");
                 configStatus = ConfigStatus.ERROR;
                 break;
             }
