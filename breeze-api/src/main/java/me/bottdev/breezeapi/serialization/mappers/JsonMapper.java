@@ -19,10 +19,10 @@ public class JsonMapper implements JacksonMapper {
     @Override
     public ObjectMapper getObjectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
         registry.getTypes().forEach(type -> {
             SimpleModule module = type.getModule();
             objectMapper.registerModule(module);
-            objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
         });
         return objectMapper;
     }
