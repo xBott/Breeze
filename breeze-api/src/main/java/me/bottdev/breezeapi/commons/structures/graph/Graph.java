@@ -10,6 +10,15 @@ public interface Graph<T> {
 
     List<GraphNode<T>> getNodes();
 
+    default List<GraphNode<T>> getIsolatedNodes() {
+        return getNodes().stream()
+                .filter(node ->
+                        getEdges().stream().noneMatch(edge ->
+                                edge.getFrom().equals(node) || edge.getTo().equals(node)
+                        )
+                ).toList();
+    }
+
     List<GraphEdge<T>> getEdges();
 
     default Optional<GraphNode<T>> getFirstNodeByValue(T value) {

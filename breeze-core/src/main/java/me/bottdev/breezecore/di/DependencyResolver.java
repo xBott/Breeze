@@ -23,7 +23,12 @@ public class DependencyResolver {
             throw new IllegalArgumentException("Failed to resolve dependencies: found cycle dependencies.");
         }
         logger.info("Successfully resolved dependencies.");
-        return applyTopographicalSort(graph);
+
+        List<ResolvedDependency> resolved = new ArrayList<>();
+        resolved.addAll(getIsolatedDependencies(graph));
+        resolved.addAll(applyTopographicalSort(graph));
+
+        return resolved;
     }
 
     private static DirectedGraph<String> buildGraph(ComponentIndex index) {
@@ -79,6 +84,17 @@ public class DependencyResolver {
         logger.info("Successfully built topographical sort using DFS.");
 
         return sorted;
+    }
+
+    private static List<ResolvedDependency> getIsolatedDependencies(DirectedGraph<String> graph) {
+        return graph.getIsolatedNodes().stream()
+                .map(node ->
+                        new ResolvedDependency(
+                                node.getValue(),
+                                (SupplyType) node.getAttributes().get("supplyType")
+                        )
+                )
+                .toList();
     }
 
 }
