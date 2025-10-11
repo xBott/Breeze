@@ -9,3 +9,15 @@ dependencies:
       join-classpath: true
       required: false
       load: BEFORE
+    InvUIWrapper:
+      join-classpath: true
+      required: false
+      load: BEFORE
+    LightGear:
+      join-classpath: true
+      required: false
+      load: BEFORE
+    LightAPI:
+      join-classpath: true
+      required: false
+      load: BEFORE
