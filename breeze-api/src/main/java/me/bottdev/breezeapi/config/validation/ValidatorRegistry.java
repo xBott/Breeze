@@ -22,6 +22,7 @@ public class ValidatorRegistry {
             Class<?> fieldType = field.getType();
 
             Object value = node.getValue();
+            if (!node.getChildren().isEmpty()) return FieldStatus.SUCCESS;
             if (value == null) return FieldStatus.EMPTY;
 
             Class<?> valueType = value.getClass();
