@@ -8,6 +8,7 @@ import me.bottdev.breezeapi.config.Configuration;
 import me.bottdev.breezeapi.config.validation.ConfigValidator;
 import me.bottdev.breezeapi.di.BreezeContext;
 import me.bottdev.breezeapi.di.suppliers.SingletonSupplier;
+import me.bottdev.breezeapi.index.types.BreezeAutoLoadIndex;
 import me.bottdev.breezeapi.log.BreezeLogger;
 import me.bottdev.breezeapi.log.SimpleLogger;
 import me.bottdev.breezeapi.modules.ModulePreLoad;
@@ -26,9 +27,9 @@ public class AutoLoadPerformer {
     private final ModulePreLoad modulePreLoad;
     private final ClassLoader classLoader;
 
-    public void load(AutoLoadIndex index) {
+    public void load(BreezeAutoLoadIndex index) {
         logger.info("Loading auto load configurations...");
-        for (AutoLoadIndex.Entry entry : index.getEntries()) {
+        for (BreezeAutoLoadIndex.Entry entry : index.getEntries()) {
             Optional<Configuration> configurationOptional = loadEntry(entry);
             configurationOptional.ifPresent(this::addConfigurationSupplier);
         }
@@ -36,7 +37,7 @@ public class AutoLoadPerformer {
     }
 
     @SuppressWarnings("unchecked")
-    private Optional<Configuration> loadEntry(AutoLoadIndex.Entry entry) {
+    private Optional<Configuration> loadEntry(BreezeAutoLoadIndex.Entry entry) {
 
         try {
 

@@ -1,6 +1,7 @@
 package me.bottdev.breezeapi;
 
 import me.bottdev.breezeapi.di.BreezeContext;
+import me.bottdev.breezeapi.index.BreezeIndexLoader;
 import me.bottdev.breezeapi.log.BreezeLogger;
 import me.bottdev.breezeapi.modules.ModuleManager;
 import me.bottdev.breezeapi.serialization.mappers.JsonMapper;
@@ -8,6 +9,8 @@ import me.bottdev.breezeapi.serialization.mappers.JsonMapper;
 import java.nio.file.Path;
 
 public interface BreezeEngine {
+
+    BreezeIndexLoader getIndexLoader();
 
     BreezeContext getContext();
 

@@ -11,14 +11,28 @@ public class ModuleClassLoader extends URLClassLoader {
 
     @Override
     public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-        try {
-            return super.loadClass(name, resolve);
-        } catch (ClassNotFoundException ignored) {}
+        Class<?> clazz = findLoadedClass(name);
+        if (clazz != null) return clazz;
 
-        Class<?> clazz = findClass(name);
-        if (resolve) {
-            resolveClass(clazz);
+        if (name.startsWith("me.bottdev.")) {
+            try {
+                clazz = findClass(name);
+            } catch (ClassNotFoundException ignored) {}
         }
+
+        if (clazz == null) {
+            try {
+                clazz = getParent().loadClass(name);
+            } catch (ClassNotFoundException ignored) {}
+        }
+
+        if (clazz == null) {
+            clazz = findClass(name);
+        }
+
+        if (resolve) resolveClass(clazz);
         return clazz;
+
     }
+
 }

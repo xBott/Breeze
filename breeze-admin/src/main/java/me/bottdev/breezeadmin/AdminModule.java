@@ -11,8 +11,6 @@ import me.bottdev.breezeapi.modules.annotations.ModuleInfo;
 import me.bottdev.breezeapi.log.SimpleLogger;
 import me.bottdev.breezeapi.serialization.mappers.JsonMapper;
 
-import java.io.File;
-
 @ModuleInfo(name = "Admin", version = "0.0.1")
 @RequiredArgsConstructor
 public class AdminModule extends Module {
