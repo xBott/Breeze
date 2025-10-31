@@ -2,6 +2,7 @@ package me.bottdev.breezecore;
 
 import lombok.Getter;
 import me.bottdev.breezeapi.BreezeEngine;
+import me.bottdev.breezeapi.index.BreezeIndexLoader;
 import me.bottdev.breezeapi.log.BreezeLogger;
 import me.bottdev.breezeapi.log.SimpleLogger;
 import me.bottdev.breezeapi.di.BreezeContext;
@@ -15,6 +16,7 @@ import java.nio.file.Path;
 @Getter
 public class SimpleBreezeEngine implements BreezeEngine {
 
+    private final BreezeIndexLoader indexLoader = new BreezeIndexLoader();
     private final BreezeContext context = new SimpleBreezeContext();
     private final ModuleManager moduleManager = new SimpleModuleManager(this);
     private final BreezeLogger logger = new SimpleLogger("SimpleBreezeEngine");
@@ -36,7 +38,7 @@ public class SimpleBreezeEngine implements BreezeEngine {
 
     private void loadContext() {
         ClassLoader classLoader = getClass().getClassLoader();
-        context.load(classLoader);
+        context.getContextReader().read(classLoader);
     }
 
     private void startModuleManager() {

@@ -2,10 +2,8 @@ package me.bottdev.breezecore.modules;
 
 import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.BreezeEngine;
-import me.bottdev.breezeapi.config.autoload.AutoLoadIndex;
-import me.bottdev.breezeapi.config.autoload.AutoLoadPerformer;
-import me.bottdev.breezeapi.di.index.ComponentIndex;
-import me.bottdev.breezeapi.di.index.SupplierIndex;
+import me.bottdev.breezeapi.index.types.BreezeComponentIndex;
+import me.bottdev.breezeapi.index.types.BreezeSupplierIndex;
 import me.bottdev.breezeapi.log.BreezeLogger;
 import me.bottdev.breezeapi.di.BreezeContext;
 import me.bottdev.breezeapi.modules.*;
@@ -81,10 +79,14 @@ public class SimpleModuleManager implements ModuleManager {
         logger.info("Loading auto configurations from module {}...", moduleName);
 
         ClassLoader classLoader = modulePreLoad.getClassLoader();
-        AutoLoadIndex autoLoadIndex = modulePreLoad.getAutoLoadIndex();
 
-        AutoLoadPerformer performer = new AutoLoadPerformer(engine, modulePreLoad,  classLoader);
-        performer.load(autoLoadIndex);
+//        modulePreLoad.getIndexBucket().get(BreezeComponentIndex.class).ifPresent(index ->
+//                context.getContextReader().readComponentsFromIndex(index, classLoader)
+//        );
+//        AutoLoadIndex autoLoadIndex = modulePreLoad.getAutoLoadIndex();
+//
+//        AutoLoadPerformer performer = new AutoLoadPerformer(engine, modulePreLoad,  classLoader);
+//        performer.load(autoLoadIndex);
 
     }
 
@@ -96,12 +98,13 @@ public class SimpleModuleManager implements ModuleManager {
         BreezeContext context = engine.getContext();
 
         ClassLoader classLoader = modulePreLoad.getClassLoader();
-        SupplierIndex supplierIndex = modulePreLoad.getSupplierIndex();
-        ComponentIndex componentIndex = modulePreLoad.getComponentIndex();
 
-        context.loadSuppliersFromIndex(supplierIndex, classLoader);
-        context.loadComponentsFromIndex(componentIndex, classLoader);
-
+        modulePreLoad.getIndexBucket().get(BreezeSupplierIndex.class).ifPresent(index ->
+                context.getContextReader().readSuppliersFromIndex(index, classLoader)
+        );
+        modulePreLoad.getIndexBucket().get(BreezeComponentIndex.class).ifPresent(index ->
+                context.getContextReader().readComponentsFromIndex(index, classLoader)
+        );
     }
 
     private Optional<Module> handleModulePreLoad(ModulePreLoad modulePreLoad) {
