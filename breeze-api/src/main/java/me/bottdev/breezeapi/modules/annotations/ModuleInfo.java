@@ -10,4 +10,5 @@ import java.lang.annotation.Target;
 public @interface ModuleInfo {
     String name() default "";
     String version() default "";
+    ModuleDependency[] dependencies() default {};
 }
