@@ -1,22 +1,17 @@
 package me.bottdev.breezecore.di;
 
 import lombok.Getter;
-import me.bottdev.breezeapi.di.BreezeContext;
-import me.bottdev.breezeapi.di.ObjectSupplier;
-import me.bottdev.breezeapi.di.SupplierFactory;
-import me.bottdev.breezeapi.di.SupplyType;
+import me.bottdev.breezeapi.di.*;
 import me.bottdev.breezeapi.di.annotations.Inject;
 import me.bottdev.breezeapi.di.annotations.Named;
 import me.bottdev.breezeapi.di.annotations.Supply;
-import me.bottdev.breezeapi.di.index.ComponentIndex;
-import me.bottdev.breezeapi.di.index.SupplierIndex;
+import me.bottdev.breezeapi.log.BreezeLogger;
+import me.bottdev.breezeapi.log.SimpleLogger;
 
-import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -34,88 +29,11 @@ public class SimpleBreezeContext implements BreezeContext {
     );
 
     @Getter
+    private final BreezeLogger logger = new SimpleLogger("SimpleBreezeContext");
+    @Getter
+    private final ContextReader contextReader = new SimpleBreezeContextReader(this);
+    @Getter
     private final Map<String, ObjectSupplier> suppliers = new HashMap<>();
-
-    @Override
-    public void load() {
-        ClassLoader classLoader = getClass().getClassLoader();
-        load(classLoader);
-    }
-
-    @Override
-    public void load(ClassLoader classLoader) {
-        loadSuppliersFromClassLoader(classLoader);
-        loadComponentsFromClassLoader(classLoader);
-    }
-
-    @Override
-    public void loadSuppliersFromClassLoader(ClassLoader classLoader) {
-        try (InputStream in = classLoader.getResourceAsStream("META-INF/breeze-supplier-index.json")) {
-
-            if (in == null) return;
-            String content = new String(in.readAllBytes(), StandardCharsets.UTF_8);
-
-            Optional<SupplierIndex> optionalIndex = SupplierIndex.fromJson(content);
-            optionalIndex.ifPresent(index -> loadSuppliersFromIndex(index, classLoader));
-
-        } catch (Exception ex) {
-            throw new RuntimeException("Failed to load suppliers from index", ex);
-        }
-    }
-
-    @Override
-    public void loadSuppliersFromIndex(SupplierIndex index, ClassLoader classLoader) {
-        index.getPaths().forEach(path -> {
-
-            try {
-                Class<?> clazz = classLoader.loadClass(path);
-                addSupplier(clazz.getDeclaredConstructor().newInstance());
-            } catch (Exception ex) {
-                throw new RuntimeException("Could not find class " + path, ex);
-            }
-
-        });
-    }
-
-    @Override
-    public void loadComponentsFromClassLoader(ClassLoader classLoader) {
-        try (InputStream in = classLoader.getResourceAsStream("META-INF/breeze-components-index.json")) {
-
-            if (in == null) return;
-            String content = new String(in.readAllBytes(), StandardCharsets.UTF_8);
-
-            Optional<ComponentIndex> optionalIndex = ComponentIndex.fromJson(content);
-            optionalIndex.ifPresent(index -> loadComponentsFromIndex(index, classLoader));
-
-        } catch (Exception ex) {
-            throw new RuntimeException("Failed to load components from index", ex);
-        }
-    }
-
-    @Override
-    public void loadComponentsFromIndex(ComponentIndex index, ClassLoader classLoader) {
-
-        List<ResolvedDependency> resolvedDependencies = DependencyResolver.resolve(index);
-
-        resolvedDependencies.forEach(dependency -> {
-
-            try {
-                String path = dependency.getClassPath();
-                SupplyType supplyType = dependency.getSupplyType();
-                Class<?> clazz = classLoader.loadClass(path);
-
-                ObjectSupplier supplier = SupplierFactory.create(supplyType, () -> injectConstructor(clazz));
-
-                String name = clazz.getSimpleName();
-                name = name.substring(0, 1).toLowerCase() + name.substring(1);
-                addObjectSupplier(name, supplier);
-
-            } catch (Exception ex) {
-                throw new RuntimeException("Could not find class " + dependency, ex);
-            }
-
-        });
-    }
 
     @Override
     public void addSupplier(Object object) {
