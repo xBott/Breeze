@@ -2,6 +2,7 @@ package me.bottdev.breezepaper.location;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -9,7 +10,8 @@ import org.bukkit.World;
 @AllArgsConstructor
 @Builder
 @Getter
-public class BreezeLocation {
+@EqualsAndHashCode
+public class BreezeLocation implements VectorLike {
 
     public static BreezeLocation fromBukkit(Location location) {
         World world = location.getWorld();
@@ -34,15 +36,4 @@ public class BreezeLocation {
         return new Location(world, x, y, z, yaw, pitch);
     }
 
-    @Override
-    public String toString() {
-        return "BreezeLocation{" +
-                "world=" + world.getName() +
-                ", x=" + x +
-                ", y=" + y +
-                ", z=" + z +
-                ", yaw=" + yaw +
-                ", pitch=" + pitch +
-                "}";
-    }
 }
