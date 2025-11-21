@@ -2,6 +2,7 @@ package me.bottdev.breezecore;
 
 import lombok.Getter;
 import me.bottdev.breezeapi.BreezeEngine;
+import me.bottdev.breezeapi.events.EventBus;
 import me.bottdev.breezeapi.index.BreezeIndexLoader;
 import me.bottdev.breezeapi.log.BreezeLogger;
 import me.bottdev.breezeapi.log.SimpleLogger;
@@ -19,6 +20,7 @@ public class SimpleBreezeEngine implements BreezeEngine {
     private final BreezeIndexLoader indexLoader = new BreezeIndexLoader();
     private final BreezeContext context = new SimpleBreezeContext();
     private final ModuleManager moduleManager = new SimpleModuleManager(this);
+    private final EventBus eventBus = new EventBus();
     private final BreezeLogger logger = new SimpleLogger("SimpleBreezeEngine");
     private final JsonMapper jsonMapper = new JsonMapper();
 
@@ -60,11 +62,16 @@ public class SimpleBreezeEngine implements BreezeEngine {
     public void stop() {
         logger.info("Stopping engine....");
         stopModuleManager();
+        unregisterListeners();
         logger.info("Successfully stopped engine.");
     }
 
     private void stopModuleManager() {
         moduleManager.unloadAll();
+    }
+
+    private void unregisterListeners() {
+        eventBus.unregisterAllListeners();
     }
 
 }
