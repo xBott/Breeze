@@ -1,6 +1,7 @@
 package me.bottdev.breezeapi;
 
 import me.bottdev.breezeapi.di.BreezeContext;
+import me.bottdev.breezeapi.events.EventBus;
 import me.bottdev.breezeapi.index.BreezeIndexLoader;
 import me.bottdev.breezeapi.log.BreezeLogger;
 import me.bottdev.breezeapi.modules.ModuleManager;
@@ -15,6 +16,8 @@ public interface BreezeEngine {
     BreezeContext getContext();
 
     ModuleManager getModuleManager();
+
+    EventBus getEventBus();
 
     BreezeLogger getLogger();
 
