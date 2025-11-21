@@ -39,45 +39,45 @@ public class AutoLoadPerformer {
     @SuppressWarnings("unchecked")
     private Optional<Configuration> loadEntry(BreezeAutoLoadIndex.Entry entry) {
 
-        try {
-
-            String classPath = entry.getClassPath();
-            Class<? extends Configuration> clazz = (Class<? extends Configuration>) classLoader.loadClass(classPath);
-
-            AutoLoadSerializer serializer = entry.getSerializer();
-            Mapper mapper = serializer.getMapper(engine);
-
-            String filePath = entry.getFilePath();
-            String formattedPath = replacePathPlaceholders(filePath, clazz, serializer);
-            File file = new File(formattedPath);
-
-            logger.info("Trying to load {} {} configuration from {}...",
-                    serializer.toString(), clazz.getSimpleName(), formattedPath);
-
-            ConfigLoader configLoader = new ConfigLoader(mapper, new ConfigValidator());
-
-            Configuration emptyInstance;
-            try {
-                emptyInstance = clazz.getDeclaredConstructor().newInstance();
-            } catch (Exception ex) {
-                emptyInstance = null;
-                logger.error("Failed to create empty instance of " + clazz.getSimpleName(), ex);
-            }
-
-            Configuration finalEmptyInstance = emptyInstance;
-
-            Configuration configuration = configLoader.loadConfigSafely(
-                    file,
-                    (Class<Configuration>) clazz,
-                    () -> finalEmptyInstance
-            );
-
-            return Optional.of(configuration);
-
-
-        } catch (Exception ex) {
-            logger.error("Failed to load auto load entry: " + entry.getFilePath(), ex);
-        }
+//        try {
+//
+//            String classPath = entry.getClassPath();
+//            Class<? extends Configuration> clazz = (Class<? extends Configuration>) classLoader.loadClass(classPath);
+//
+//            AutoLoadSerializer serializer = entry.getSerializer();
+//            Mapper mapper = serializer.getMapper(engine);
+//
+//            String filePath = entry.getFilePath();
+//            String formattedPath = replacePathPlaceholders(filePath, clazz, serializer);
+//            File file = new File(formattedPath);
+//
+//            logger.info("Trying to load {} {} configuration from {}...",
+//                    serializer.toString(), clazz.getSimpleName(), formattedPath);
+//
+//            ConfigLoader configLoader = new ConfigLoader(mapper, new ConfigValidator());
+//
+//            Configuration emptyInstance;
+//            try {
+//                emptyInstance = clazz.getDeclaredConstructor().newInstance();
+//            } catch (Exception ex) {
+//                emptyInstance = null;
+//                logger.error("Failed to create empty instance of " + clazz.getSimpleName(), ex);
+//            }
+//
+//            Configuration finalEmptyInstance = emptyInstance;
+//
+//            Configuration configuration = configLoader.loadConfigSafely(
+//                    file,
+//                    (Class<Configuration>) clazz,
+//                    () -> finalEmptyInstance
+//            );
+//
+//            return Optional.of(configuration);
+//
+//
+//        } catch (Exception ex) {
+//            logger.error("Failed to load auto load entry: " + entry.getFilePath(), ex);
+//        }
 
         return Optional.empty();
     }

@@ -19,8 +19,6 @@ public class BreezeAutoLoadIndex implements MultipleBreezeIndex<BreezeAutoLoadIn
     public static class Entry implements IndexEntry {
 
         private String classPath;
-        private String filePath;
-        private AutoLoadSerializer serializer;
 
     }
 
