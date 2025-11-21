@@ -9,6 +9,15 @@ At the moment Breeze is a simple java framework for developing common applicatio
 4. **breeze-paper** - minecraft related module that adds abstraction above bukkit and provides support for breeze DI and modules.
 5. **breeze-admin** - a test module for breeze engine
 
+
+## So far working on
+1. Better minecraft integration
+2. Auto-Loadable objects
+3. Better configuration system (basic configurations, tree configurations)
+4. Event system
+5. Scripting
+
+
 ## Future Plans
 1. Dependency resolving on the level of modules: evaluating the order of module loading. Dependencies list in @ModuleInfo
 2. Cycle-Dependency logging
