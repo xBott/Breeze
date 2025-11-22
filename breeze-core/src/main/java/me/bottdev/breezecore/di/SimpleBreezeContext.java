@@ -34,6 +34,13 @@ public class SimpleBreezeContext implements BreezeContext {
     private final ContextReader contextReader = new SimpleBreezeContextReader(this);
     @Getter
     private final Map<String, ObjectSupplier> suppliers = new HashMap<>();
+    @Getter
+    private final List<ConstructHook> constructHooks = new ArrayList<>();
+
+    @Override
+    public void registerConstructHook(ConstructHook constructHook) {
+        constructHooks.add(constructHook);
+    }
 
     @Override
     public void addSupplier(Object object) {
@@ -89,11 +96,11 @@ public class SimpleBreezeContext implements BreezeContext {
     }
 
     @Override
-    public <T> T injectConstructor(Class<T> clazz) {
+    public <T> Optional<T> injectConstructor(Class<T> clazz) {
 
-        Constructor<?>[] constructors = clazz.getDeclaredConstructors();
+        Constructor<?>[] allConstructors = clazz.getDeclaredConstructors();
 
-        List<Constructor<?>> injectConstructors = Arrays.stream(constructors)
+        List<Constructor<?>> injectConstructors = Arrays.stream(allConstructors)
                 .filter(c -> c.isAnnotationPresent(Inject.class))
                 .toList();
 
@@ -101,57 +108,89 @@ public class SimpleBreezeContext implements BreezeContext {
             throw new RuntimeException("Multiple @Inject constructors found in " + clazz.getName());
         }
 
+        Optional<T> injectedObject;
+
         if (injectConstructors.isEmpty()) {
 
-            List<Constructor<?>> noArgConstructors = Arrays.stream(constructors)
-                    .filter(c -> c.getParameterCount() == 0)
-                    .toList();
+            injectedObject = injectEmptyConstructor(clazz, allConstructors);
 
-            try {
-                if (noArgConstructors.size() == 1) {
-                    Constructor<?> noArgConstructor = noArgConstructors.getFirst();
-                    return clazz.cast(noArgConstructor.newInstance());
-                }
-            } catch (Exception ex) {
-                throw new RuntimeException("Failed to use no args constructor", ex);
-            }
+        } else {
 
-            throw new RuntimeException("No @Inject constructor found in " + clazz.getName());
+            Constructor<?> injectConstructor = injectConstructors.getFirst();
+            injectedObject = injectNonEmptyConstructor(clazz, injectConstructor);
+
         }
 
-        Constructor<?> injectConstructor = injectConstructors.getFirst();
+        return injectedObject;
+
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> Optional<T> injectEmptyConstructor(Class<?> clazz, Constructor<?>[] constructors) {
+        List<Constructor<?>> noArgConstructors = Arrays.stream(constructors)
+                .filter(c -> c.getParameterCount() == 0)
+                .toList();
+
+        if (noArgConstructors.isEmpty()) {
+            logger.warn("No @Inject empty constructors found in " + clazz.getName());
+            return Optional.empty();
+        }
 
         try {
-            if (injectConstructor != null) {
-                injectConstructor.setAccessible(true);
+            if (noArgConstructors.size() == 1) {
+                Constructor<?> noArgConstructor = noArgConstructors.getFirst();
+                return (Optional<T>) Optional.of(clazz.cast(noArgConstructor.newInstance()));
+            }  else {
+                logger.warn("Failed to inject constructor. {} has multiple empty constructors.", clazz.getName());
+                return Optional.empty();
+            }
 
-                Parameter[] parameters = injectConstructor.getParameters();
-                Object[] suppliedParameters = new Object[parameters.length];
+        } catch (Exception ex) {
+            logger.error("Failed to inject empty constructor for " + clazz.getName(), ex);
+            return Optional.empty();
+        }
 
-                for (int i = 0; i < parameters.length; i++) {
-                    Parameter parameter = parameters[i];
-                    Class<?> type = parameter.getType();
-                    String name = parameter.isAnnotationPresent(Named.class) ?
-                            parameter.getAnnotation(Named.class).value() : parameter.getName();
+    }
 
-                    Object supplied = get(type, name).orElseThrow(() ->
-                            new RuntimeException("No supplier found for key: " + name + " with type: " + type)
-                    );
+    @SuppressWarnings("unchecked")
+    private <T> Optional<T> injectNonEmptyConstructor(Class<?> clazz, Constructor<?> constructor) {
+        try {
 
-                    if (!isAssignable(type, supplied)) {
-                        throw new RuntimeException("Supplier for key " + name + " is not assignable to " + type);
-                    }
+            if (constructor == null) {
+                return (Optional<T>) Optional.of(clazz.getDeclaredConstructor().newInstance());
+            }
 
-                    suppliedParameters[i] = supplied;
+            constructor.setAccessible(true);
+
+            Parameter[] parameters = constructor.getParameters();
+            Object[] suppliedParameters = new Object[parameters.length];
+
+            for (int i = 0; i < parameters.length; i++) {
+                Parameter parameter = parameters[i];
+                Class<?> type = parameter.getType();
+                String name = parameter.isAnnotationPresent(Named.class) ?
+                        parameter.getAnnotation(Named.class).value() : parameter.getName();
+
+                Object supplied = get(type, name);
+
+                if (supplied == null) {
+                    logger.warn("No supplier found for key: {} with type: {}", name, type);
+                    return Optional.empty();
                 }
 
-                return clazz.cast(injectConstructor.newInstance(suppliedParameters));
+                if (!isAssignable(type, supplied)) {
+                    logger.warn("Supplier for key {} is not assignable to {}",  name, type);
+                    return Optional.empty();
+                }
 
-            } else {
-                return clazz.getDeclaredConstructor().newInstance();
+                suppliedParameters[i] = supplied;
             }
+
+            return (Optional<T>) Optional.of(clazz.cast(constructor.newInstance(suppliedParameters)));
+
         } catch (Exception ex) {
-            throw new RuntimeException("Failed to inject dependencies for " + clazz.getName(), ex);
+            logger.error("Failed to inject dependencies of constructor for " + clazz.getName(), ex);
+            return Optional.empty();
         }
     }
 

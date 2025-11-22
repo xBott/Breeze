@@ -2,7 +2,9 @@ package me.bottdev.breezecore;
 
 import lombok.Getter;
 import me.bottdev.breezeapi.BreezeEngine;
+import me.bottdev.breezeapi.di.suppliers.SingletonSupplier;
 import me.bottdev.breezeapi.events.EventBus;
+import me.bottdev.breezeapi.events.Listener;
 import me.bottdev.breezeapi.index.BreezeIndexLoader;
 import me.bottdev.breezeapi.log.BreezeLogger;
 import me.bottdev.breezeapi.log.SimpleLogger;
@@ -34,6 +36,7 @@ public class SimpleBreezeEngine implements BreezeEngine {
     public void start() {
         logger.info("Starting engine....");
         loadContext();
+        addEngineToContext();
         startModuleManager();
         logger.info("Successfully started engine.");
     }
@@ -41,6 +44,16 @@ public class SimpleBreezeEngine implements BreezeEngine {
     private void loadContext() {
         ClassLoader classLoader = getClass().getClassLoader();
         context.getContextReader().read(classLoader);
+        context.registerConstructHook(object -> {
+            if  (object instanceof Listener) {
+                logger.info("Registering listener " + object.getClass().getSimpleName());
+            }
+        });
+    }
+
+    private void addEngineToContext() {
+        context.addObjectSupplier("breezeEngine", new SingletonSupplier(this));
+        logger.info("Successfully added breezeEngine supplier.");
     }
 
     private void startModuleManager() {

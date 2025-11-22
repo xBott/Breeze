@@ -8,6 +8,7 @@ import me.bottdev.breezeapi.index.types.BreezeSupplierIndex;
 import me.bottdev.breezecore.di.resolver.ComponentDependencyResolver;
 
 import java.util.List;
+import java.util.Optional;
 
 @Getter
 public class SimpleBreezeContextReader implements ContextReader {
@@ -49,16 +50,18 @@ public class SimpleBreezeContextReader implements ContextReader {
     public void readComponentsFromIndex(BreezeComponentIndex index, ClassLoader classLoader) {
         List<BreezeComponentIndex.Entry> resolvedDependencies = resolver.resolve(index);
 
-        resolvedDependencies.forEach(dependency -> {
-
+        for (BreezeComponentIndex.Entry dependency : resolvedDependencies) {
             try {
                 String path = dependency.getClassPath();
                 SupplyType supplyType = dependency.getSupplyType();
                 Class<?> clazz = classLoader.loadClass(path);
 
+                Optional<?> optionalInjectedObject = getContext().injectConstructor(clazz);
+                if (optionalInjectedObject.isEmpty()) continue;
+
                 ObjectSupplier supplier = SupplierFactory.create(
                         supplyType,
-                        () -> getContext().injectConstructor(clazz)
+                        () -> getContext().injectConstructorAndApplyHooks(clazz).orElseThrow()
                 );
 
                 String name = clazz.getSimpleName();
@@ -68,7 +71,7 @@ public class SimpleBreezeContextReader implements ContextReader {
             } catch (Exception ex) {
                 getContext().getLogger().error("Could not find component class " + dependency, ex);
             }
+        }
 
-        });
     }
 }
