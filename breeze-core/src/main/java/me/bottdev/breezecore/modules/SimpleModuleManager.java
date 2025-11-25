@@ -4,10 +4,9 @@ import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.BreezeEngine;
 import me.bottdev.breezeapi.index.types.BreezeComponentIndex;
 import me.bottdev.breezeapi.index.types.BreezeSupplierIndex;
-import me.bottdev.breezeapi.log.BreezeLogger;
 import me.bottdev.breezeapi.di.BreezeContext;
+import me.bottdev.breezeapi.log.TreeLogger;
 import me.bottdev.breezeapi.modules.*;
-import me.bottdev.breezeapi.log.SimpleLogger;
 import me.bottdev.breezeapi.modules.Module;
 
 import java.util.*;
@@ -18,10 +17,10 @@ import java.util.function.Supplier;
 public class SimpleModuleManager implements ModuleManager {
 
     private final BreezeEngine engine;
+    private final TreeLogger logger;
 
     private final Set<ModuleLoader> moduleLoaders = new HashSet<>();
     private final Map<Class<? extends Module>, Module> loadedModules = new HashMap<>();
-    private final BreezeLogger logger = new SimpleLogger("SimpleModuleManager");
 
     @Override
     public Set<ModuleLoader> getModuleLoaders() {
@@ -57,28 +56,37 @@ public class SimpleModuleManager implements ModuleManager {
 
     @Override
     public void unload(Class<? extends Module> moduleClass) {
-        if (!isModuleLoaded(moduleClass)) {
-            logger.info("Could not unloaded module {}, because it is not loaded.", moduleClass.getSimpleName());
-            return;
-        }
-        Module module = loadedModules.remove(moduleClass);
-        logger.info("Successfully unloaded module {}.", moduleClass.getSimpleName());
-        disable(module);
+        String moduleName = moduleClass.getSimpleName();
+        logger.withSection("Unloading module " + moduleName, "", () -> {
+
+            if (!isModuleLoaded(moduleClass)) {
+                logger.info("Could not unloaded module {}, because it is not loaded.", moduleClass.getSimpleName());
+                logger.pop();
+                return;
+            }
+            Module module = loadedModules.remove(moduleClass);
+            logger.info("Successfully unloaded module {}.", moduleClass.getSimpleName());
+            disable(module);
+
+        });
     }
 
     @Override
     public void unloadAll() {
-        logger.info("Unloading all modules...");
-        loadedModules.values().forEach(this::disable);
-        loadedModules.clear();
-        logger.info("Successfully unloaded all modules");
+        logger.withSection("Unloading all modules", "", () -> {
+
+            loadedModules.values().forEach(this::disable);
+            loadedModules.clear();
+            logger.info("Successfully unloaded all modules");
+
+        });
     }
 
     private void loadAutoConfigurations(ModulePreLoad modulePreLoad) {
         String moduleName = modulePreLoad.getModuleClass().getSimpleName();
-        logger.info("Loading auto configurations from module {}...", moduleName);
+        logger.withSection("Loading auto configurations from module " +  moduleName, "", () -> {
 
-        ClassLoader classLoader = modulePreLoad.getClassLoader();
+            ClassLoader classLoader = modulePreLoad.getClassLoader();
 
 //        modulePreLoad.getIndexBucket().get(BreezeComponentIndex.class).ifPresent(index ->
 //                context.getContextReader().readComponentsFromIndex(index, classLoader)
@@ -88,23 +96,27 @@ public class SimpleModuleManager implements ModuleManager {
 //        AutoLoadPerformer performer = new AutoLoadPerformer(engine, modulePreLoad,  classLoader);
 //        performer.load(autoLoadIndex);
 
+        });
     }
 
     private void loadContextFromModule(ModulePreLoad modulePreLoad) {
 
         String moduleName = modulePreLoad.getModuleClass().getSimpleName();
-        logger.info("Loading context from module {}...", moduleName);
+        logger.withSection("Loading context from module " +  moduleName, "", () -> {
 
-        BreezeContext context = engine.getContext();
+            BreezeContext context = engine.getContext();
 
-        ClassLoader classLoader = modulePreLoad.getClassLoader();
+            ClassLoader classLoader = modulePreLoad.getClassLoader();
 
-        modulePreLoad.getIndexBucket().get(BreezeSupplierIndex.class).ifPresent(index ->
-                context.getContextReader().readSuppliersFromIndex(index, classLoader)
-        );
-        modulePreLoad.getIndexBucket().get(BreezeComponentIndex.class).ifPresent(index ->
-                context.getContextReader().readComponentsFromIndex(index, classLoader)
-        );
+            modulePreLoad.getIndexBucket().get(BreezeSupplierIndex.class).ifPresent(index ->
+                    context.getContextReader().readSuppliersFromIndex(index, classLoader)
+            );
+            modulePreLoad.getIndexBucket().get(BreezeComponentIndex.class).ifPresent(index ->
+                    context.getContextReader().readComponentsFromIndex(index, classLoader)
+            );
+
+        });
+
     }
 
     private Optional<Module> handleModulePreLoad(ModulePreLoad modulePreLoad) {
@@ -140,57 +152,65 @@ public class SimpleModuleManager implements ModuleManager {
     @Override
     public void load(ModulePreLoad modulePreLoad) {
 
-        Optional<Module> moduleOptional = handleModulePreLoad(modulePreLoad);
-        moduleOptional.ifPresent(module -> {
-            String moduleName = module.getClass().getSimpleName();
-            logger.info("Successfully loaded module {}.", moduleName);
-            enable(module);
+        String moduleName = modulePreLoad.getModuleClass().getSimpleName();
+        logger.withSection("Loading module " + moduleName, "", () -> {
+
+            Optional<Module> moduleOptional = handleModulePreLoad(modulePreLoad);
+            moduleOptional.ifPresent(module -> {
+                logger.info("Successfully loaded module {}.", moduleName);
+                enable(module);
+            });
+
         });
 
     }
 
     @Override
     public void loadAll() {
-        logger.info("Loading modules from module loaders...");
 
-        Set<ModuleLoader> loaders = getModuleLoaders();
-        if (loaders.isEmpty()) {
-            logger.warn("No module loaders found.");
-            return;
-        }
+        logger.withSection("Loading modules from module loaders", "", () -> {
 
-        loadedModules.clear();
-
-        for (ModuleLoader loader : loaders) {
-
-            String loaderName = loader.getClass().getSimpleName();
-            List<ModulePreLoad> modulePreLoads = loader.load();
-
-            for (ModulePreLoad modulePreLoad : modulePreLoads) {
-                String moduleName = modulePreLoad.getModuleClass().getSimpleName();
-                boolean loaded = loadSingleModuleFromLoader(modulePreLoad);
-                if (loaded) {
-                    logger.info("Successfully loaded module {} from module loader {}.", moduleName, loaderName);
-                }
+            Set<ModuleLoader> loaders = getModuleLoaders();
+            if (loaders.isEmpty()) {
+                logger.warn("No module loaders found.");
+                logger.pop();
+                return;
             }
 
-        }
+            loadedModules.clear();
 
-        logger.info("Successfully loaded {}x from module loaders.", loadedModules.size());
+            for (ModuleLoader loader : loaders) {
+
+                String loaderName = loader.getClass().getSimpleName();
+                List<ModulePreLoad> modulePreLoads = loader.load();
+
+                for (ModulePreLoad modulePreLoad : modulePreLoads) {
+                    String moduleName = modulePreLoad.getModuleClass().getSimpleName();
+                    boolean loaded = loadSingleModuleFromLoader(modulePreLoad);
+                    if (loaded) {
+                        logger.info("Successfully loaded module {} from module loader {}.", moduleName, loaderName);
+                    }
+                }
+
+            }
+
+            logger.info("Successfully loaded {}x from module loaders.", loadedModules.size());
+        });
 
         enableAll();
+
     }
 
     private boolean loadSingleModuleFromLoader(ModulePreLoad modulePreLoad) {
 
         AtomicBoolean loaded = new AtomicBoolean(false);
 
-        Optional<Module> moduleOptional = handleModulePreLoad(modulePreLoad);
-        moduleOptional.ifPresent(module -> {
-            String moduleName = module.getClass().getSimpleName();
-            logger.info("Successfully loaded module {}.", moduleName);
-            enable(module);
-            loaded.set(true);
+        String moduleName = modulePreLoad.getModuleClass().getSimpleName();
+        logger.withSection("Loading module " + moduleName + " from loader", "", () -> {
+
+            Optional<Module> moduleOptional = handleModulePreLoad(modulePreLoad);
+            moduleOptional.ifPresent(module -> loaded.set(true));
+
         });
 
         return loaded.get();
@@ -198,77 +218,101 @@ public class SimpleModuleManager implements ModuleManager {
 
     @Override
     public void enable(Module module) {
+
         String moduleName = module.getClass().getSimpleName();
-        if (module.getStatus() == ModuleStatus.RUNNING) {
-            logger.info("Could not enable module {}, because it's already enabled.", moduleName);
-            return;
-        }
-        module.setStatus(ModuleStatus.ENABLING);
-        logger.info("Enabling module {}...", moduleName);
-        try {
-            module.onEnable();
-            module.setStatus(ModuleStatus.RUNNING);
-            logger.info("Successfully enabled module {}.", moduleName);
-        } catch (Exception ex) {
-            module.setStatus(ModuleStatus.ERROR);
-            throw new RuntimeException("Could not enable module: ", ex);
-        }
+        logger.withSection("Enabling module " + moduleName, "", () -> {
+
+            if (module.getStatus() == ModuleStatus.RUNNING) {
+                logger.info("Could not enable module {}, because it's already enabled.", moduleName);
+                return;
+            }
+
+            module.setStatus(ModuleStatus.ENABLING);
+
+            try {
+                module.onEnable();
+                module.setStatus(ModuleStatus.RUNNING);
+                logger.info("Successfully enabled module {}.", moduleName);
+            } catch (Exception ex) {
+                module.setStatus(ModuleStatus.ERROR);
+                logger.error("Could not enable module: ", ex);
+            }
+
+        });
+
     }
 
     @Override
     public void enableAll() {
-        logger.info("Enabling all modules...");
-        loadedModules.values().forEach(this::enable);
+        logger.withSection("Enabling modules", "", () -> {
+            loadedModules.values().forEach(this::enable);
+        });
     }
 
     @Override
     public void disable(Module module) {
+
         String moduleName = module.getClass().getSimpleName();
-        if (module.getStatus() != ModuleStatus.RUNNING) {
-            logger.info("Could not disable module {}, because it's not enabled.", moduleName);
-            return;
-        }
-        module.setStatus(ModuleStatus.DISABLING);
-        logger.info("Disabling module {}...", moduleName);
-        try {
-            module.onDisable();
-            module.setStatus(ModuleStatus.DISABLED);
-            logger.info("Successfully disabled module {}.", moduleName);
-        } catch (Exception ex) {
-            module.setStatus(ModuleStatus.ERROR);
-            throw new RuntimeException("Could not disable module: ", ex);
-        }
+        logger.withSection("Disabling module " + moduleName, "", () -> {
+
+            if (module.getStatus() != ModuleStatus.RUNNING) {
+                logger.info("Could not disable module {}, because it's not enabled.", moduleName);
+                return;
+            }
+
+            module.setStatus(ModuleStatus.DISABLING);
+
+            try {
+                module.onDisable();
+                module.setStatus(ModuleStatus.DISABLED);
+                logger.info("Successfully disabled module {}.", moduleName);
+            } catch (Exception ex) {
+                module.setStatus(ModuleStatus.ERROR);
+                logger.error("Could not disable module: ", ex);
+            }
+
+        });
+
     }
 
     @Override
     public void disableAll() {
-        logger.info("Disabling all modules...");
-        loadedModules.values().forEach(this::disable);
+        logger.withSection("Disabling modules", "", () -> {
+            loadedModules.values().forEach(this::disable);
+        });
     }
 
     @Override
     public void restart(Module module) {
+
         String moduleName = module.getClass().getSimpleName();
-        if (module.getStatus() != ModuleStatus.RUNNING) {
-            logger.info("Could not restart module {}, because it's not enabled.", module.getClass().getSimpleName());
-            return;
-        }
-        module.setStatus(ModuleStatus.RESTARTING);
-        logger.info("Restarting module {}...", moduleName);
-        try {
-            module.onRestart();
-            module.setStatus(ModuleStatus.RUNNING);
-            logger.info("Successfully restarted module {}.", moduleName);
-        } catch (Exception ex) {
-            module.setStatus(ModuleStatus.ERROR);
-            throw new RuntimeException("Could not restart module: ", ex);
-        }
+        logger.withSection("Restarting module " + moduleName, "", () -> {
+
+            if (module.getStatus() != ModuleStatus.RUNNING) {
+                logger.info("Could not restart module {}, because it's not enabled.", module.getClass().getSimpleName());
+                return;
+            }
+
+            module.setStatus(ModuleStatus.RESTARTING);
+
+            try {
+                module.onRestart();
+                module.setStatus(ModuleStatus.RUNNING);
+                logger.info("Successfully restarted module {}.", moduleName);
+            } catch (Exception ex) {
+                module.setStatus(ModuleStatus.ERROR);
+                logger.error("Could not restart module: ", ex);
+            }
+
+        });
+
     }
 
     @Override
     public void restartAll() {
-        logger.info("Restarting all modules...");
-        loadedModules.values().forEach(this::restart);
+        logger.withSection("Restarting all modules", "", () -> {
+            loadedModules.values().forEach(this::restart);
+        });
     }
 
 }
