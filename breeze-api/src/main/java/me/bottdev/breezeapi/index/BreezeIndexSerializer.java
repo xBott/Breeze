@@ -23,12 +23,6 @@ public class BreezeIndexSerializer {
     }
 
     public Optional<BreezeIndex> deserialize(String jsonString) {
-        jsonMapper.getRegistry().getTypes().forEach(type -> {
-            System.out.println(type + ": ");
-            type.getRegisteredClasses().forEach(className -> {
-                System.out.println(" - " + className);
-            });
-        });
         return jsonMapper.deserialize(BreezeIndex.class, jsonString);
     }
 
