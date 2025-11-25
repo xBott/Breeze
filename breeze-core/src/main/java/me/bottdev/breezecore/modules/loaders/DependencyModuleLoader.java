@@ -1,18 +1,14 @@
 package me.bottdev.breezecore.modules.loaders;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.BreezeEngine;
 import me.bottdev.breezeapi.index.BreezeIndexBucket;
 import me.bottdev.breezeapi.index.BreezeIndexBucketContainer;
 import me.bottdev.breezeapi.index.BreezeIndexSerializer;
 import me.bottdev.breezeapi.index.types.BreezeModuleIndex;
-import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.SimpleLogger;
+import me.bottdev.breezeapi.log.TreeLogger;
+import me.bottdev.breezeapi.modules.*;
 import me.bottdev.breezeapi.modules.Module;
-import me.bottdev.breezeapi.modules.ModuleClassLoader;
-import me.bottdev.breezeapi.modules.ModuleLoader;
-import me.bottdev.breezeapi.modules.ModulePreLoad;
 import me.bottdev.breezecore.di.resolver.IndexBucketDependencyResolver;
 
 import java.io.*;
@@ -25,11 +21,10 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Supplier;
 
-@RequiredArgsConstructor
 public class DependencyModuleLoader implements ModuleLoader {
 
-    private final BreezeLogger logger = new SimpleLogger("DependencyFolderModuleLoader");
-    private final IndexBucketDependencyResolver bucketDependencyResolver = new IndexBucketDependencyResolver();
+    private final TreeLogger logger;
+    private final IndexBucketDependencyResolver bucketDependencyResolver;
     private final BreezeIndexSerializer serializer = new BreezeIndexSerializer();
 
     @Getter
@@ -38,6 +33,20 @@ public class DependencyModuleLoader implements ModuleLoader {
     private final BreezeEngine engine;
     @Getter
     private final Path targetDirectory;
+
+
+    public DependencyModuleLoader(
+            TreeLogger logger,
+            ClassLoader parentClassLoader,
+            BreezeEngine engine,
+            Path targetDirectory
+    ) {
+        this.logger = logger;
+        this.parentClassLoader = parentClassLoader;
+        this.engine = engine;
+        this.targetDirectory = targetDirectory;
+        this.bucketDependencyResolver = new IndexBucketDependencyResolver(logger);
+    }
 
     private void createDirectoryIfNotExists() {
         File folder = this.targetDirectory.toFile();
@@ -57,9 +66,12 @@ public class DependencyModuleLoader implements ModuleLoader {
                 .build();
 
         List<BreezeIndexBucket> sortedBuckets = getSortedBuckets(container);
-        sortedBuckets.forEach(this::loadBucket);
 
-        return List.of();
+        return sortedBuckets.stream()
+                .map(this::loadBucket)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .toList();
     }
 
     private List<Path> getJarPaths() {
@@ -163,7 +175,9 @@ public class DependencyModuleLoader implements ModuleLoader {
             Constructor<?> constructor = clazz.getDeclaredConstructor(File.class);
             return () -> {
                 try {
-                    return Optional.of((Module) constructor.newInstance(dataFolder));
+                    Module instance = (Module) constructor.newInstance(dataFolder);
+                    instance.setStatus(ModuleStatus.DISABLED);
+                    return Optional.of(instance);
                 } catch (Exception ex) {
                     logger.error("Failed to create module of class " + clazz.getName(), ex);
                 }

@@ -2,13 +2,15 @@ package me.bottdev.breezecore;
 
 import lombok.Getter;
 import me.bottdev.breezeapi.BreezeEngine;
+import me.bottdev.breezeapi.autoload.AutoLoaderRegistry;
 import me.bottdev.breezeapi.di.suppliers.SingletonSupplier;
 import me.bottdev.breezeapi.events.EventBus;
 import me.bottdev.breezeapi.events.Listener;
+import me.bottdev.breezeapi.events.ListenerAutoLoader;
 import me.bottdev.breezeapi.index.BreezeIndexLoader;
-import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.SimpleLogger;
 import me.bottdev.breezeapi.di.BreezeContext;
+import me.bottdev.breezeapi.log.SimpleLogger;
+import me.bottdev.breezeapi.log.TreeLogger;
 import me.bottdev.breezeapi.modules.ModuleManager;
 import me.bottdev.breezeapi.serialization.mappers.JsonMapper;
 import me.bottdev.breezecore.di.SimpleBreezeContext;
@@ -19,11 +21,12 @@ import java.nio.file.Path;
 @Getter
 public class SimpleBreezeEngine implements BreezeEngine {
 
-    private final BreezeIndexLoader indexLoader = new BreezeIndexLoader();
-    private final BreezeContext context = new SimpleBreezeContext();
-    private final ModuleManager moduleManager = new SimpleModuleManager(this);
-    private final EventBus eventBus = new EventBus();
-    private final BreezeLogger logger = new SimpleLogger("SimpleBreezeEngine");
+    private final TreeLogger logger = new SimpleLogger("SimpleBreezeEngine");
+    private final BreezeIndexLoader indexLoader = new BreezeIndexLoader(logger);
+    private final BreezeContext context = new SimpleBreezeContext(logger);
+    private final AutoLoaderRegistry autoLoaderRegistry = new AutoLoaderRegistry(logger);
+    private final ModuleManager moduleManager = new SimpleModuleManager(this, logger);
+    private final EventBus eventBus = new EventBus(logger);
     private final JsonMapper jsonMapper = new JsonMapper();
 
     private final Path dataFolder;
@@ -35,20 +38,31 @@ public class SimpleBreezeEngine implements BreezeEngine {
     @Override
     public void start() {
         logger.info("Starting engine....");
-        loadContext();
-        addEngineToContext();
-        startModuleManager();
+
+        logger.withSection("BreezeEngine Startup", "", () -> {
+            registerAutoLoaders();
+            addConstructHooks();
+            loadContext();
+            addEngineToContext();
+            startModuleManager();
+        });
+
         logger.info("Successfully started engine.");
+    }
+
+    private void registerAutoLoaders() {
+        autoLoaderRegistry.register(Listener.class, new ListenerAutoLoader(eventBus));
+        logger.info("Successfully registered loaders in auto loader registry.");
+    }
+
+    private void addConstructHooks() {
+        context.registerConstructHook(autoLoaderRegistry::accept);
+        logger.info("Successfully registered autoload construct hook.");
     }
 
     private void loadContext() {
         ClassLoader classLoader = getClass().getClassLoader();
         context.getContextReader().read(classLoader);
-        context.registerConstructHook(object -> {
-            if  (object instanceof Listener) {
-                logger.info("Registering listener " + object.getClass().getSimpleName());
-            }
-        });
     }
 
     private void addEngineToContext() {
@@ -57,13 +71,17 @@ public class SimpleBreezeEngine implements BreezeEngine {
     }
 
     private void startModuleManager() {
-        moduleManager.loadAll();
+        logger.withSection("Loading Module System", "", () -> {
+            moduleManager.loadAll();
+        });
     }
 
     @Override
     public void restart() {
         logger.info("Restating engine....");
-        restartModuleManager();
+        logger.withSection("Breeze Engine Restart", "", () -> {
+            restartModuleManager();
+        });
         logger.info("Successfully restarted engine.");
     }
 
@@ -74,8 +92,10 @@ public class SimpleBreezeEngine implements BreezeEngine {
     @Override
     public void stop() {
         logger.info("Stopping engine....");
-        stopModuleManager();
-        unregisterListeners();
+        logger.withSection("Breeze Engine Stop", "", () -> {
+            stopModuleManager();
+            unregisterListeners();
+        });
         logger.info("Successfully stopped engine.");
     }
 

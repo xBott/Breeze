@@ -6,7 +6,6 @@ import me.bottdev.breezeapi.di.annotations.Inject;
 import me.bottdev.breezeapi.di.annotations.Named;
 import me.bottdev.breezeapi.di.annotations.Supply;
 import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.SimpleLogger;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -29,13 +28,18 @@ public class SimpleBreezeContext implements BreezeContext {
     );
 
     @Getter
-    private final BreezeLogger logger = new SimpleLogger("SimpleBreezeContext");
+    private final BreezeLogger logger;
     @Getter
-    private final ContextReader contextReader = new SimpleBreezeContextReader(this);
+    private final ContextReader contextReader;
     @Getter
     private final Map<String, ObjectSupplier> suppliers = new HashMap<>();
     @Getter
     private final List<ConstructHook> constructHooks = new ArrayList<>();
+
+    public SimpleBreezeContext(BreezeLogger logger) {
+        this.logger = logger;
+        this.contextReader = new SimpleBreezeContextReader(this, logger);
+    }
 
     @Override
     public void registerConstructHook(ConstructHook constructHook) {

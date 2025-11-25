@@ -5,6 +5,7 @@ import me.bottdev.breezeapi.di.*;
 import me.bottdev.breezeapi.index.BreezeIndexSerializer;
 import me.bottdev.breezeapi.index.types.BreezeComponentIndex;
 import me.bottdev.breezeapi.index.types.BreezeSupplierIndex;
+import me.bottdev.breezeapi.log.BreezeLogger;
 import me.bottdev.breezecore.di.resolver.ComponentDependencyResolver;
 
 import java.util.List;
@@ -16,11 +17,13 @@ public class SimpleBreezeContextReader implements ContextReader {
     private final BreezeContext context;
     private final BreezeIndexSerializer serializer;
     private final ComponentDependencyResolver resolver;
+    private final BreezeLogger logger;
 
-    public SimpleBreezeContextReader(BreezeContext context) {
+    public SimpleBreezeContextReader(BreezeContext context, BreezeLogger logger) {
         this.context = context;
+        this.logger = logger;
         this.serializer = new BreezeIndexSerializer();
-        this.resolver = new ComponentDependencyResolver();
+        this.resolver = new ComponentDependencyResolver(logger);
     }
 
     @Override

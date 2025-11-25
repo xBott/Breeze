@@ -1,8 +1,8 @@
 package me.bottdev.breezeapi.index;
 
 import lombok.Getter;
-import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.SimpleLogger;
+import lombok.RequiredArgsConstructor;
+import me.bottdev.breezeapi.log.TreeLogger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,11 +13,12 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Optional;
 
+@RequiredArgsConstructor
 public class BreezeIndexLoader {
 
     private static final Path INDICES_PATH = Paths.get("META-INF/");
 
-    private final BreezeLogger logger = new SimpleLogger("BreezeIndexLoader");
+    private final TreeLogger logger;
 
     @Getter
     private final BreezeIndexRegistry registry = new BreezeIndexRegistry();
@@ -39,6 +40,7 @@ public class BreezeIndexLoader {
     private Optional<BreezeIndex> loadSingleIndexFromClassloader(ClassLoader classLoader, String id) {
         Path path = INDICES_PATH.resolve(id + "-index.json");
         String jsonString = readFile(classLoader, path);
+        if (jsonString == null || jsonString.isBlank()) return Optional.empty();
         return registry.getSerializer().deserialize(jsonString);
     }
 
