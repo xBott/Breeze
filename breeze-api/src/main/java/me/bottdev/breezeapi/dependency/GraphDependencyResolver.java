@@ -67,6 +67,10 @@ public interface GraphDependencyResolver<D extends Dependent, C extends Dependen
 
         HashMap<GraphNode<String>, Integer> inDegree = new HashMap<>();
 
+        for (GraphNode<String> node : graph.getNodes()) {
+            inDegree.put(node, 0);
+        }
+
         for (GraphEdge<String> edge : graph.getEdges()) {
             GraphNode<String> from = edge.getFrom();
             GraphNode<String> to = edge.getTo();
