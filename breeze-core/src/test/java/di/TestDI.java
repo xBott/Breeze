@@ -4,6 +4,7 @@ import me.bottdev.breezecore.SimpleBreezeEngine;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
+import java.util.Optional;
 
 public class TestDI {
 
@@ -19,8 +20,8 @@ public class TestDI {
     public void testInject() {
         SimpleBreezeEngine breezeEngine = new SimpleBreezeEngine(Path.of(""));
         breezeEngine.getContext().addSupplier(new TestSupplier());
-        TestInject injected = breezeEngine.getContext().injectConstructor(TestInject.class);
-        assert injected.getAge() == 10;
+        Optional<TestInject> injected = breezeEngine.getContext().injectConstructor(TestInject.class);
+        assert injected.get().getAge() == 10;
     }
 
 }
