@@ -15,8 +15,7 @@ public class AdminUtils {
 
     @Inject
     public AdminUtils(
-        @Named("adminnamelist") List<String> adminNameList,
-        @Named("testComponent") TestComponent testComponent
+        @Named("adminnamelist") List<String> adminNameList
     ) {
         this.adminNameList = adminNameList;
     }
