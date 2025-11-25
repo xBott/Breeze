@@ -1,7 +1,6 @@
 package me.bottdev.breezeapi.index;
 
 import lombok.Getter;
-import me.bottdev.breezeapi.index.types.BreezeAutoLoadIndex;
 import me.bottdev.breezeapi.index.types.BreezeComponentIndex;
 import me.bottdev.breezeapi.index.types.BreezeModuleIndex;
 import me.bottdev.breezeapi.index.types.BreezeSupplierIndex;
@@ -33,7 +32,6 @@ public class BreezeIndexRegistry {
         registerIndex(BreezeModuleIndex.class, "module");
         registerIndex(BreezeComponentIndex.class, "component");
         registerIndex(BreezeSupplierIndex.class, "supplier");
-        registerIndex(BreezeAutoLoadIndex.class, "autoLoad");
     }
 
 }
