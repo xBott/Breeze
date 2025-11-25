@@ -1,7 +1,9 @@
 package me.bottdev.breezeapi.index.types;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import me.bottdev.breezeapi.index.IndexEntry;
 
 import java.util.ArrayList;
@@ -11,6 +13,8 @@ public class BreezeSupplierIndex implements MultipleBreezeIndex<BreezeSupplierIn
 
     @Getter
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class Entry implements IndexEntry {
         private String classPath;
     }

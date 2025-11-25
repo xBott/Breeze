@@ -1,8 +1,6 @@
 package me.bottdev.breezeapi.index.types;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Singular;
+import lombok.*;
 import me.bottdev.breezeapi.dependency.Dependent;
 import me.bottdev.breezeapi.dependency.DependentContainer;
 import me.bottdev.breezeapi.di.SupplyType;
@@ -19,6 +17,8 @@ public class BreezeComponentIndex implements
 
     @Getter
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class Entry implements IndexEntry, Dependent {
 
         private String classPath;

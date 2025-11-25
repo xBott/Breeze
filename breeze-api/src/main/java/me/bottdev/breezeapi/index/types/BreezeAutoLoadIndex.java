@@ -1,8 +1,6 @@
 package me.bottdev.breezeapi.index.types;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Singular;
+import lombok.*;
 import me.bottdev.breezeapi.config.autoload.AutoLoadSerializer;
 import me.bottdev.breezeapi.dependency.Dependent;
 import me.bottdev.breezeapi.di.SupplyType;
@@ -16,6 +14,8 @@ public class BreezeAutoLoadIndex implements MultipleBreezeIndex<BreezeAutoLoadIn
 
     @Getter
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class Entry implements IndexEntry {
 
         private String classPath;
