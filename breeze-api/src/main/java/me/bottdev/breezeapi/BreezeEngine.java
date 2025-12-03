@@ -4,10 +4,9 @@ import me.bottdev.breezeapi.autoload.AutoLoaderRegistry;
 import me.bottdev.breezeapi.di.BreezeContext;
 import me.bottdev.breezeapi.events.EventBus;
 import me.bottdev.breezeapi.index.BreezeIndexLoader;
-import me.bottdev.breezeapi.log.BreezeLogger;
 import me.bottdev.breezeapi.log.TreeLogger;
 import me.bottdev.breezeapi.modules.ModuleManager;
-import me.bottdev.breezeapi.serialization.mappers.JsonMapper;
+import me.bottdev.breezeapi.serialization.MapperRegistry;
 
 import java.nio.file.Path;
 
@@ -17,6 +16,8 @@ public interface BreezeEngine {
 
     BreezeIndexLoader getIndexLoader();
 
+    MapperRegistry getMapperRegistry();
+
     BreezeContext getContext();
 
     AutoLoaderRegistry getAutoLoaderRegistry();
@@ -24,8 +25,6 @@ public interface BreezeEngine {
     ModuleManager getModuleManager();
 
     EventBus getEventBus();
-
-    JsonMapper getJsonMapper();
 
     Path getDataFolder();
 

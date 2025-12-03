@@ -12,6 +12,8 @@ import me.bottdev.breezeapi.di.BreezeContext;
 import me.bottdev.breezeapi.log.SimpleLogger;
 import me.bottdev.breezeapi.log.TreeLogger;
 import me.bottdev.breezeapi.modules.ModuleManager;
+import me.bottdev.breezeapi.serialization.MapperRegistry;
+import me.bottdev.breezeapi.serialization.MapperType;
 import me.bottdev.breezeapi.serialization.mappers.JsonMapper;
 import me.bottdev.breezecore.di.SimpleBreezeContext;
 import me.bottdev.breezecore.modules.SimpleModuleManager;
@@ -23,11 +25,11 @@ public class SimpleBreezeEngine implements BreezeEngine {
 
     private final TreeLogger logger = new SimpleLogger("SimpleBreezeEngine");
     private final BreezeIndexLoader indexLoader = new BreezeIndexLoader(logger);
+    private final MapperRegistry mapperRegistry = new MapperRegistry();
     private final BreezeContext context = new SimpleBreezeContext(logger);
     private final AutoLoaderRegistry autoLoaderRegistry = new AutoLoaderRegistry(logger);
     private final ModuleManager moduleManager = new SimpleModuleManager(this, logger);
     private final EventBus eventBus = new EventBus(logger);
-    private final JsonMapper jsonMapper = new JsonMapper();
 
     private final Path dataFolder;
 
@@ -40,6 +42,7 @@ public class SimpleBreezeEngine implements BreezeEngine {
         logger.info("Starting engine....");
 
         logger.withSection("BreezeEngine Startup", "", () -> {
+            registerMappers();
             registerAutoLoaders();
             addConstructHooks();
             loadContext();
@@ -48,6 +51,10 @@ public class SimpleBreezeEngine implements BreezeEngine {
         });
 
         logger.info("Successfully started engine.");
+    }
+
+    private void registerMappers() {
+        mapperRegistry.registerMapper(new MapperType(JsonMapper.class, "json"), new JsonMapper());
     }
 
     private void registerAutoLoaders() {
