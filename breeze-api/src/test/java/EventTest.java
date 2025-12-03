@@ -6,6 +6,8 @@ import me.bottdev.breezeapi.events.EventBus;
 import me.bottdev.breezeapi.events.Listener;
 import me.bottdev.breezeapi.events.annotations.Listen;
 import me.bottdev.breezeapi.log.SimpleLogger;
+import me.bottdev.breezeapi.resource.containers.SingleResourceContainer;
+import me.bottdev.breezeapi.resource.types.FileResource;
 import org.junit.jupiter.api.Test;
 
 public class EventTest {
