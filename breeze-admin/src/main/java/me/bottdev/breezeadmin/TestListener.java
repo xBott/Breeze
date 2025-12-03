@@ -7,7 +7,7 @@ import me.bottdev.breezeapi.events.annotations.Listen;
 @Component
 public class TestListener implements Listener {
 
-    @Listen
+    @Listen(priority = 100)
     public void onTestEvent(TestEvent event) {
         String value = event.getValue();
         System.out.println(value);
