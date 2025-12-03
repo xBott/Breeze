@@ -49,13 +49,13 @@ public class ConfigValidator {
 
         for (Annotation annotation : annotations) {
 
-            Optional<AnnotationValidator<?>> validatorOptional = registry.getValidator(annotation.annotationType());
+            Optional<ValidationHandler<?>> validatorOptional = registry.getValidator(annotation.annotationType());
 
             if (validatorOptional.isEmpty()) continue;
 
-            AnnotationValidator<?> validator = validatorOptional.get();
+            ValidationHandler<?> validator = validatorOptional.get();
             @SuppressWarnings("unchecked")
-            AnnotationValidator<Annotation> typedValidator = (AnnotationValidator<Annotation>) validator;
+            ValidationHandler<Annotation> typedValidator = (ValidationHandler<Annotation>) validator;
             FieldStatus status = typedValidator.validate(annotation, node, field);
 
             String message = status.getFormattedMessage(name);

@@ -59,18 +59,18 @@ public class ValidatorRegistry {
         return registry;
     }
 
-    private final Map<Class<? extends Annotation>, AnnotationValidator<?>> validators = new HashMap<>();
+    private final Map<Class<? extends Annotation>, ValidationHandler<?>> validators = new HashMap<>();
 
     public boolean isRegistered(Class<? extends Annotation> annotationClass) {
         return validators.containsKey(annotationClass);
     }
 
-    public <T extends Annotation> void register(Class<T> annotationClass, AnnotationValidator<T> validator) {
+    public <T extends Annotation> void register(Class<T> annotationClass, ValidationHandler<T> validator) {
         if (isRegistered(annotationClass)) return;
         validators.put(annotationClass, validator);
     }
 
-    public Optional<AnnotationValidator<?>> getValidator(Class<? extends Annotation> annotationClass) {
+    public Optional<ValidationHandler<?>> getValidator(Class<? extends Annotation> annotationClass) {
         return Optional.ofNullable(validators.get(annotationClass));
     }
 }
