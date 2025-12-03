@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import lombok.*;
 
-import javax.swing.text.html.Option;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
