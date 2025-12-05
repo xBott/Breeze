@@ -8,6 +8,7 @@ import me.bottdev.breezeapi.index.types.BreezeModuleIndex;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class BreezeIndexBucket implements Dependent {
@@ -33,6 +34,10 @@ public class BreezeIndexBucket implements Dependent {
 
     public void put(BreezeIndex index) {
         indices.put(index.getClass(), index);
+    }
+
+    public List<BreezeIndex> getIndices() {
+        return indices.values().stream().sorted().collect(Collectors.toList());
     }
 
     @SuppressWarnings("unchecked")
