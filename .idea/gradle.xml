@@ -14,6 +14,7 @@
             <option value="$PROJECT_DIR$/breeze-core" />
             <option value="$PROJECT_DIR$/breeze-paper" />
             <option value="$PROJECT_DIR$/breeze-processor" />
+            <option value="$PROJECT_DIR$/breeze-velocity" />
           </set>
         </option>
         <option name="resolveExternalAnnotations" value="true" />
