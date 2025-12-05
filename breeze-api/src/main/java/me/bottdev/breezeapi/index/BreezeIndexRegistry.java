@@ -3,6 +3,7 @@ package me.bottdev.breezeapi.index;
 import lombok.Getter;
 import me.bottdev.breezeapi.index.types.BreezeComponentIndex;
 import me.bottdev.breezeapi.index.types.BreezeModuleIndex;
+import me.bottdev.breezeapi.index.types.BreezeProxyIndex;
 import me.bottdev.breezeapi.index.types.BreezeSupplierIndex;
 
 import java.util.HashMap;
@@ -32,6 +33,7 @@ public class BreezeIndexRegistry {
         registerIndex(BreezeModuleIndex.class, "module");
         registerIndex(BreezeComponentIndex.class, "component");
         registerIndex(BreezeSupplierIndex.class, "supplier");
+        registerIndex(BreezeProxyIndex.class, "proxy");
     }
 
 }
