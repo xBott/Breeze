@@ -2,27 +2,29 @@ package me.bottdev.breezeapi.di.proxy;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class ProxyHandlerRegistry {
 
-    private static final List<Class<? extends ProxyHandler>> HANDLERS = new ArrayList<>();
+    private final List<Class<? extends ProxyHandler>> HANDLERS = new ArrayList<>();
 
-    public static void register(Class<? extends ProxyHandler> handler) {
+    public ProxyHandlerRegistry register(Class<? extends ProxyHandler> handler) {
         HANDLERS.add(handler);
+        return this;
     }
 
-    public static ProxyHandler getFor(Class<?> iface) {
+    public Optional<ProxyHandler> get(Class<?> iface) {
         for (Class<? extends ProxyHandler> handlerClass : HANDLERS) {
             try {
                 ProxyHandler handler = handlerClass.getConstructor(Class.class).newInstance(iface);
                 if (handler.supports(iface)) {
-                    return handler;
+                    return Optional.of(handler);
                 }
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                return Optional.empty();
             }
         }
-        throw new IllegalStateException("No ProxyHandler found for " + iface.getName());
+        return Optional.empty();
     }
 
 }
