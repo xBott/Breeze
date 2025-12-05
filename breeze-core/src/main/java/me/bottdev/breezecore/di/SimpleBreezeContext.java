@@ -30,15 +30,12 @@ public class SimpleBreezeContext implements BreezeContext {
     @Getter
     private final BreezeLogger logger;
     @Getter
-    private final ContextReader contextReader;
-    @Getter
     private final Map<String, ObjectSupplier> suppliers = new HashMap<>();
     @Getter
     private final List<ConstructHook> constructHooks = new ArrayList<>();
 
     public SimpleBreezeContext(BreezeLogger logger) {
         this.logger = logger;
-        this.contextReader = new SimpleBreezeContextReader(this, logger);
     }
 
     @Override

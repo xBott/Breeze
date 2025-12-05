@@ -9,8 +9,6 @@ public interface BreezeContext {
 
     BreezeLogger getLogger();
 
-    ContextReader getContextReader();
-
     List<ConstructHook> getConstructHooks();
 
     void addSupplier(Object object);

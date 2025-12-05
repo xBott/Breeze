@@ -2,8 +2,7 @@ package me.bottdev.breezecore.modules;
 
 import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.BreezeEngine;
-import me.bottdev.breezeapi.index.types.BreezeComponentIndex;
-import me.bottdev.breezeapi.index.types.BreezeSupplierIndex;
+import me.bottdev.breezeapi.di.ContextBootstrapper;
 import me.bottdev.breezeapi.di.BreezeContext;
 import me.bottdev.breezeapi.log.TreeLogger;
 import me.bottdev.breezeapi.modules.*;
@@ -82,38 +81,17 @@ public class SimpleModuleManager implements ModuleManager {
         });
     }
 
-    private void loadAutoConfigurations(ModulePreLoad modulePreLoad) {
-        String moduleName = modulePreLoad.getModuleClass().getSimpleName();
-        logger.withSection("Loading auto configurations from module " +  moduleName, "", () -> {
-
-            ClassLoader classLoader = modulePreLoad.getClassLoader();
-
-//        modulePreLoad.getIndexBucket().get(BreezeComponentIndex.class).ifPresent(index ->
-//                context.getContextReader().readComponentsFromIndex(index, classLoader)
-//        );
-//        AutoLoadIndex autoLoadIndex = modulePreLoad.getAutoLoadIndex();
-//
-//        AutoLoadPerformer performer = new AutoLoadPerformer(engine, modulePreLoad,  classLoader);
-//        performer.load(autoLoadIndex);
-
-        });
-    }
-
     private void loadContextFromModule(ModulePreLoad modulePreLoad) {
 
         String moduleName = modulePreLoad.getModuleClass().getSimpleName();
         logger.withSection("Loading context from module " +  moduleName, "", () -> {
 
             BreezeContext context = engine.getContext();
+            ContextBootstrapper contextBootstrapper = engine.getContextBootstrapper();
 
             ClassLoader classLoader = modulePreLoad.getClassLoader();
 
-            modulePreLoad.getIndexBucket().get(BreezeSupplierIndex.class).ifPresent(index ->
-                    context.getContextReader().readSuppliersFromIndex(index, classLoader)
-            );
-            modulePreLoad.getIndexBucket().get(BreezeComponentIndex.class).ifPresent(index ->
-                    context.getContextReader().readComponentsFromIndex(index, classLoader)
-            );
+            contextBootstrapper.bootstrap(context, classLoader, modulePreLoad.getIndexBucket());
 
         });
 
@@ -129,7 +107,7 @@ public class SimpleModuleManager implements ModuleManager {
 
         Supplier<Optional<Module>> supplier = modulePreLoad.getModuleSupplier();
 
-        loadAutoConfigurations(modulePreLoad);
+        //loadAutoConfigurations(modulePreLoad);
         loadContextFromModule(modulePreLoad);
 
         Optional<Module> moduleOptional = supplier.get();
