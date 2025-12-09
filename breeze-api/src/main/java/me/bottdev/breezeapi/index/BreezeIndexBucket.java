@@ -37,7 +37,7 @@ public class BreezeIndexBucket implements Dependent {
     }
 
     public List<BreezeIndex> getIndices() {
-        return indices.values().stream().sorted().collect(Collectors.toList());
+        return indices.values().stream().toList();
     }
 
     @SuppressWarnings("unchecked")
