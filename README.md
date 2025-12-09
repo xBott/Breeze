@@ -12,14 +12,12 @@ At the moment Breeze is a simple java framework for developing common applicatio
 
 ## So far working on
 1. Better minecraft integration
-2. Auto-Loadable objects
-3. Better configuration system (basic configurations, tree configurations)
-4. Event system
-5. Scripting
+2. Annotation based resource system
+3. Better configuration system (using resource system)
+4. Event system (base is done, one-time events need to be done)
 
 
 ## Future Plans
-1. Dependency resolving on the level of modules: evaluating the order of module loading. Dependencies list in @ModuleInfo
 2. Cycle-Dependency logging
 3. **breeze-data** - centralized data base management with support of multiple data bases and other infrastructure stuff like MySql, PostgresDB, MongoDB, Neo4j, Redis and so.  
 
