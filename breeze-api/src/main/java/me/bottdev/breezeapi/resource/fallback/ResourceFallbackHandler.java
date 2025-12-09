@@ -3,8 +3,8 @@ package me.bottdev.breezeapi.resource.fallback;
 import java.lang.reflect.Method;
 import java.util.Optional;
 
-public interface ResourceFallbackHandler<T> {
+public interface ResourceFallbackHandler {
 
-    Optional<T> handle(Method method);
+    Optional<Object> handle(Method method);
 
 }
