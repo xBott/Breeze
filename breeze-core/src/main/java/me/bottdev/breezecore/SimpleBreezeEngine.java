@@ -86,7 +86,7 @@ public class SimpleBreezeEngine implements BreezeEngine {
     }
 
     private void registerResourceProvideStrategies() {
-        ResourceProxyHandler.registerStrategy(Source.DRIVE, new DriveResourceProvideStrategy(getDataFolder()));
+        ResourceProxyHandler.registerProvideStrategy(Source.DRIVE, new DriveResourceProvideStrategy(getDataFolder()));
     }
 
     private void registerContextBootstrapperReaders() {
