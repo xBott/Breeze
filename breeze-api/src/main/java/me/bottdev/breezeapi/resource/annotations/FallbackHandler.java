@@ -10,6 +10,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface FallbackHandler {
-    Class<? extends ResourceFallbackHandler<?>> value();
+    Class<? extends ResourceFallbackHandler> value();
 
 }
