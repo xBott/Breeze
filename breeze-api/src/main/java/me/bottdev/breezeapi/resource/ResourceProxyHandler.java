@@ -3,6 +3,7 @@ package me.bottdev.breezeapi.resource;
 import me.bottdev.breezeapi.di.proxy.ProxyHandler;
 import me.bottdev.breezeapi.resource.annotations.FallbackMethod;
 import me.bottdev.breezeapi.resource.annotations.ProvideResource;
+import me.bottdev.breezeapi.resource.fallback.ResourceFallbackHandler;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -12,14 +13,23 @@ import java.util.Optional;
 
 public class ResourceProxyHandler implements ProxyHandler {
 
-    private static final Map<Source, ResourceProvideStrategy> strategies = new HashMap<>();
+    private static final Map<Source, ResourceProvideStrategy> provideStrategies = new HashMap<>();
+    private static final Map<Class<? extends ResourceFallbackHandler>, ResourceFallbackHandler> fallbackHandler = new HashMap<>();
 
-    public static void registerStrategy(Source source, ResourceProvideStrategy strategy) {
-        strategies.put(source, strategy);
+    public static void registerProvideStrategy(Source source, ResourceProvideStrategy strategy) {
+        provideStrategies.put(source, strategy);
     }
 
-    public Optional<ResourceProvideStrategy> getStrategy(Source source) {
-        return Optional.ofNullable(strategies.get(source));
+    public static Optional<ResourceProvideStrategy> getProvideStrategy(Source source) {
+        return Optional.ofNullable(provideStrategies.get(source));
+    }
+
+    public static void registerFallbackHandler(Class<? extends ResourceFallbackHandler> handler, ResourceFallbackHandler fallback) {
+        fallbackHandler.put(handler, fallback);
+    }
+
+    public static Optional<ResourceFallbackHandler> getFallbackHandler(Class<? extends ResourceFallbackHandler> handler) {
+        return Optional.ofNullable(fallbackHandler.get(handler));
     }
 
     @Override
@@ -48,7 +58,7 @@ public class ResourceProxyHandler implements ProxyHandler {
         Source source = annotation.source();
         Class<? extends Resource> type = annotation.type();
 
-        Optional<ResourceProvideStrategy> strategyOptional = getStrategy(source);
+        Optional<ResourceProvideStrategy> strategyOptional = getProvideStrategy(source);
         if (strategyOptional.isEmpty()) {
             return handleFallback(proxy, method);
         }
