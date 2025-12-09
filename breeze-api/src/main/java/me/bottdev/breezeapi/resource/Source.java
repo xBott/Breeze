@@ -1,7 +1,6 @@
 package me.bottdev.breezeapi.resource;
 
-public interface Resource {
-
-
-
+public enum Source {
+    DRIVE,
+    HTTP
 }
