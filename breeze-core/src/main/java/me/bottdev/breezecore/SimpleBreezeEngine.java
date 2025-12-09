@@ -3,6 +3,8 @@ package me.bottdev.breezecore;
 import lombok.Getter;
 import me.bottdev.breezeapi.BreezeEngine;
 import me.bottdev.breezeapi.autoload.AutoLoaderRegistry;
+import me.bottdev.breezeapi.bootstrap.Bootstrap;
+import me.bottdev.breezeapi.bootstrap.BootstrapAutoLoader;
 import me.bottdev.breezeapi.di.ContextBootstrapper;
 import me.bottdev.breezeapi.di.proxy.ProxyFactory;
 import me.bottdev.breezeapi.di.proxy.ProxyHandlerRegistry;
@@ -16,6 +18,9 @@ import me.bottdev.breezeapi.di.BreezeContext;
 import me.bottdev.breezeapi.log.SimpleLogger;
 import me.bottdev.breezeapi.log.TreeLogger;
 import me.bottdev.breezeapi.modules.ModuleManager;
+import me.bottdev.breezeapi.resource.ResourceProxyHandler;
+import me.bottdev.breezeapi.resource.Source;
+import me.bottdev.breezeapi.resource.strategies.DriveResourceProvideStrategy;
 import me.bottdev.breezeapi.serialization.MapperRegistry;
 import me.bottdev.breezeapi.serialization.MapperType;
 import me.bottdev.breezeapi.serialization.mappers.JsonMapper;
@@ -54,6 +59,7 @@ public class SimpleBreezeEngine implements BreezeEngine {
             registerMappers();
             registerAutoLoaders();
             registerConstructHooks();
+            registerResourceProvideStrategies();
             registerContextBootstrapperReaders();
             loadContext();
             addEngineToContext();
@@ -68,7 +74,9 @@ public class SimpleBreezeEngine implements BreezeEngine {
     }
 
     private void registerAutoLoaders() {
-        autoLoaderRegistry.register(Listener.class, new ListenerAutoLoader(eventBus));
+        autoLoaderRegistry
+                .register(Listener.class, new ListenerAutoLoader(eventBus))
+                .register(Bootstrap.class, new BootstrapAutoLoader());
         logger.info("Successfully registered loaders in auto loader registry.");
     }
 
@@ -77,13 +85,18 @@ public class SimpleBreezeEngine implements BreezeEngine {
         logger.info("Successfully registered autoload construct hook.");
     }
 
+    private void registerResourceProvideStrategies() {
+        ResourceProxyHandler.registerStrategy(Source.DRIVE, new DriveResourceProvideStrategy(getDataFolder()));
+    }
+
     private void registerContextBootstrapperReaders() {
         contextBootstrapper
                 .addReader(new SupplierReader(logger))
-                .addReader(new ComponentReader(logger, new ComponentDependencyResolver(logger)))
                 .addReader(new ProxyReader(logger, new ProxyFactory(
                         new ProxyHandlerRegistry()
-                )));
+                                .register(ResourceProxyHandler.class)
+                )))
+                .addReader(new ComponentReader(logger, new ComponentDependencyResolver(logger)));
     }
 
     private void loadContext() {

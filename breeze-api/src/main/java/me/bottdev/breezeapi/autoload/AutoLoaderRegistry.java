@@ -18,14 +18,15 @@ public class AutoLoaderRegistry {
         return loaders.containsKey(clazz);
     }
 
-    public void register(Class<?> clazz, AutoLoader autoLoader) {
-        if (isRegistered(clazz)) return;
+    public AutoLoaderRegistry register(Class<?> clazz, AutoLoader autoLoader) {
+        if (isRegistered(clazz)) return this;
         loaders.put(clazz, autoLoader);
         logger.info("{} Registered AutoLoader \"{}\" for class \"{}\"",
                 loggerPrefix,
                 autoLoader.getClass().getSimpleName(),
                 clazz.getSimpleName()
         );
+        return this;
     }
 
     private Optional<AutoLoader> get(Class<?> clazz) {
