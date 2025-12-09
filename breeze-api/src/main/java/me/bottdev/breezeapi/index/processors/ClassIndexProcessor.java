@@ -9,7 +9,7 @@ public interface ClassIndexProcessor {
     void extractDataFromClass(TypeElement typeElement);
 
     default void processClass(Element element) {
-        if (element.getKind() != ElementKind.CLASS) return;
+        if (element.getKind() != ElementKind.CLASS && element.getKind() != ElementKind.INTERFACE) return;
         TypeElement typeElement = (TypeElement) element;
         extractDataFromClass(typeElement);
     }
