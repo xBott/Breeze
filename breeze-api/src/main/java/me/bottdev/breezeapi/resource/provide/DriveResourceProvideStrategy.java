@@ -1,4 +1,4 @@
-package me.bottdev.breezeapi.resource.strategies;
+package me.bottdev.breezeapi.resource.provide;
 
 import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.resource.*;

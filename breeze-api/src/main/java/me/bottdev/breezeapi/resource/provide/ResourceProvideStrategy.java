@@ -1,7 +1,8 @@
-package me.bottdev.breezeapi.resource;
+package me.bottdev.breezeapi.resource.provide;
+
+import me.bottdev.breezeapi.resource.ResourceChunkContainer;
 
 import java.lang.reflect.Method;
-import java.util.Optional;
 
 public interface ResourceProvideStrategy {
 
