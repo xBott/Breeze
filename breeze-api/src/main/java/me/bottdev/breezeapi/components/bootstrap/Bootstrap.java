@@ -1,4 +1,4 @@
-package me.bottdev.breezeapi.bootstrap;
+package me.bottdev.breezeapi.components.bootstrap;
 
 public interface Bootstrap {
 

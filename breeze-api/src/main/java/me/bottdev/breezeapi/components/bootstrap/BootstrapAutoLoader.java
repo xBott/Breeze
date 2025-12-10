@@ -1,10 +1,8 @@
-package me.bottdev.breezeapi.bootstrap;
+package me.bottdev.breezeapi.components.bootstrap;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.autoload.AutoLoader;
-import me.bottdev.breezeapi.events.EventBus;
-import me.bottdev.breezeapi.events.Listener;
 
 @Getter
 @RequiredArgsConstructor
