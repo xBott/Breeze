@@ -19,8 +19,10 @@ import me.bottdev.breezeapi.log.SimpleLogger;
 import me.bottdev.breezeapi.log.TreeLogger;
 import me.bottdev.breezeapi.modules.ModuleManager;
 import me.bottdev.breezeapi.resource.ResourceProxyHandler;
-import me.bottdev.breezeapi.resource.Source;
-import me.bottdev.breezeapi.resource.strategies.DriveResourceProvideStrategy;
+import me.bottdev.breezeapi.resource.fallback.Fallback;
+import me.bottdev.breezeapi.resource.fallback.MethodFallbackStrategy;
+import me.bottdev.breezeapi.resource.provide.Source;
+import me.bottdev.breezeapi.resource.provide.DriveResourceProvideStrategy;
 import me.bottdev.breezeapi.serialization.MapperRegistry;
 import me.bottdev.breezeapi.serialization.MapperType;
 import me.bottdev.breezeapi.serialization.mappers.JsonMapper;
@@ -87,6 +89,7 @@ public class SimpleBreezeEngine implements BreezeEngine {
 
     private void registerResourceProvideStrategies() {
         ResourceProxyHandler.registerProvideStrategy(Source.DRIVE, new DriveResourceProvideStrategy(getDataFolder()));
+        ResourceProxyHandler.registerFallbackStrategy(Fallback.METHOD, new MethodFallbackStrategy());
     }
 
     private void registerContextBootstrapperReaders() {
@@ -117,9 +120,7 @@ public class SimpleBreezeEngine implements BreezeEngine {
     @Override
     public void restart() {
         logger.info("Restating engine....");
-        logger.withSection("Breeze Engine Restart", "", () -> {
-            restartModuleManager();
-        });
+        logger.withSection("Breeze Engine Restart", "", this::restartModuleManager);
         logger.info("Successfully restarted engine.");
     }
 
