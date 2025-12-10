@@ -3,7 +3,9 @@ package me.bottdev.breezeapi.autoload;
 import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.log.BreezeLogger;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -29,37 +31,37 @@ public class AutoLoaderRegistry {
         return this;
     }
 
-    private Optional<AutoLoader> get(Class<?> clazz) {
+    private List<AutoLoader> get(Class<?> clazz) {
+
+        List<AutoLoader> autoLoaders = new ArrayList<>();
+
         if (clazz == null) {
-            return Optional.empty();
+            return autoLoaders;
         }
 
         AutoLoader loader = loaders.get(clazz);
         if (loader != null) {
-            return Optional.of(loader);
+            autoLoaders.add(loader);
         }
 
         for (Class<?> iface : clazz.getInterfaces()) {
             loader = loaders.get(iface);
             if (loader != null) {
-                return Optional.of(loader);
+                autoLoaders.add(loader);
             }
         }
 
-        return get(clazz.getSuperclass());
+        autoLoaders.addAll(get(clazz.getSuperclass()));
+
+        return autoLoaders;
     }
 
     public void accept(Object object) {
         Class<?> clazz = object.getClass();
 
-        Optional<AutoLoader> autoLoader = get(clazz);
+        List<AutoLoader> autoLoaders = get(clazz);
 
-        if (autoLoader.isEmpty()) {
-            return;
-        }
-
-        AutoLoader loader = autoLoader.get();
-        loader.load(object);
+        autoLoaders.forEach(autoLoader -> autoLoader.load(object));
     }
 
 
