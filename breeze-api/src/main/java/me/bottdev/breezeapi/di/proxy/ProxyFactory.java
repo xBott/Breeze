@@ -2,6 +2,7 @@ package me.bottdev.breezeapi.di.proxy;
 
 import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.di.annotations.Proxy;
+import me.bottdev.breezeapi.di.proxy.composite.CompositeProxyHandler;
 
 import java.util.Optional;
 
@@ -16,14 +17,16 @@ public class ProxyFactory {
         if (!iface.isAnnotationPresent(Proxy.class))
             throw new IllegalArgumentException("Missing @Proxy");
 
-        Optional<ProxyHandler> handlerOptional = registry.get(iface);
+        CompositeProxyHandler compositeHandler = registry.getComposite(iface);
+        if (compositeHandler.isEmpty()) return Optional.empty();
 
-        return handlerOptional.map(handler ->
-                (T) java.lang.reflect.Proxy.newProxyInstance(
-                        iface.getClassLoader(),
-                        new Class[] { iface },
-                        handlerOptional.get()
-                ));
+        Object proxy = java.lang.reflect.Proxy.newProxyInstance(
+                iface.getClassLoader(),
+                new Class[] { iface },
+                compositeHandler
+        );
+
+        return Optional.of((T) proxy);
 
     }
 
