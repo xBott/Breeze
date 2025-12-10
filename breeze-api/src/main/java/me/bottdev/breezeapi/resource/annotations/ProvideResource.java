@@ -1,7 +1,8 @@
 package me.bottdev.breezeapi.resource.annotations;
 
 import me.bottdev.breezeapi.resource.Resource;
-import me.bottdev.breezeapi.resource.Source;
+import me.bottdev.breezeapi.resource.fallback.Fallback;
+import me.bottdev.breezeapi.resource.provide.Source;
 import me.bottdev.breezeapi.resource.types.FileResource;
 
 import java.lang.annotation.ElementType;
@@ -14,5 +15,6 @@ import java.lang.annotation.Target;
 public @interface ProvideResource {
     Source source() default Source.DRIVE;
     Class<? extends Resource> type() default FileResource.class;
+    Fallback fallback() default Fallback.NONE;
 
 }
