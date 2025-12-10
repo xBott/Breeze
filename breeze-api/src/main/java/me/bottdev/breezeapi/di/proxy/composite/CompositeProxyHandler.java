@@ -1,14 +1,22 @@
 package me.bottdev.breezeapi.di.proxy.composite;
 
+import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.di.proxy.ProxyHandler;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.PriorityQueue;
 
-public class CompositeHandler implements InvocationHandler {
+@RequiredArgsConstructor
+public class CompositeProxyHandler implements InvocationHandler {
+
+    private final Class<?> targetClass;
 
     private final PriorityQueue<HandlerPriorityWrapper> handlerQueue = new PriorityQueue<>();
+
+    public boolean isEmpty() {
+        return handlerQueue.isEmpty();
+    }
 
     public void add(ProxyHandler handler, int priority) {
         HandlerPriorityWrapper priorityWrapper = new HandlerPriorityWrapper(handler, priority);
@@ -30,10 +38,8 @@ public class CompositeHandler implements InvocationHandler {
 
                 ProxyHandler handler = wrapper.getHandler();
 
-                if (handler.supports(proxy.getClass().getInterfaces()[0])) {
-                    Object result = handler.invoke(proxy, method, args);
-                    if (result != null) return result;
-                }
+                Object result = handler.invoke(targetClass, proxy, method, args);
+                if (result != null) return result;
 
             } catch (Throwable throwable) {
                 lastException = throwable;
