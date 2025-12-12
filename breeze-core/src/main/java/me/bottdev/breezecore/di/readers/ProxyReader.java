@@ -41,6 +41,7 @@ public class ProxyReader implements ContextIndexReader<BreezeProxyIndex> {
                 name = name.substring(0, 1).toLowerCase() + name.substring(1);
 
                 context.addObjectSupplier(name, new SingletonSupplier(proxy));
+                logger.info("Proxy class {} has been created.", name);
 
             } catch (Exception ex) {
                 logger.error("Could not load proxy class " + entry.getClassPath(), ex);
