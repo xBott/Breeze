@@ -4,34 +4,40 @@ import me.bottdev.breezeapi.index.BreezeIndex;
 import me.bottdev.breezeapi.index.BreezeIndexBucket;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ContextBootstrapper {
 
-    private final Map<Class<? extends BreezeIndex>, ContextIndexReader<?>> readers = new HashMap<>();
+    private final List<ReaderPriorityWrapper> readers = new ArrayList<>();
 
-    public <T extends BreezeIndex> ContextBootstrapper addReader(ContextIndexReader<T> reader) {
-        readers.put(reader.getIndexClass(), reader);
+    public ContextBootstrapper addReader(ContextIndexReader<?> reader, int priority) {
+        readers.add(new ReaderPriorityWrapper(reader, priority));
         return this;
     }
 
     public void bootstrap(BreezeContext context, ClassLoader classLoader, BreezeIndexBucket bucket) {
-        bucket.getIndices().forEach(index -> {
-            Class<? extends BreezeIndex> indexClass = index.getClass();
-            ContextIndexReader<?> reader = readers.get(indexClass);
-            if (reader == null) return;
 
-            callReader(reader, context, classLoader, index);
+        List<ContextIndexReader<?>> sortedReaders = readers.stream()
+                .sorted(Comparator.comparing(ReaderPriorityWrapper::getPriority))
+                .map(ReaderPriorityWrapper::getReader)
+                .collect(Collectors.toList());
+
+        sortedReaders.forEach(reader -> {
+            bucket.getIndices().stream()
+                    .filter(index -> reader.getIndexClass().isAssignableFrom(index.getClass()))
+                    .forEach(index -> callReader(reader, context, classLoader, index));
         });
+
     }
 
     private <T extends BreezeIndex> void callReader(
             ContextIndexReader<T> reader,
-            BreezeContext ctx,
-            ClassLoader cl,
+            BreezeContext context,
+            ClassLoader classLoader,
             BreezeIndex index
     ) {
         T typedIndex = reader.getIndexClass().cast(index);
-        reader.readIndex(ctx, cl, typedIndex);
+        reader.readIndex(context, classLoader, typedIndex);
     }
 
 }
