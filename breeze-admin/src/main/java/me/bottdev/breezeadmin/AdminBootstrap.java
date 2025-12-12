@@ -5,11 +5,14 @@ import me.bottdev.breezeapi.components.bootstrap.Bootstrap;
 import me.bottdev.breezeapi.di.annotations.Component;
 import me.bottdev.breezeapi.di.annotations.Inject;
 import me.bottdev.breezeapi.di.annotations.Named;
+import me.bottdev.breezeapi.log.BreezeLogger;
+import me.bottdev.breezeapi.log.SimpleTreeLogger;
 import me.bottdev.breezeapi.resource.types.FileResource;
 
 @Component
 public class AdminBootstrap implements Bootstrap {
 
+    private final BreezeLogger logger = new SimpleTreeLogger("AdminBootstrap");
     private final SettingsProvider settingsProvider;
 
     @Inject
@@ -21,7 +24,7 @@ public class AdminBootstrap implements Bootstrap {
     public void bootstrap() {
         settingsProvider.getSettings()
                 .map(FileResource::read)
-                .ifPresent(System.out::println);
+                .ifPresent(logger::info);
     }
 
 }
