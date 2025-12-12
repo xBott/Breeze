@@ -5,9 +5,7 @@ import me.bottdev.breezeapi.events.Event;
 import me.bottdev.breezeapi.events.EventBus;
 import me.bottdev.breezeapi.events.Listener;
 import me.bottdev.breezeapi.events.annotations.Listen;
-import me.bottdev.breezeapi.log.SimpleLogger;
-import me.bottdev.breezeapi.resource.containers.SingleResourceContainer;
-import me.bottdev.breezeapi.resource.types.FileResource;
+import me.bottdev.breezeapi.log.SimpleTreeLogger;
 import org.junit.jupiter.api.Test;
 
 public class EventTest {
@@ -51,7 +49,7 @@ public class EventTest {
     @Test
     public void testEventBus() {
 
-        EventBus eventBus = new EventBus(new SimpleLogger("EventBus"));
+        EventBus eventBus = new EventBus(new SimpleTreeLogger("EventBus"));
 
         JoinListener listener = new JoinListener();
         eventBus.registerListeners(listener);

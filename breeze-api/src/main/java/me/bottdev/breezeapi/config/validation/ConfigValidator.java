@@ -2,7 +2,7 @@ package me.bottdev.breezeapi.config.validation;
 
 import me.bottdev.breezeapi.config.Configuration;
 import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.SimpleLogger;
+import me.bottdev.breezeapi.log.SimpleTreeLogger;
 import me.bottdev.breezeapi.serialization.ObjectNode;
 
 import java.lang.annotation.Annotation;
@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public class ConfigValidator {
 
-    private final BreezeLogger logger = new SimpleLogger("ConfigValidator");
+    private final BreezeLogger logger = new SimpleTreeLogger("ConfigValidator");
     private final ValidatorRegistry registry = ValidatorRegistry.createDefault();
 
     public <T extends Configuration> ConfigStatus validateTree(ObjectNode node, Class<T> clazz) {

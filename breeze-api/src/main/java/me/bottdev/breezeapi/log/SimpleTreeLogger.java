@@ -10,7 +10,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 @RequiredArgsConstructor
-public class SimpleLogger implements TreeLogger {
+public class SimpleTreeLogger implements TreeLogger {
 
     @Getter
     @Setter
@@ -22,13 +22,13 @@ public class SimpleLogger implements TreeLogger {
 
     private final Logger logger;
 
-    public SimpleLogger(String name, LogLevel logLevel) {
+    public SimpleTreeLogger(String name, LogLevel logLevel) {
         this.name = name;
         this.logLevel = logLevel;
         this.logger = LoggerFactory.getLogger(name);
     }
 
-    public SimpleLogger(String name) {
+    public SimpleTreeLogger(String name) {
         this.name = name;
         this.logLevel = LogLevel.INFO;
         this.logger = LoggerFactory.getLogger(name);

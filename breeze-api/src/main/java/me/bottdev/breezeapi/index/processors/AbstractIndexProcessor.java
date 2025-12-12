@@ -5,7 +5,7 @@ import me.bottdev.breezeapi.index.BreezeIndex;
 import me.bottdev.breezeapi.index.BreezeIndexRegistry;
 import me.bottdev.breezeapi.index.BreezeIndexSerializer;
 import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.SimpleLogger;
+import me.bottdev.breezeapi.log.SimpleTreeLogger;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
@@ -23,7 +23,7 @@ import java.util.Set;
 public abstract class AbstractIndexProcessor<T extends BreezeIndex> extends AbstractProcessor {
 
     @Getter
-    private final BreezeLogger logger = new SimpleLogger(this.getClass().getSimpleName());
+    private final BreezeLogger logger = new SimpleTreeLogger(this.getClass().getSimpleName());
     private final BreezeIndexSerializer serializer = new BreezeIndexRegistry().getSerializer();
     @Getter
     private T index;
