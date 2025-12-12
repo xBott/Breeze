@@ -2,7 +2,7 @@ package me.bottdev.breezeapi.di.proxy;
 
 import me.bottdev.breezeapi.di.proxy.composite.CompositeProxyHandler;
 import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.SimpleLogger;
+import me.bottdev.breezeapi.log.SimpleTreeLogger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public class ProxyHandlerRegistry {
 
-    private final BreezeLogger logger = new SimpleLogger("ProxyHandlerRegistry");
+    private final BreezeLogger logger = new SimpleTreeLogger("ProxyHandlerRegistry");
 
     private final List<Class<? extends ProxyHandler>> HANDLERS = new ArrayList<>();
 
@@ -24,8 +24,8 @@ public class ProxyHandlerRegistry {
         try {
 
             ProxyHandler handler = (ProxyHandler) clazz
-                    .getConstructor(Class.class)
-                    .newInstance(iface);
+                    .getDeclaredConstructor()
+                    .newInstance();
 
             return handler.supports(iface) ? Optional.of(handler) : Optional.empty();
 
