@@ -15,7 +15,7 @@ import me.bottdev.breezeapi.events.ListenerAutoLoader;
 import me.bottdev.breezeapi.index.BreezeIndexBucket;
 import me.bottdev.breezeapi.index.BreezeIndexLoader;
 import me.bottdev.breezeapi.di.BreezeContext;
-import me.bottdev.breezeapi.log.SimpleLogger;
+import me.bottdev.breezeapi.log.SimpleTreeLogger;
 import me.bottdev.breezeapi.log.TreeLogger;
 import me.bottdev.breezeapi.modules.ModuleManager;
 import me.bottdev.breezeapi.resource.ResourceProxyHandler;
@@ -38,7 +38,7 @@ import java.nio.file.Path;
 @Getter
 public class SimpleBreezeEngine implements BreezeEngine {
 
-    private final TreeLogger logger = new SimpleLogger("SimpleBreezeEngine");
+    private final TreeLogger logger = new SimpleTreeLogger("SimpleBreezeEngine");
     private final BreezeIndexLoader indexLoader = new BreezeIndexLoader(logger);
     private final MapperRegistry mapperRegistry = new MapperRegistry();
     private final ContextBootstrapper contextBootstrapper = new ContextBootstrapper();
@@ -88,18 +88,20 @@ public class SimpleBreezeEngine implements BreezeEngine {
     }
 
     private void registerResourceProvideStrategies() {
-        ResourceProxyHandler.registerProvideStrategy(Source.DRIVE, new DriveResourceProvideStrategy(getDataFolder()));
+        ResourceProxyHandler.registerProvideStrategy(Source.DRIVE,
+                new DriveResourceProvideStrategy(getDataFolder().resolve("modules"))
+        );
         ResourceProxyHandler.registerFallbackStrategy(Fallback.METHOD, new MethodFallbackStrategy());
     }
 
     private void registerContextBootstrapperReaders() {
         contextBootstrapper
-                .addReader(new SupplierReader(logger))
+                .addReader(new SupplierReader(logger), 0)
                 .addReader(new ProxyReader(logger, new ProxyFactory(
                         new ProxyHandlerRegistry()
                                 .register(ResourceProxyHandler.class)
-                )))
-                .addReader(new ComponentReader(logger, new ComponentDependencyResolver(logger)));
+                )), 5)
+                .addReader(new ComponentReader(logger, new ComponentDependencyResolver(logger)), 10);
     }
 
     private void loadContext() {
