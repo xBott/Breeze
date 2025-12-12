@@ -47,52 +47,65 @@ public class ResourceProxyHandler implements ProxyHandler {
         }
 
         if (method.isAnnotationPresent(ProvideResource.class)) {
-            return handleNotEmpty(targetClass, proxy, method);
+
+            ProvideResource annotation = method.getAnnotation(ProvideResource.class);
+            Source source = annotation.source();
+            Class<? extends Resource> type = annotation.type();
+            Fallback fallback = annotation.fallback();
+
+            Object result;
+            result = handleNotEmpty(method, source, type);
+
+            if (result == null) {
+                result = handleFallback(targetClass, proxy, method, fallback, type);
+            }
+
+            if (result == null) {
+                return handleEmpty(method);
+            }
+
+            return handleResult(method, result);
         }
 
         return handleEmpty(method);
 
     }
 
-    private Object handleNotEmpty(Class<?> targetClass, Object proxy, Method method) {
-
-        ProvideResource annotation = method.getAnnotation(ProvideResource.class);
-        Source source = annotation.source();
-        Class<? extends Resource> type = annotation.type();
-        Fallback fallback = annotation.fallback();
+    private Object handleNotEmpty(Method method, Source source, Class<? extends Resource> type) {
 
         Optional<ResourceProvideStrategy> strategyOptional = getProvideStrategy(source);
-        if (strategyOptional.isEmpty()) {
-            return handleFallback(targetClass, proxy, method, fallback);
-        }
+        if (strategyOptional.isEmpty()) return null;
 
         ResourceProvideStrategy strategy = strategyOptional.get();
         ResourceChunkContainer container = strategy.provide(method);
 
         Optional<? extends Resource> created = ResourceFactory.create(type, container);
-        if (created.isEmpty()) {
-            return handleFallback(targetClass, proxy, method, fallback);
-        }
 
-        return created;
+        return created.orElse(null);
+
     }
 
-    private Object handleFallback(Class<?> targetClass, Object proxy, Method method, Fallback fallback) {
-        if (fallback == Fallback.NONE) return handleEmpty(method);
+    private Object handleFallback(Class<?> targetClass, Object proxy, Method method, Fallback fallback, Class<?> requiredType) {
+        if (fallback == Fallback.NONE) return null;
 
         Optional<ResourceFallbackStrategy> strategyOptional = getFallbackHandler(fallback);
-        if (strategyOptional.isEmpty()) {
-            return handleEmpty(method);
-        }
+        if (strategyOptional.isEmpty()) return null;
 
         ResourceFallbackStrategy strategy = strategyOptional.get();
-        Object result = strategy.fallback(targetClass, proxy, method);
 
-        if (result == null) {
-            return handleEmpty(method);
+        return strategy.fallback(targetClass, proxy, method, requiredType);
+    }
+
+    private Object handleResult(Method method, Object result) {
+
+        Class<?> returnType = method.getReturnType();
+
+        if (returnType == Optional.class) {
+            return Optional.of(result);
+        } else {
+            return result;
         }
 
-        return result;
     }
 
     private Object handleEmpty(Method method) {
