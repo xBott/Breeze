@@ -7,10 +7,7 @@ import me.bottdev.breezeapi.di.annotations.Named;
 import me.bottdev.breezeapi.di.annotations.Supply;
 import me.bottdev.breezeapi.log.BreezeLogger;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -85,16 +82,31 @@ public class SimpleBreezeContext implements BreezeContext {
     }
 
     private boolean isAssignable(Class<?> targetType, Object value) {
-        if (value == null) return !targetType.isPrimitive();
-        if (targetType.isInstance(value)) return true;
+
+        if (targetType.isInstance(value)) {
+            return true;
+        }
 
         if (targetType.isPrimitive()) {
             Class<?> wrapper = primitiveWrappers.get(targetType);
-            return wrapper != null && wrapper.isInstance(value);
+            if (wrapper != null && wrapper.isInstance(value)) {
+                return true;
+            }
+        }
+
+        Class<?> valueClass = value.getClass();
+
+        if (Proxy.isProxyClass(valueClass)) {
+            for (Class<?> iface : valueClass.getInterfaces()) {
+                if (iface.getName().equals(targetType.getName())) {
+                    return true;
+                }
+            }
         }
 
         return false;
     }
+
 
     @Override
     public <T> Optional<T> injectConstructor(Class<T> clazz) {
@@ -172,7 +184,7 @@ public class SimpleBreezeContext implements BreezeContext {
                 String name = parameter.isAnnotationPresent(Named.class) ?
                         parameter.getAnnotation(Named.class).value() : parameter.getName();
 
-                Object supplied = get(type, name);
+                Object supplied = get(type, name).orElse(null);
 
                 if (supplied == null) {
                     logger.warn("No supplier found for key: {} with type: {}", name, type);
