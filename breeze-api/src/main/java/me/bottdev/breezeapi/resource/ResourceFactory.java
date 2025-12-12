@@ -10,6 +10,8 @@ public class ResourceFactory {
 
     public static <T extends Resource> Optional<T> create(Class<T> clazz, ResourceChunkContainer chunkContainer) {
 
+        if (chunkContainer.isEmpty()) return Optional.empty();
+
         if (clazz == FileResource.class) {
 
             ResourceChunk chunk = chunkContainer.getFirst();
