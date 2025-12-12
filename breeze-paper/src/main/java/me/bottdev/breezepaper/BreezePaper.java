@@ -29,7 +29,7 @@ public class BreezePaper extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
-        engine = new SimpleBreezeEngine(getDataPath());
+        engine = new SimpleBreezeEngine(getDataPath().toAbsolutePath());
         addDependencyModuleLoader();
         engine.start();
 
