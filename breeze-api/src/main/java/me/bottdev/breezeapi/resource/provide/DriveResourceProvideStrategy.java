@@ -5,6 +5,7 @@ import me.bottdev.breezeapi.resource.*;
 import me.bottdev.breezeapi.resource.annotations.Drive;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.file.FileVisitResult;
@@ -28,18 +29,24 @@ public class DriveResourceProvideStrategy implements ResourceProvideStrategy {
 
         if (!method.isAnnotationPresent(Drive.class)) return chunkContainer;
         Drive annotation = method.getAnnotation(Drive.class);
-        String pathString = annotation.path();
+        String pathString = (annotation.path());
 
         Path path = Path.of(pathString);
+        Path replacedPath = replacePathPlaceholders(path);
 
+        File file = replacedPath.toFile();
 
-        if (path.toFile().isFile()) {
+        if (!file.exists()) {
+            return chunkContainer;
+        }
 
-            provideSingleFile(path).ifPresent(chunkContainer::addChunk);
+        if (file.isFile()) {
+
+            provideSingleFile(replacedPath).ifPresent(chunkContainer::addChunk);
 
         } else {
 
-            List<ResourceChunk> chunks = provideTreeFiles(path);
+            List<ResourceChunk> chunks = provideTreeFiles(replacedPath);
             chunkContainer.addChunks(chunks);
 
         }
@@ -50,7 +57,7 @@ public class DriveResourceProvideStrategy implements ResourceProvideStrategy {
     private Path replacePathPlaceholders(Path path) {
         String pathString = path.toString();
         String result = pathString
-                .replace("\\", "/")
+                .replace("\\", File.separator)
                 .replace("{engine}", enginePath.toString());
         return Path.of(result);
     }
