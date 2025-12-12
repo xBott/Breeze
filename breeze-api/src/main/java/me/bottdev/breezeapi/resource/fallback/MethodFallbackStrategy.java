@@ -1,7 +1,7 @@
 package me.bottdev.breezeapi.resource.fallback;
 
 import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.SimpleLogger;
+import me.bottdev.breezeapi.log.SimpleTreeLogger;
 import me.bottdev.breezeapi.resource.annotations.FallbackMethod;
 
 import java.lang.reflect.InvocationHandler;
@@ -10,13 +10,13 @@ import java.util.Optional;
 
 public class MethodFallbackStrategy implements ResourceFallbackStrategy {
 
-    private final BreezeLogger logger = new SimpleLogger("MethodFallbackStrategy");
+    private final BreezeLogger logger = new SimpleTreeLogger("MethodFallbackStrategy");
 
     private boolean hasFallback(Method method) {
         return method.isAnnotationPresent(FallbackMethod.class);
     }
 
-    private Optional<Method> getFallbackMethod(Method original) {
+    private Optional<Method> getFallbackMethod(Method original, Class<?> targetClass, Class<?> requiredType) {
 
         if (!hasFallback(original)) {
             return Optional.empty();
@@ -25,17 +25,15 @@ public class MethodFallbackStrategy implements ResourceFallbackStrategy {
         FallbackMethod annotation = original.getAnnotation(FallbackMethod.class);
         String fallbackName = annotation.name();
 
-        Class<?> iface = original.getDeclaringClass();
-
         try {
-            Method fallback = iface.getMethod(fallbackName);
+            Method fallback = targetClass.getMethod(fallbackName);
 
             if (fallback.getParameterCount() != 0) {
                 logger.warn("Fallback method {} has no parameters.", fallbackName);
                 return Optional.empty();
             }
 
-            if (!isCompatibleReturnType(original, fallback)) {
+            if (!isCompatibleReturnType(fallback, requiredType)) {
                 logger.warn("Fallback method {} has wrong return type.", fallbackName);
                 return Optional.empty();
             }
@@ -48,17 +46,17 @@ public class MethodFallbackStrategy implements ResourceFallbackStrategy {
     }
 
     @Override
-    public Object fallback(Class<?> targetClass, Object proxy, Method method) {
-        Optional<Method> fallbackOptional = getFallbackMethod(method);
+    public Object fallback(Class<?> targetClass, Object proxy, Method method, Class<?> requiredType) {
+        Optional<Method> fallbackOptional = getFallbackMethod(method, targetClass, requiredType);
 
         if (fallbackOptional.isEmpty()) return null;
 
         try {
             Method fallback = fallbackOptional.get();
-            return InvocationHandler.invokeDefault(proxy, fallback, (Object) null);
+            return InvocationHandler.invokeDefault(proxy, fallback);
 
-        } catch (Throwable e) {
-            logger.warn("Could not invoke fallback method for {}.", method.getName());
+        } catch (Throwable ex) {
+            logger.error("Could not invoke fallback method for {}.", ex, method.getName());
         }
 
         return null;

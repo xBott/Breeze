@@ -1,22 +1,14 @@
 package me.bottdev.breezeapi.resource.fallback;
 
 import java.lang.reflect.Method;
-import java.util.Optional;
 
 public interface ResourceFallbackStrategy {
 
-    default boolean isCompatibleReturnType(Method original, Method fallback) {
-
-        Class<?> originalType = original.getReturnType();
+    default boolean isCompatibleReturnType(Method fallback, Class<?> requiredType) {
         Class<?> fallbackType = fallback.getReturnType();
-
-        if (Optional.class.isAssignableFrom(originalType)) {
-            return original.getGenericReturnType().equals(fallback.getGenericReturnType());
-        }
-
-        return originalType.isAssignableFrom(fallbackType);
+        return requiredType.isAssignableFrom(fallbackType);
     }
 
-    Object fallback(Class<?> targetClass, Object proxy, Method method);
+    Object fallback(Class<?> targetClass, Object proxy, Method method, Class<?> requiredType);
 
 }
