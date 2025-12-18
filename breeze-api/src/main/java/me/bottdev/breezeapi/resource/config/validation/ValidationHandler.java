@@ -1,4 +1,4 @@
-package me.bottdev.breezeapi.config.validation;
+package me.bottdev.breezeapi.resource.config.validation;
 
 import me.bottdev.breezeapi.serialization.ObjectNode;
 

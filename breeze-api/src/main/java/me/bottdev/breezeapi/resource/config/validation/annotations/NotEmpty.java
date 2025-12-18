@@ -1,4 +1,4 @@
-package me.bottdev.breezeapi.config.validation.annotations;
+package me.bottdev.breezeapi.resource.config.validation.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,4 +7,4 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface Ignore {}
+public @interface NotEmpty {}

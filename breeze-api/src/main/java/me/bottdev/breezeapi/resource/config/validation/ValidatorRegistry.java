@@ -1,8 +1,8 @@
-package me.bottdev.breezeapi.config.validation;
+package me.bottdev.breezeapi.resource.config.validation;
 
-import me.bottdev.breezeapi.config.validation.annotations.Ignore;
-import me.bottdev.breezeapi.config.validation.annotations.NotEmpty;
-import me.bottdev.breezeapi.config.validation.annotations.Range;
+import me.bottdev.breezeapi.resource.config.validation.annotations.Ignore;
+import me.bottdev.breezeapi.resource.config.validation.annotations.NotEmpty;
+import me.bottdev.breezeapi.resource.config.validation.annotations.Range;
 import org.apache.commons.lang3.ClassUtils;
 
 import java.lang.annotation.Annotation;
