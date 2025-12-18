@@ -71,6 +71,7 @@ public class DriveResourceProvideStrategy implements ResourceProvideStrategy {
 
         File source = path.toFile();
         TempFile target = targetOptional.get();
+        target.setSourcePath(path);
 
         try {
 
