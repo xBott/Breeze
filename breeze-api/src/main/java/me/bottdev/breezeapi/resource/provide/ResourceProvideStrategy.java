@@ -1,11 +1,12 @@
 package me.bottdev.breezeapi.resource.provide;
 
-import me.bottdev.breezeapi.resource.ResourceChunkContainer;
+import me.bottdev.breezeapi.resource.ResourceTree;
+import me.bottdev.breezeapi.resource.types.file.SingleFileResource;
 
 import java.lang.reflect.Method;
 
 public interface ResourceProvideStrategy {
 
-    ResourceChunkContainer provide(Method method);
+    ResourceTree<SingleFileResource> provide(Method method);
 
 }

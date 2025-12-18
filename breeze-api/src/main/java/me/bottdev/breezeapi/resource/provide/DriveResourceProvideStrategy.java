@@ -1,8 +1,15 @@
 package me.bottdev.breezeapi.resource.provide;
 
 import lombok.RequiredArgsConstructor;
-import me.bottdev.breezeapi.resource.*;
+import me.bottdev.breezeapi.commons.file.temp.TempFile;
+import me.bottdev.breezeapi.commons.file.temp.TempFiles;
+import me.bottdev.breezeapi.commons.file.input.BreezeFileReader;
+import me.bottdev.breezeapi.commons.file.output.BreezeFileWriter;
+import me.bottdev.breezeapi.log.BreezeLogger;
+import me.bottdev.breezeapi.log.SimpleTreeLogger;
+import me.bottdev.breezeapi.resource.ResourceTree;
 import me.bottdev.breezeapi.resource.annotations.Drive;
+import me.bottdev.breezeapi.resource.types.file.SingleFileResource;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -13,93 +20,91 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @RequiredArgsConstructor
 public class DriveResourceProvideStrategy implements ResourceProvideStrategy {
 
+    private final BreezeLogger logger = new SimpleTreeLogger("DriveProvide");
+
     private final Path enginePath;
 
     @Override
-    public ResourceChunkContainer provide(Method method) {
+    public ResourceTree<SingleFileResource> provide(Method method) {
 
-        ResourceChunkContainer chunkContainer = new ResourceChunkContainer();
+        ResourceTree<SingleFileResource> resourceTree = new ResourceTree<>();
 
-        if (!method.isAnnotationPresent(Drive.class)) return chunkContainer;
+        if (!method.isAnnotationPresent(Drive.class)) return resourceTree;
         Drive annotation = method.getAnnotation(Drive.class);
         String pathString = (annotation.path());
 
-        Path path = Path.of(pathString);
-        Path replacedPath = replacePathPlaceholders(path);
-
-        File file = replacedPath.toFile();
+        Path path = enginePath.resolve(pathString);
+        File file = path.toFile();
 
         if (!file.exists()) {
-            return chunkContainer;
+            return resourceTree;
         }
 
         if (file.isFile()) {
-
-            provideSingleFile(replacedPath).ifPresent(chunkContainer::addChunk);
+            createSingleFileResource(path).ifPresent(resource ->
+                    resourceTree.add("",  resource)
+            );
 
         } else {
 
-            List<ResourceChunk> chunks = provideTreeFiles(replacedPath);
-            chunkContainer.addChunks(chunks);
+            Map<String, SingleFileResource> resources = createTreeFileResources(path);
+            resourceTree.addAll(resources);
 
         }
 
-        return chunkContainer;
+        return resourceTree;
     }
 
-    private Path replacePathPlaceholders(Path path) {
-        String pathString = path.toString();
-        String result = pathString
-                .replace("\\", File.separator)
-                .replace("{engine}", enginePath.toString());
-        return Path.of(result);
-    }
+    private Optional<SingleFileResource> createSingleFileResource(Path path) {
 
-    private Optional<ResourceChunk> provideSingleFile(Path path) {
+        Path relativePath = enginePath.relativize(path);
+
+        Optional<TempFile> targetOptional = TempFiles.create(relativePath);
+        if (targetOptional.isEmpty()) return Optional.empty();
+
+        File source = path.toFile();
+        TempFile target = targetOptional.get();
+
         try {
 
-            byte[] data = Files.readAllBytes(path);
+            BreezeFileWriter.INSTANCE.writeChunks(target.toFile(), out ->
+                    BreezeFileReader.INSTANCE.readChunks(source, (data, length) ->
+                            out.write(data, 0, length)
+                    )
+            );
 
-            ResourceMetadata metadata = new ResourceMetadata()
-                    .set("path", path);
-
-            ResourceChunk chunk = new ResourceChunk(data, metadata);
-            return Optional.of(chunk);
+            SingleFileResource resource = new SingleFileResource(target);
+            return Optional.of(resource);
 
         } catch (IOException ex) {
-            ex.printStackTrace();
+            TempFiles.delete(target);
+            logger.error("Could not write temp file", ex);
         }
 
         return Optional.empty();
     }
 
-    private List<ResourceChunk> provideTreeFiles(Path root) {
+    private Map<String, SingleFileResource> createTreeFileResources(Path root) {
 
-        List<ResourceChunk> chunks = new ArrayList<>();
+        HashMap<String, SingleFileResource> resources = new HashMap<>();
 
         try {
 
             Files.walkFileTree(root, new SimpleFileVisitor<>() {
-                @NotNull
-                @Override
+                @Override @NotNull
                 public FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) {
 
-                    provideSingleFile(file).ifPresent(chunk -> {
+                    createSingleFileResource(file).ifPresent(resource -> {
 
-                        String relativePath = root.relativize(file)
-                                .toString()
-                                .replace("\\", "/");
-
-                        chunk.getMetadata().set("relative", relativePath);
-
-                        chunks.add(chunk);
+                        Path relativePath = enginePath.relativize(file);
+                        resources.put(relativePath.toString(), resource);
 
                     });
 
@@ -108,10 +113,13 @@ public class DriveResourceProvideStrategy implements ResourceProvideStrategy {
             });
 
         } catch (IOException ex) {
-            ex.printStackTrace();
+            logger.error("Could not walk through file tree.", ex);
+            resources.values().forEach(resource ->
+                    TempFiles.delete(resource.getTempFile())
+            );
         }
 
-        return chunks;
+        return resources;
 
     }
 

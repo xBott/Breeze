@@ -6,6 +6,7 @@ import me.bottdev.breezeapi.resource.fallback.Fallback;
 import me.bottdev.breezeapi.resource.fallback.ResourceFallbackStrategy;
 import me.bottdev.breezeapi.resource.provide.ResourceProvideStrategy;
 import me.bottdev.breezeapi.resource.provide.Source;
+import me.bottdev.breezeapi.resource.types.file.SingleFileResource;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -51,10 +52,11 @@ public class ResourceProxyHandler implements ProxyHandler {
             ProvideResource annotation = method.getAnnotation(ProvideResource.class);
             Source source = annotation.source();
             Class<? extends Resource> type = annotation.type();
+            boolean isTree = annotation.isTree();
             Fallback fallback = annotation.fallback();
 
             Object result;
-            result = handleNotEmpty(method, source, type);
+            result = handleNotEmpty(method, source, type, isTree);
 
             if (result == null) {
                 result = handleFallback(targetClass, proxy, method, fallback, type);
@@ -71,18 +73,32 @@ public class ResourceProxyHandler implements ProxyHandler {
 
     }
 
-    private Object handleNotEmpty(Method method, Source source, Class<? extends Resource> type) {
+    private Object handleNotEmpty(Method method, Source source, Class<? extends Resource> requiredType, boolean isTree) {
 
         Optional<ResourceProvideStrategy> strategyOptional = getProvideStrategy(source);
         if (strategyOptional.isEmpty()) return null;
 
         ResourceProvideStrategy strategy = strategyOptional.get();
-        ResourceChunkContainer container = strategy.provide(method);
 
-        Optional<? extends Resource> created = ResourceFactory.create(type, container);
+        ResourceTree<SingleFileResource> resourceTree = strategy.provide(method);
 
-        return created.orElse(null);
+        if (isTree) {
+            return handleTree(resourceTree, requiredType);
+        }
 
+        return handleSingle(resourceTree, requiredType);
+
+    }
+
+    private Object handleTree(ResourceTree<SingleFileResource> resourceTree, Class<? extends Resource> requiredType) {
+        return ResourceConverter.convertTree(requiredType, resourceTree);
+    }
+
+    private Object handleSingle(ResourceTree<SingleFileResource> resourceTree, Class<? extends Resource> requiredType) {
+        return resourceTree.getSingle()
+                .map(resource ->
+                        ResourceConverter.convertSingle(requiredType, resource)
+                ).orElse(null);
     }
 
     private Object handleFallback(Class<?> targetClass, Object proxy, Method method, Fallback fallback, Class<?> requiredType) {
@@ -97,16 +113,51 @@ public class ResourceProxyHandler implements ProxyHandler {
     }
 
     private Object handleResult(Method method, Object result) {
-
         Class<?> returnType = method.getReturnType();
 
-        if (returnType == Optional.class) {
-            return Optional.of(result);
-        } else {
-            return result;
+        if (returnType == void.class || returnType == Void.class) {
+            return null;
         }
 
+        if (Optional.class.isAssignableFrom(returnType)) {
+            if (result == null) {
+                return Optional.empty();
+            }
+            if (result instanceof Optional<?>) {
+                return result;
+            }
+            return Optional.of(result);
+        }
+
+        if (ResourceTree.class.isAssignableFrom(returnType)) {
+            if (result == null) {
+                return new ResourceTree<>();
+            }
+
+            if (returnType.isInstance(result)) {
+                return result;
+            }
+
+            throw new IllegalStateException(
+                    "Expected " + returnType.getName() +
+                            " but got " + result.getClass().getName()
+            );
+        }
+
+        if (result == null) {
+            return null;
+        }
+
+        if (!returnType.isInstance(result)) {
+            throw new IllegalStateException(
+                    "Return type mismatch: expected " + returnType.getName() +
+                            ", got " + result.getClass().getName()
+            );
+        }
+
+        return result;
     }
+
 
     private Object handleEmpty(Method method) {
 

@@ -1,42 +1,33 @@
 package me.bottdev.breezeapi.resource.types;
 
-import lombok.Getter;
-import me.bottdev.breezeapi.commons.file.FileCommons;
+import me.bottdev.breezeapi.commons.file.input.BreezeFileReader;
+import me.bottdev.breezeapi.commons.file.temp.TempFile;
+import me.bottdev.breezeapi.log.BreezeLogger;
+import me.bottdev.breezeapi.log.SimpleTreeLogger;
+import me.bottdev.breezeapi.resource.Resource;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.util.Optional;
 
-@Getter
-public class FileResource implements BinaryResource {
+public interface FileResource extends Resource {
 
-    private final Path path;
-    private final String fileName;
-    private byte[] data;
+    BreezeLogger logger = new SimpleTreeLogger("FileResource");
 
-    public FileResource(Path path, byte[] data) {
-        this.path = path;
-        this.data = data;
-        this.fileName = path.getFileName().toString();
+    TempFile getTempFile();
+
+    default String getName() {
+        return getTempFile().getAbsolutePath().getFileName().toString();
     }
 
-    public String getExtension() {
-        return FileCommons.getExtension(fileName);
-    }
+    default Optional<String> read() {
+        try {
+            String content = BreezeFileReader.INSTANCE.readLines(getTempFile().toFile());
+            return Optional.ofNullable(content);
 
-    @Override
-    public byte[] getBytes() {
-        return data;
-    }
-
-    public String read() {
-        return new String(data, StandardCharsets.UTF_8);
-    }
-
-    public void save(Path path) throws IOException {
-        Files.createDirectories(path.getParent());
-        Files.write(path, data);
+        } catch (IOException ex) {
+            logger.error("Could not read file", ex);
+        }
+        return Optional.empty();
     }
 
 }
