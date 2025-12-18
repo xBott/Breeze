@@ -1,6 +1,7 @@
 package me.bottdev.breezeapi;
 
 import me.bottdev.breezeapi.autoload.AutoLoaderRegistry;
+import me.bottdev.breezeapi.commons.file.temp.TempFiles;
 import me.bottdev.breezeapi.di.BreezeContext;
 import me.bottdev.breezeapi.di.ContextBootstrapper;
 import me.bottdev.breezeapi.events.EventBus;
@@ -36,5 +37,9 @@ public interface BreezeEngine {
     void restart();
 
     void stop();
+
+    default void addShutdownHook() {
+        Runtime.getRuntime().addShutdownHook(new Thread(TempFiles::cleanup));
+    }
 
 }
