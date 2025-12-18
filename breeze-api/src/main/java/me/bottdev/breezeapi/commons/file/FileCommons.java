@@ -1,10 +1,17 @@
 package me.bottdev.breezeapi.commons.file;
 
-import java.io.File;
+import me.bottdev.breezeapi.commons.file.input.BreezeFileReader;
+import me.bottdev.breezeapi.commons.file.output.BreezeFileWriter;
+import me.bottdev.breezeapi.log.BreezeLogger;
+import me.bottdev.breezeapi.log.SimpleTreeLogger;
+
+import java.io.*;
 import java.nio.file.Path;
 import java.util.function.Consumer;
 
 public class FileCommons {
+
+    private static final BreezeLogger logger = new SimpleTreeLogger("FileCommons");
 
     public static void createDirectoryIfNotExists(File directory) {
         if (directory.exists()) return;
@@ -37,6 +44,50 @@ public class FileCommons {
                 walkDirectory(file, onJoin);
             }
             onJoin.accept(file);
+        }
+
+    }
+
+    public void createFileIfNotExists(File file) {
+        if (file.exists()) return;
+
+        if (file.isDirectory()) {
+            file.mkdirs();
+
+        } else {
+
+            try {
+                file.getParentFile().mkdirs();
+                file.createNewFile();
+
+            } catch (IOException ex) {
+                logger.error("Failed to create file", ex);
+            }
+
+        }
+
+    }
+
+    public static void copyFile(File source, File target) {
+
+        if (!source.exists() || source.isDirectory() || target.isDirectory()) return;
+
+        createDirectoryIfNotExists(target);
+
+        try {
+
+            new BreezeFileWriter().writeChunks(target, out -> {
+
+                new BreezeFileReader().readChunks(source, (data, length) -> {
+
+                    out.write(data, 0, length);
+
+                });
+
+            });
+
+        } catch (IOException ex) {
+            logger.error("Failed to copy file", ex);
         }
 
     }
