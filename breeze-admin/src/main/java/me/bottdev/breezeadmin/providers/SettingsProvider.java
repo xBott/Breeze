@@ -19,6 +19,9 @@ public interface SettingsProvider extends ResourceProvider {
     @ProvideResource(source = Source.DRIVE)
     @Drive(path = "Admin/settings.json")
     Optional<SingleFileResource> getSettingsResource();
+    //ДОБАВИТЬ СОХРАНЕНИЕ РЕСУРСОВ
+    //ДОБАВИТЬ КЕШ (Ресурсы и конфиги раздельно)
+    //ДОБАВИТЬ ПЕРЕЗАГРУЗКУ РЕСУРСОВ И КОНФИГОВ (WatcherService + CheckSum?)
 
     default Optional<SettingsConfiguration> getSettingsConfiguration() {
 
