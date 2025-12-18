@@ -7,7 +7,6 @@ import me.bottdev.breezeapi.di.annotations.Inject;
 import me.bottdev.breezeapi.di.annotations.Named;
 import me.bottdev.breezeapi.log.BreezeLogger;
 import me.bottdev.breezeapi.log.SimpleTreeLogger;
-import me.bottdev.breezeapi.resource.types.FileResource;
 
 @Component
 public class AdminBootstrap implements Bootstrap {
@@ -22,9 +21,13 @@ public class AdminBootstrap implements Bootstrap {
 
     @Override
     public void bootstrap() {
-        settingsProvider.getSettings()
-                .map(FileResource::read)
+        settingsProvider.getSettingsResource()
+                .map(resource -> resource.read().orElse(""))
                 .ifPresent(logger::info);
+
+        settingsProvider.getSettingsConfiguration().ifPresent(configuration -> {
+            logger.info("Module version is {}", configuration.getVersion());
+        });
     }
 
 }
