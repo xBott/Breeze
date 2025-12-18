@@ -5,7 +5,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class BreezeFileReader implements LineReader<File>, ChunkReader<File> {
+public class BreezeFileReader implements StringReader<File>, ChunkReader<File> {
 
     public static final BreezeFileReader INSTANCE = new BreezeFileReader();
 

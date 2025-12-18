@@ -1,18 +1,15 @@
 package me.bottdev.breezeapi.commons.file.input;
 
-import me.bottdev.breezeapi.log.BreezeLogger;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.function.Consumer;
 
-public interface LineReader<T> {
+public interface StringReader<T> {
 
     InputStream getInputStream(T target) throws IOException;
 
-    default void readLines(T target, ReadLineConsumer onRead) throws IOException {
+    default void readString(T target, ReadLineConsumer onRead) throws IOException {
 
         try (InputStream inputStream = getInputStream(target)) {
 
@@ -27,11 +24,11 @@ public interface LineReader<T> {
 
     }
 
-    default String readLines(T target) throws IOException {
+    default String readString(T target) throws IOException {
 
         StringBuilder stringBuilder = new StringBuilder();
 
-        readLines(target, line -> {
+        readString(target, line -> {
             stringBuilder.append(line).append("\n");
         });
 
