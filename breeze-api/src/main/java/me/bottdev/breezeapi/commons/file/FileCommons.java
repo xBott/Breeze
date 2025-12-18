@@ -68,27 +68,21 @@ public class FileCommons {
 
     }
 
-    public static void copyFile(File source, File target) {
+    public static void copyFile(File source, File target) throws IOException {
 
         if (!source.exists() || source.isDirectory() || target.isDirectory()) return;
 
         createDirectoryIfNotExists(target);
 
-        try {
+        new BreezeFileWriter().writeChunks(target, out -> {
 
-            new BreezeFileWriter().writeChunks(target, out -> {
+            new BreezeFileReader().readChunks(source, (data, length) -> {
 
-                new BreezeFileReader().readChunks(source, (data, length) -> {
-
-                    out.write(data, 0, length);
-
-                });
+                out.write(data, 0, length);
 
             });
 
-        } catch (IOException ex) {
-            logger.error("Failed to copy file", ex);
-        }
+        });
 
     }
 
