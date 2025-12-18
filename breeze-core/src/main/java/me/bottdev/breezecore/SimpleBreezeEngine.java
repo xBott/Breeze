@@ -58,6 +58,7 @@ public class SimpleBreezeEngine implements BreezeEngine {
         logger.info("Starting engine....");
 
         logger.withSection("BreezeEngine Startup", "", () -> {
+            addShutdownHook();
             registerMappers();
             registerAutoLoaders();
             registerConstructHooks();
