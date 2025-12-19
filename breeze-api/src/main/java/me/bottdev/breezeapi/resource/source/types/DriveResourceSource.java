@@ -1,6 +1,7 @@
-package me.bottdev.breezeapi.resource.provide;
+package me.bottdev.breezeapi.resource.source.types;
 
 import lombok.RequiredArgsConstructor;
+import me.bottdev.breezeapi.commons.file.FileCommons;
 import me.bottdev.breezeapi.commons.file.temp.TempFile;
 import me.bottdev.breezeapi.commons.file.temp.TempFiles;
 import me.bottdev.breezeapi.commons.file.input.BreezeFileReader;
@@ -8,7 +9,9 @@ import me.bottdev.breezeapi.commons.file.output.BreezeFileWriter;
 import me.bottdev.breezeapi.log.BreezeLogger;
 import me.bottdev.breezeapi.log.SimpleTreeLogger;
 import me.bottdev.breezeapi.resource.ResourceTree;
-import me.bottdev.breezeapi.resource.annotations.Drive;
+import me.bottdev.breezeapi.resource.annotations.DriveSource;
+import me.bottdev.breezeapi.resource.source.ResourceSource;
+import me.bottdev.breezeapi.resource.source.SourceType;
 import me.bottdev.breezeapi.resource.types.file.SingleFileResource;
 import org.jetbrains.annotations.NotNull;
 
@@ -25,7 +28,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @RequiredArgsConstructor
-public class DriveResourceProvideStrategy implements ResourceProvideStrategy {
+public class DriveResourceSource implements ResourceSource {
 
     private final BreezeLogger logger = new SimpleTreeLogger("DriveProvide");
 
@@ -36,18 +39,26 @@ public class DriveResourceProvideStrategy implements ResourceProvideStrategy {
 
         ResourceTree<SingleFileResource> resourceTree = new ResourceTree<>();
 
-        if (!method.isAnnotationPresent(Drive.class)) return resourceTree;
-        Drive annotation = method.getAnnotation(Drive.class);
+        if (!method.isAnnotationPresent(DriveSource.class)) return resourceTree;
+        DriveSource annotation = method.getAnnotation(DriveSource.class);
         String pathString = (annotation.path());
+        boolean createIfAbsent = annotation.createIfAbsent();
+        String defaultValue = annotation.defaultValue();
 
         Path path = enginePath.resolve(pathString);
-        File file = path.toFile();
 
-        if (!file.exists()) {
-            return resourceTree;
+        if (!Files.exists(path)) {
+            if (!createIfAbsent) return resourceTree;
+
+            try {
+                createFile(path, defaultValue);
+            } catch (IOException ex) {
+                logger.error("Could not create file", ex);
+                return resourceTree;
+            }
         }
 
-        if (file.isFile()) {
+        if (Files.isRegularFile(path)) {
             createSingleFileResource(path).ifPresent(resource ->
                     resourceTree.add("",  resource)
             );
@@ -60,6 +71,13 @@ public class DriveResourceProvideStrategy implements ResourceProvideStrategy {
         }
 
         return resourceTree;
+    }
+
+    private void createFile(Path path, String defaultValue) throws IOException {
+        File created = FileCommons.createFileOrDirectory(path);
+        BreezeFileWriter.INSTANCE.writeString(created, bufferedWriter ->
+                bufferedWriter.write(defaultValue)
+        );
     }
 
     private Optional<SingleFileResource> createSingleFileResource(Path path) {
@@ -81,7 +99,7 @@ public class DriveResourceProvideStrategy implements ResourceProvideStrategy {
                     )
             );
 
-            SingleFileResource resource = new SingleFileResource(target);
+            SingleFileResource resource = new SingleFileResource(target, SourceType.DRIVE);
             return Optional.of(resource);
 
         } catch (IOException ex) {
