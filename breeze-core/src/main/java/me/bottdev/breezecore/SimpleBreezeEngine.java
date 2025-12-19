@@ -19,10 +19,9 @@ import me.bottdev.breezeapi.log.SimpleTreeLogger;
 import me.bottdev.breezeapi.log.TreeLogger;
 import me.bottdev.breezeapi.modules.ModuleManager;
 import me.bottdev.breezeapi.resource.ResourceProxyHandler;
-import me.bottdev.breezeapi.resource.fallback.Fallback;
-import me.bottdev.breezeapi.resource.fallback.MethodFallbackStrategy;
-import me.bottdev.breezeapi.resource.provide.Source;
-import me.bottdev.breezeapi.resource.provide.DriveResourceProvideStrategy;
+import me.bottdev.breezeapi.resource.source.ResourceSourceRegistry;
+import me.bottdev.breezeapi.resource.source.SourceType;
+import me.bottdev.breezeapi.resource.source.types.DriveResourceSource;
 import me.bottdev.breezeapi.serialization.MapperRegistry;
 import me.bottdev.breezeapi.serialization.MapperType;
 import me.bottdev.breezeapi.serialization.mappers.JsonMapper;
@@ -62,7 +61,7 @@ public class SimpleBreezeEngine implements BreezeEngine {
             registerMappers();
             registerAutoLoaders();
             registerConstructHooks();
-            registerResourceProvideStrategies();
+            registerResourceSources();
             registerContextBootstrapperReaders();
             loadContext();
             addEngineToContext();
@@ -88,11 +87,10 @@ public class SimpleBreezeEngine implements BreezeEngine {
         logger.info("Successfully registered autoload construct hook.");
     }
 
-    private void registerResourceProvideStrategies() {
-        ResourceProxyHandler.registerProvideStrategy(Source.DRIVE,
-                new DriveResourceProvideStrategy(getDataFolder().resolve("modules"))
+    private void registerResourceSources() {
+        ResourceSourceRegistry.register(SourceType.DRIVE,
+                new DriveResourceSource(getDataFolder().resolve("modules"))
         );
-        ResourceProxyHandler.registerFallbackStrategy(Fallback.METHOD, new MethodFallbackStrategy());
     }
 
     private void registerContextBootstrapperReaders() {
