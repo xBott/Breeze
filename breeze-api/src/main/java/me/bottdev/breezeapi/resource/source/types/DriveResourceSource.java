@@ -12,6 +12,7 @@ import me.bottdev.breezeapi.resource.ResourceTree;
 import me.bottdev.breezeapi.resource.annotations.DriveSource;
 import me.bottdev.breezeapi.resource.source.ResourceSource;
 import me.bottdev.breezeapi.resource.source.SourceType;
+import me.bottdev.breezeapi.resource.types.FileResource;
 import me.bottdev.breezeapi.resource.types.file.SingleFileResource;
 import org.jetbrains.annotations.NotNull;
 
@@ -35,9 +36,9 @@ public class DriveResourceSource implements ResourceSource {
     private final Path enginePath;
 
     @Override
-    public ResourceTree<SingleFileResource> provide(Method method) {
+    public ResourceTree<FileResource> provide(Method method) {
 
-        ResourceTree<SingleFileResource> resourceTree = new ResourceTree<>();
+        ResourceTree<FileResource> resourceTree = new ResourceTree<>();
 
         if (!method.isAnnotationPresent(DriveSource.class)) return resourceTree;
         DriveSource annotation = method.getAnnotation(DriveSource.class);
@@ -65,7 +66,7 @@ public class DriveResourceSource implements ResourceSource {
 
         } else {
 
-            Map<String, SingleFileResource> resources = createTreeFileResources(path);
+            Map<String, FileResource> resources = createTreeFileResources(path);
             resourceTree.addAll(resources);
 
         }
@@ -80,7 +81,7 @@ public class DriveResourceSource implements ResourceSource {
         );
     }
 
-    private Optional<SingleFileResource> createSingleFileResource(Path path) {
+    private Optional<FileResource> createSingleFileResource(Path path) {
 
         Path relativePath = enginePath.relativize(path);
 
@@ -110,9 +111,9 @@ public class DriveResourceSource implements ResourceSource {
         return Optional.empty();
     }
 
-    private Map<String, SingleFileResource> createTreeFileResources(Path root) {
+    private Map<String, FileResource> createTreeFileResources(Path root) {
 
-        HashMap<String, SingleFileResource> resources = new HashMap<>();
+        HashMap<String, FileResource> resources = new HashMap<>();
 
         try {
 
