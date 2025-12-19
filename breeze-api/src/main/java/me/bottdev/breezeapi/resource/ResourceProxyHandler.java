@@ -7,7 +7,7 @@ import me.bottdev.breezeapi.resource.source.ResourceSourceRegistry;
 import me.bottdev.breezeapi.resource.source.SourceType;
 import me.bottdev.breezeapi.resource.source.descriptor.SourceDescriptor;
 import me.bottdev.breezeapi.resource.source.descriptor.SourceDescriptorFactory;
-import me.bottdev.breezeapi.resource.types.file.SingleFileResource;
+import me.bottdev.breezeapi.resource.types.FileResource;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -54,7 +54,7 @@ public class ResourceProxyHandler implements ProxyHandler {
             if (sourceOptional.isEmpty()) continue;
 
             ResourceSource source = sourceOptional.get();
-            ResourceTree<SingleFileResource> resourceTree = source.provide(method);
+            ResourceTree<FileResource> resourceTree = source.provide(method);
             if (resourceTree.isEmpty()) continue;
 
             if (isTree) {
@@ -69,11 +69,11 @@ public class ResourceProxyHandler implements ProxyHandler {
 
     }
 
-    private Object handleTree(ResourceTree<SingleFileResource> resourceTree, Class<? extends Resource> requiredType) {
+    private Object handleTree(ResourceTree<FileResource> resourceTree, Class<? extends Resource> requiredType) {
         return ResourceConverter.convertTree(requiredType, resourceTree);
     }
 
-    private Object handleSingle(ResourceTree<SingleFileResource> resourceTree, Class<? extends Resource> requiredType) {
+    private Object handleSingle(ResourceTree<FileResource> resourceTree, Class<? extends Resource> requiredType) {
         return resourceTree.getSingle()
                 .map(resource ->
                         ResourceConverter.convertSingle(requiredType, resource)
