@@ -22,6 +22,7 @@ import me.bottdev.breezeapi.resource.ResourceProxyHandler;
 import me.bottdev.breezeapi.resource.source.ResourceSourceRegistry;
 import me.bottdev.breezeapi.resource.source.SourceType;
 import me.bottdev.breezeapi.resource.source.types.DriveResourceSource;
+import me.bottdev.breezeapi.resource.source.types.JarResourceSource;
 import me.bottdev.breezeapi.serialization.MapperRegistry;
 import me.bottdev.breezeapi.serialization.MapperType;
 import me.bottdev.breezeapi.serialization.mappers.JsonMapper;
@@ -90,6 +91,9 @@ public class SimpleBreezeEngine implements BreezeEngine {
     private void registerResourceSources() {
         ResourceSourceRegistry.register(SourceType.DRIVE,
                 new DriveResourceSource(getDataFolder().resolve("modules"))
+        );
+        ResourceSourceRegistry.register(SourceType.JAR,
+                new JarResourceSource(getDataFolder().resolve("modules"))
         );
     }
 
