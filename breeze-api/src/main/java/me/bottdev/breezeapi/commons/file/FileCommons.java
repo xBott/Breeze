@@ -6,6 +6,7 @@ import me.bottdev.breezeapi.log.BreezeLogger;
 import me.bottdev.breezeapi.log.SimpleTreeLogger;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Consumer;
 
@@ -66,6 +67,18 @@ public class FileCommons {
 
         }
 
+    }
+
+    public static File createFileOrDirectory(Path path) throws IOException {
+        if (Files.isDirectory(path)) {
+            Files.createDirectories(path);
+
+        } else {
+            Files.createDirectories(path.getParent());
+            Files.createFile(path);
+        }
+
+        return path.toFile();
     }
 
     public static void copyFile(File source, File target) throws IOException {
