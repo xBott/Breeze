@@ -2,38 +2,18 @@ package me.bottdev.breezeapi.resource;
 
 import me.bottdev.breezeapi.di.proxy.ProxyHandler;
 import me.bottdev.breezeapi.resource.annotations.ProvideResource;
-import me.bottdev.breezeapi.resource.fallback.Fallback;
-import me.bottdev.breezeapi.resource.fallback.ResourceFallbackStrategy;
-import me.bottdev.breezeapi.resource.provide.ResourceProvideStrategy;
-import me.bottdev.breezeapi.resource.provide.Source;
+import me.bottdev.breezeapi.resource.source.ResourceSource;
+import me.bottdev.breezeapi.resource.source.ResourceSourceRegistry;
+import me.bottdev.breezeapi.resource.source.SourceType;
+import me.bottdev.breezeapi.resource.source.descriptor.SourceDescriptor;
+import me.bottdev.breezeapi.resource.source.descriptor.SourceDescriptorFactory;
 import me.bottdev.breezeapi.resource.types.file.SingleFileResource;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class ResourceProxyHandler implements ProxyHandler {
-
-    private static final Map<Source, ResourceProvideStrategy> provideStrategies = new HashMap<>();
-    private static final Map<Fallback, ResourceFallbackStrategy> fallbackStrategies = new HashMap<>();
-
-    public static void registerProvideStrategy(Source source, ResourceProvideStrategy strategy) {
-        provideStrategies.put(source, strategy);
-    }
-
-    public static Optional<ResourceProvideStrategy> getProvideStrategy(Source source) {
-        return Optional.ofNullable(provideStrategies.get(source));
-    }
-
-    public static void registerFallbackStrategy(Fallback fallback, ResourceFallbackStrategy fallbackStrategy) {
-        fallbackStrategies.put(fallback, fallbackStrategy);
-    }
-
-    public static Optional<ResourceFallbackStrategy> getFallbackHandler(Fallback fallback) {
-        return Optional.ofNullable(fallbackStrategies.get(fallback));
-    }
 
     @Override
     public boolean supports(Class<?> iface) {
@@ -50,21 +30,11 @@ public class ResourceProxyHandler implements ProxyHandler {
         if (method.isAnnotationPresent(ProvideResource.class)) {
 
             ProvideResource annotation = method.getAnnotation(ProvideResource.class);
-            Source source = annotation.source();
             Class<? extends Resource> type = annotation.type();
             boolean isTree = annotation.isTree();
-            Fallback fallback = annotation.fallback();
 
             Object result;
-            result = handleNotEmpty(method, source, type, isTree);
-
-            if (result == null) {
-                result = handleFallback(targetClass, proxy, method, fallback, type);
-            }
-
-            if (result == null) {
-                return handleEmpty(method);
-            }
+            result = handleSources(method, type, isTree);
 
             return handleResult(method, result);
         }
@@ -73,20 +43,29 @@ public class ResourceProxyHandler implements ProxyHandler {
 
     }
 
-    private Object handleNotEmpty(Method method, Source source, Class<? extends Resource> requiredType, boolean isTree) {
+    private Object handleSources(Method method, Class<? extends Resource> requiredType, boolean isTree) {
 
-        Optional<ResourceProvideStrategy> strategyOptional = getProvideStrategy(source);
-        if (strategyOptional.isEmpty()) return null;
+        List<SourceDescriptor> descriptors = SourceDescriptorFactory.createFromMethod(method);
 
-        ResourceProvideStrategy strategy = strategyOptional.get();
+        for (SourceDescriptor descriptor : descriptors) {
 
-        ResourceTree<SingleFileResource> resourceTree = strategy.provide(method);
+            SourceType sourceType = descriptor.getType();
+            Optional<ResourceSource> sourceOptional = ResourceSourceRegistry.get(sourceType);
+            if (sourceOptional.isEmpty()) continue;
 
-        if (isTree) {
-            return handleTree(resourceTree, requiredType);
+            ResourceSource source = sourceOptional.get();
+            ResourceTree<SingleFileResource> resourceTree = source.provide(method);
+            if (resourceTree.isEmpty()) continue;
+
+            if (isTree) {
+                return handleTree(resourceTree, requiredType);
+            }
+
+            return handleSingle(resourceTree, requiredType);
+
         }
 
-        return handleSingle(resourceTree, requiredType);
+        return null;
 
     }
 
@@ -99,17 +78,6 @@ public class ResourceProxyHandler implements ProxyHandler {
                 .map(resource ->
                         ResourceConverter.convertSingle(requiredType, resource)
                 ).orElse(null);
-    }
-
-    private Object handleFallback(Class<?> targetClass, Object proxy, Method method, Fallback fallback, Class<?> requiredType) {
-        if (fallback == Fallback.NONE) return null;
-
-        Optional<ResourceFallbackStrategy> strategyOptional = getFallbackHandler(fallback);
-        if (strategyOptional.isEmpty()) return null;
-
-        ResourceFallbackStrategy strategy = strategyOptional.get();
-
-        return strategy.fallback(targetClass, proxy, method, requiredType);
     }
 
     private Object handleResult(Method method, Object result) {
@@ -165,6 +133,10 @@ public class ResourceProxyHandler implements ProxyHandler {
 
         if (returnType == Optional.class) {
             return Optional.empty();
+        }
+
+        if (returnType == ResourceTree.class) {
+            return new ResourceTree<>();
         }
 
         if (!returnType.isPrimitive()) {
