@@ -7,6 +7,7 @@ import me.bottdev.breezeapi.commons.file.temp.TempFile;
 import me.bottdev.breezeapi.log.BreezeLogger;
 import me.bottdev.breezeapi.log.SimpleTreeLogger;
 import me.bottdev.breezeapi.resource.Resource;
+import me.bottdev.breezeapi.resource.source.SourceType;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,6 +18,7 @@ public interface FileResource extends Resource {
     BreezeLogger logger = new SimpleTreeLogger("FileResource");
 
     TempFile getTempFile();
+    SourceType getSourceType();
 
     default String getName() {
         return getTempFile().getAbsolutePath().getFileName().toString();
@@ -31,6 +33,13 @@ public interface FileResource extends Resource {
             logger.error("Could not read file", ex);
         }
         return Optional.empty();
+    }
+
+    default boolean isEmpty() {
+        Optional<String> contentOptional = read();
+        if (contentOptional.isEmpty()) return true;
+        String content = contentOptional.get();
+        return content.isEmpty();
     }
 
     default boolean write(String content) {
