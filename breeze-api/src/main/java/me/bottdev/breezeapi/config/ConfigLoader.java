@@ -1,8 +1,8 @@
-package me.bottdev.breezeapi.resource.config;
+package me.bottdev.breezeapi.config;
 
 import lombok.RequiredArgsConstructor;
-import me.bottdev.breezeapi.resource.config.validation.ConfigStatus;
-import me.bottdev.breezeapi.resource.config.validation.ConfigValidator;
+import me.bottdev.breezeapi.config.validation.ConfigStatus;
+import me.bottdev.breezeapi.config.validation.ConfigValidator;
 import me.bottdev.breezeapi.log.BreezeLogger;
 import me.bottdev.breezeapi.log.SimpleTreeLogger;
 import me.bottdev.breezeapi.resource.types.FileResource;

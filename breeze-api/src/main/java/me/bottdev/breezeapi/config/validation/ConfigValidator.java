@@ -1,6 +1,6 @@
-package me.bottdev.breezeapi.resource.config.validation;
+package me.bottdev.breezeapi.config.validation;
 
-import me.bottdev.breezeapi.resource.config.Configuration;
+import me.bottdev.breezeapi.config.Configuration;
 import me.bottdev.breezeapi.log.BreezeLogger;
 import me.bottdev.breezeapi.log.SimpleTreeLogger;
 import me.bottdev.breezeapi.serialization.ObjectNode;

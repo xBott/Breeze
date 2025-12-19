@@ -1,7 +1,7 @@
 package me.bottdev.breezeadmin.config;
 
 import lombok.*;
-import me.bottdev.breezeapi.resource.config.Configuration;
+import me.bottdev.breezeapi.config.Configuration;
 
 @Getter
 @Setter

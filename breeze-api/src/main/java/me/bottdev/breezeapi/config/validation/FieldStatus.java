@@ -1,4 +1,4 @@
-package me.bottdev.breezeapi.resource.config.validation;
+package me.bottdev.breezeapi.config.validation;
 
 import lombok.Getter;
 
