@@ -1,8 +1,10 @@
 package me.bottdev.breezeapi.resource;
 
+import me.bottdev.breezeapi.commons.file.temp.TempFile;
 import me.bottdev.breezeapi.log.BreezeLogger;
 import me.bottdev.breezeapi.log.SimpleTreeLogger;
-import me.bottdev.breezeapi.resource.types.file.SingleFileResource;
+import me.bottdev.breezeapi.resource.source.SourceType;
+import me.bottdev.breezeapi.resource.types.FileResource;
 
 import java.lang.reflect.Constructor;
 import java.util.Optional;
@@ -13,16 +15,17 @@ public class ResourceConverter {
 
     public static <T extends Resource> Optional<T> convertSingle(
             Class<T> clazz,
-            SingleFileResource singleFileResource
+            FileResource fileResource
     ) {
-
-        if (clazz == SingleFileResource.class) return Optional.of(clazz.cast(singleFileResource));
 
         try {
 
-            Constructor<T> constructor = clazz.getDeclaredConstructor(SingleFileResource.class);
+            TempFile tempFile = fileResource.getTempFile();
+            SourceType sourceType = fileResource.getSourceType();
+
+            Constructor<T> constructor = clazz.getDeclaredConstructor(TempFile.class, SourceType.class);
             constructor.setAccessible(true);
-            T instance = constructor.newInstance(singleFileResource);
+            T instance = constructor.newInstance(tempFile, sourceType);
 
             return Optional.of(instance);
 
@@ -32,13 +35,10 @@ public class ResourceConverter {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public static <T extends Resource> ResourceTree<T> convertTree(
             Class<T> clazz,
-            ResourceTree<SingleFileResource> resourceTree
+            ResourceTree<FileResource> resourceTree
     ) {
-
-        if (clazz == SingleFileResource.class) return (ResourceTree<T>) resourceTree;
 
         ResourceTree<T> newResourceTree = new ResourceTree<>();
 
