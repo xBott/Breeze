@@ -2,7 +2,7 @@ package me.bottdev.breezeadmin.providers;
 
 import me.bottdev.breezeadmin.config.SettingsConfiguration;
 import me.bottdev.breezeapi.di.annotations.Proxy;
-import me.bottdev.breezeapi.resource.ResourceProvider;
+import me.bottdev.breezeapi.resource.proxy.ResourceProvider;
 import me.bottdev.breezeapi.config.ConfigLoader;
 import me.bottdev.breezeapi.config.validation.ConfigValidator;
 import me.bottdev.breezeapi.resource.annotations.DriveSource;
@@ -25,6 +25,8 @@ public interface SettingsProvider extends ResourceProvider {
     default Optional<SettingsConfiguration> getSettingsConfiguration() {
 
         ConfigLoader loader = new ConfigLoader(new JsonMapper(), new ConfigValidator());
+
+        getSettingsResource().ifPresent(resource -> resource.writeAndSave("{}"));
 
         return getSettingsResource().map(resource ->
             loader.loadConfig(resource, SettingsConfiguration.class).get()
