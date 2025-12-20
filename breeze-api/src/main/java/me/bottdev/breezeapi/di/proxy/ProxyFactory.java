@@ -2,7 +2,6 @@ package me.bottdev.breezeapi.di.proxy;
 
 import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.di.annotations.Proxy;
-import me.bottdev.breezeapi.di.proxy.composite.CompositeProxyHandler;
 
 import java.util.Optional;
 
