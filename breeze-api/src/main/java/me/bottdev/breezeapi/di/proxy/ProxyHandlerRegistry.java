@@ -1,21 +1,19 @@
 package me.bottdev.breezeapi.di.proxy;
 
-import me.bottdev.breezeapi.di.proxy.composite.CompositeProxyHandler;
+import me.bottdev.breezeapi.commons.priority.PriorityList;
 import me.bottdev.breezeapi.log.BreezeLogger;
 import me.bottdev.breezeapi.log.SimpleTreeLogger;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class ProxyHandlerRegistry {
 
     private final BreezeLogger logger = new SimpleTreeLogger("ProxyHandlerRegistry");
 
-    private final List<Class<? extends ProxyHandler>> HANDLERS = new ArrayList<>();
+    private final PriorityList<Class<? extends ProxyHandler>> handlers = new PriorityList<>();
 
-    public ProxyHandlerRegistry register(Class<? extends ProxyHandler> handler) {
-        HANDLERS.add(handler);
+    public ProxyHandlerRegistry register(Class<? extends ProxyHandler> handler, int priority) {
+        handlers.add(handler, priority);
         return this;
     }
 
@@ -39,7 +37,7 @@ public class ProxyHandlerRegistry {
 
     public Optional<ProxyHandler> get(Class<?> iface) {
 
-        for (Class<? extends ProxyHandler> handlerClass : HANDLERS) {
+        for (Class<? extends ProxyHandler> handlerClass : handlers) {
 
             Optional<ProxyHandler> handler = tryCreate(handlerClass, iface);
             if (handler.isPresent()) {
@@ -55,7 +53,7 @@ public class ProxyHandlerRegistry {
 
         CompositeProxyHandler compositeHandler = new CompositeProxyHandler(iface);
 
-        HANDLERS.stream()
+        handlers.stream()
                 .map(clazz -> tryCreate(clazz, iface))
                 .forEach(optional -> optional.ifPresent(
                         handler -> compositeHandler.add(handler, 0)
