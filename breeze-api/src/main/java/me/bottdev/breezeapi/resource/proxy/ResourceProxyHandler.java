@@ -1,6 +1,10 @@
-package me.bottdev.breezeapi.resource;
+package me.bottdev.breezeapi.resource.proxy;
 
 import me.bottdev.breezeapi.di.proxy.ProxyHandler;
+import me.bottdev.breezeapi.di.proxy.ProxyResult;
+import me.bottdev.breezeapi.resource.Resource;
+import me.bottdev.breezeapi.resource.ResourceConverter;
+import me.bottdev.breezeapi.resource.ResourceTree;
 import me.bottdev.breezeapi.resource.annotations.ProvideResource;
 import me.bottdev.breezeapi.resource.source.ResourceSource;
 import me.bottdev.breezeapi.resource.source.ResourceSourceRegistry;
@@ -15,16 +19,21 @@ import java.util.*;
 
 public class ResourceProxyHandler implements ProxyHandler {
 
+    private boolean isMethodAnnotated(Method method) {
+        return method.isAnnotationPresent(ProvideResource.class);
+    }
+
     @Override
     public boolean supports(Class<?> iface) {
         return ResourceProvider.class.isAssignableFrom(iface);
     }
 
     @Override
-    public Object invoke(Class<?> targetClass, Object proxy, Method method, Object[] args) throws Throwable {
+    public ProxyResult invoke(Class<?> targetClass, Object proxy, Method method, Object[] args) throws Throwable {
 
         if (method.isDefault()) {
-            return InvocationHandler.invokeDefault(proxy, method, args);
+            Object value = InvocationHandler.invokeDefault(proxy, method, args);
+            return ProxyResult.of(value);
         }
 
         if (method.isAnnotationPresent(ProvideResource.class)) {
@@ -36,10 +45,11 @@ public class ResourceProxyHandler implements ProxyHandler {
             Object result;
             result = handleSources(method, type, isTree);
 
-            return handleResult(method, result);
+            //return handleResult(method, result);
+            return ProxyResult.of(result);
         }
 
-        return handleEmpty(method);
+        return ProxyResult.empty();
 
     }
 
