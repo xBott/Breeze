@@ -1,6 +1,7 @@
 package me.bottdev.breezeapi;
 
 import me.bottdev.breezeapi.autoload.AutoLoaderRegistry;
+import me.bottdev.breezeapi.cache.CacheManager;
 import me.bottdev.breezeapi.commons.file.temp.TempFiles;
 import me.bottdev.breezeapi.di.BreezeContext;
 import me.bottdev.breezeapi.di.ContextBootstrapper;
@@ -28,6 +29,8 @@ public interface BreezeEngine {
 
     ModuleManager getModuleManager();
 
+    CacheManager getCacheManager();
+
     EventBus getEventBus();
 
     Path getDataFolder();
@@ -39,7 +42,10 @@ public interface BreezeEngine {
     void stop();
 
     default void addShutdownHook() {
-        Runtime.getRuntime().addShutdownHook(new Thread(TempFiles::cleanup));
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            TempFiles.cleanup();
+            getCacheManager().shutdown();
+        }));
     }
 
 }
