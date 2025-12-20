@@ -3,6 +3,8 @@ package me.bottdev.breezecore;
 import lombok.Getter;
 import me.bottdev.breezeapi.BreezeEngine;
 import me.bottdev.breezeapi.autoload.AutoLoaderRegistry;
+import me.bottdev.breezeapi.cache.CacheManager;
+import me.bottdev.breezeapi.cache.proxy.CacheProxyHandler;
 import me.bottdev.breezeapi.components.bootstrap.Bootstrap;
 import me.bottdev.breezeapi.components.bootstrap.BootstrapAutoLoader;
 import me.bottdev.breezeapi.di.ContextBootstrapper;
@@ -18,7 +20,7 @@ import me.bottdev.breezeapi.di.BreezeContext;
 import me.bottdev.breezeapi.log.SimpleTreeLogger;
 import me.bottdev.breezeapi.log.TreeLogger;
 import me.bottdev.breezeapi.modules.ModuleManager;
-import me.bottdev.breezeapi.resource.ResourceProxyHandler;
+import me.bottdev.breezeapi.resource.proxy.ResourceProxyHandler;
 import me.bottdev.breezeapi.resource.source.ResourceSourceRegistry;
 import me.bottdev.breezeapi.resource.source.SourceType;
 import me.bottdev.breezeapi.resource.source.types.DriveResourceSource;
@@ -45,6 +47,7 @@ public class SimpleBreezeEngine implements BreezeEngine {
     private final BreezeContext context = new SimpleBreezeContext(logger);
     private final AutoLoaderRegistry autoLoaderRegistry = new AutoLoaderRegistry(logger);
     private final ModuleManager moduleManager = new SimpleModuleManager(this, logger);
+    private final CacheManager cacheManager = new CacheManager();
     private final EventBus eventBus = new EventBus(logger);
 
     private final Path dataFolder;
@@ -64,8 +67,8 @@ public class SimpleBreezeEngine implements BreezeEngine {
             registerConstructHooks();
             registerResourceSources();
             registerContextBootstrapperReaders();
+            addSuppliersToContext();
             loadContext();
-            addEngineToContext();
             startModuleManager();
         });
 
@@ -98,24 +101,26 @@ public class SimpleBreezeEngine implements BreezeEngine {
     }
 
     private void registerContextBootstrapperReaders() {
+
+        ProxyHandlerRegistry proxyHandlerRegistry = new ProxyHandlerRegistry()
+                .register(CacheProxyHandler.class, 0)
+                .register(ResourceProxyHandler.class, 1);
+
         contextBootstrapper
                 .addReader(new SupplierReader(logger), 0)
-                .addReader(new ProxyReader(logger, new ProxyFactory(
-                        new ProxyHandlerRegistry()
-                                .register(ResourceProxyHandler.class)
-                )), 5)
+                .addReader(new ProxyReader(logger, new ProxyFactory(proxyHandlerRegistry)), 5)
                 .addReader(new ComponentReader(logger, new ComponentDependencyResolver(logger)), 10);
+    }
+
+    private void addSuppliersToContext() {
+        context.addObjectSupplier("breezeEngine", new SingletonSupplier(this));
+        logger.info("Successfully added breezeEngine supplier.");
     }
 
     private void loadContext() {
         ClassLoader classLoader = getClass().getClassLoader();
         BreezeIndexBucket bucket = indexLoader.loadFromClassloader(classLoader);
         contextBootstrapper.bootstrap(context, classLoader, bucket);
-    }
-
-    private void addEngineToContext() {
-        context.addObjectSupplier("breezeEngine", new SingletonSupplier(this));
-        logger.info("Successfully added breezeEngine supplier.");
     }
 
     private void startModuleManager() {
