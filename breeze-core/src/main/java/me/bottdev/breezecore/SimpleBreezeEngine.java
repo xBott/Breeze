@@ -4,12 +4,11 @@ import lombok.Getter;
 import me.bottdev.breezeapi.BreezeEngine;
 import me.bottdev.breezeapi.autoload.AutoLoaderRegistry;
 import me.bottdev.breezeapi.cache.CacheManager;
-import me.bottdev.breezeapi.cache.proxy.CacheProxyHandler;
+import me.bottdev.breezeapi.cache.proxy.CacheProxyHandlerFactory;
 import me.bottdev.breezeapi.components.bootstrap.Bootstrap;
 import me.bottdev.breezeapi.components.bootstrap.BootstrapAutoLoader;
 import me.bottdev.breezeapi.di.ContextBootstrapper;
-import me.bottdev.breezeapi.di.proxy.ProxyFactory;
-import me.bottdev.breezeapi.di.proxy.ProxyHandlerRegistry;
+import me.bottdev.breezeapi.di.proxy.ProxyFactoryRegistry;
 import me.bottdev.breezeapi.di.suppliers.SingletonSupplier;
 import me.bottdev.breezeapi.events.EventBus;
 import me.bottdev.breezeapi.events.Listener;
@@ -20,10 +19,11 @@ import me.bottdev.breezeapi.di.BreezeContext;
 import me.bottdev.breezeapi.log.SimpleTreeLogger;
 import me.bottdev.breezeapi.log.TreeLogger;
 import me.bottdev.breezeapi.modules.ModuleManager;
-import me.bottdev.breezeapi.resource.proxy.ResourceProxyHandler;
+import me.bottdev.breezeapi.resource.proxy.ResourceProxyHandlerFactory;
 import me.bottdev.breezeapi.resource.source.ResourceSourceRegistry;
 import me.bottdev.breezeapi.resource.source.SourceType;
 import me.bottdev.breezeapi.resource.source.types.DriveResourceSource;
+import me.bottdev.breezeapi.resource.source.types.DummyResourceSource;
 import me.bottdev.breezeapi.resource.source.types.JarResourceSource;
 import me.bottdev.breezeapi.serialization.MapperRegistry;
 import me.bottdev.breezeapi.serialization.MapperType;
@@ -65,7 +65,6 @@ public class SimpleBreezeEngine implements BreezeEngine {
             registerMappers();
             registerAutoLoaders();
             registerConstructHooks();
-            registerResourceSources();
             registerContextBootstrapperReaders();
             addSuppliersToContext();
             loadContext();
@@ -91,24 +90,20 @@ public class SimpleBreezeEngine implements BreezeEngine {
         logger.info("Successfully registered autoload construct hook.");
     }
 
-    private void registerResourceSources() {
-        ResourceSourceRegistry.register(SourceType.DRIVE,
-                new DriveResourceSource(getDataFolder().resolve("modules"))
-        );
-        ResourceSourceRegistry.register(SourceType.JAR,
-                new JarResourceSource(getDataFolder().resolve("modules"))
-        );
-    }
-
     private void registerContextBootstrapperReaders() {
 
-        ProxyHandlerRegistry proxyHandlerRegistry = new ProxyHandlerRegistry()
-                .register(CacheProxyHandler.class, 0)
-                .register(ResourceProxyHandler.class, 1);
+        ResourceSourceRegistry resourceSourceRegistry = new ResourceSourceRegistry()
+                .register(SourceType.DRIVE, new DriveResourceSource(getDataFolder()))
+                .register(SourceType.JAR, new JarResourceSource(getDataFolder()))
+                .register(SourceType.DUMMY, new DummyResourceSource());
+
+        ProxyFactoryRegistry proxyFactoryRegistry = new ProxyFactoryRegistry()
+                .register(new CacheProxyHandlerFactory(cacheManager), 0)
+                .register(new ResourceProxyHandlerFactory(resourceSourceRegistry), 1);
 
         contextBootstrapper
                 .addReader(new SupplierReader(logger), 0)
-                .addReader(new ProxyReader(logger, new ProxyFactory(proxyHandlerRegistry)), 5)
+                .addReader(new ProxyReader(logger, proxyFactoryRegistry), 5)
                 .addReader(new ComponentReader(logger, new ComponentDependencyResolver(logger)), 10);
     }
 
