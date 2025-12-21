@@ -1,6 +1,8 @@
 package me.bottdev.breezeadmin.providers;
 
 import me.bottdev.breezeadmin.config.SettingsConfiguration;
+import me.bottdev.breezeapi.cache.proxy.Cacheable;
+import me.bottdev.breezeapi.cache.proxy.annotations.Cached;
 import me.bottdev.breezeapi.di.annotations.Proxy;
 import me.bottdev.breezeapi.resource.proxy.ResourceProvider;
 import me.bottdev.breezeapi.config.ConfigLoader;
@@ -13,8 +15,9 @@ import me.bottdev.breezeapi.serialization.mappers.JsonMapper;
 import java.util.Optional;
 
 @Proxy
-public interface SettingsProvider extends ResourceProvider {
+public interface SettingsProvider extends ResourceProvider, Cacheable {
 
+    @Cached
     @ProvideResource
     @DriveSource(path = "Admin/settings.json", defaultValue = "{}")
     Optional<SingleFileResource> getSettingsResource();
