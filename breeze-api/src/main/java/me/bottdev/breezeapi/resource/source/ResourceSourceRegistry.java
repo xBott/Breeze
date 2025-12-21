@@ -5,13 +5,14 @@ import java.util.Optional;
 
 public class ResourceSourceRegistry {
 
-    private static final HashMap<SourceType, ResourceSource> sources = new HashMap<>();
+    private final HashMap<SourceType, ResourceSource> sources = new HashMap<>();
 
-    public static void register(SourceType sourceType, ResourceSource source) {
+    public ResourceSourceRegistry register(SourceType sourceType, ResourceSource source) {
         sources.put(sourceType, source);
+        return this;
     }
 
-    public static Optional<ResourceSource> get(SourceType sourceType) {
+    public Optional<ResourceSource> get(SourceType sourceType) {
         return Optional.ofNullable(sources.get(sourceType));
     }
 
