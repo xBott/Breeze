@@ -1,5 +1,6 @@
 package me.bottdev.breezeapi.cache.proxy;
 
+import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.cache.Cache;
 import me.bottdev.breezeapi.cache.CacheBuilder;
 import me.bottdev.breezeapi.cache.CacheManager;
@@ -12,9 +13,10 @@ import java.lang.reflect.Method;
 import java.time.Duration;
 import java.util.Optional;
 
+@RequiredArgsConstructor
 public class CacheProxyHandler implements ProxyHandler, ProxyPostHandler {
 
-    private final CacheManager cacheManager = new CacheManager();
+    private final CacheManager cacheManager;
 
     private boolean isMethodAnnotated(Method method) {
         return method.isAnnotationPresent(Cached.class);
@@ -35,11 +37,6 @@ public class CacheProxyHandler implements ProxyHandler, ProxyPostHandler {
                 cacheName,
                 new CacheBuilder<MethodInvocationKey, Object>().maxSize(10)
         );
-    }
-
-    @Override
-    public boolean supports(Class<?> iface) {
-        return Cacheable.class.isAssignableFrom(iface);
     }
 
     @Override
