@@ -1,11 +1,11 @@
 package cache;
 
-import me.bottdev.breezeapi.cache.proxy.CacheProxyHandler;
+import me.bottdev.breezeapi.cache.CacheManager;
+import me.bottdev.breezeapi.cache.proxy.CacheProxyHandlerFactory;
 import me.bottdev.breezeapi.cache.proxy.Cacheable;
 import me.bottdev.breezeapi.cache.proxy.annotations.Cached;
 import me.bottdev.breezeapi.di.annotations.Proxy;
-import me.bottdev.breezeapi.di.proxy.ProxyFactory;
-import me.bottdev.breezeapi.di.proxy.ProxyHandlerRegistry;
+import me.bottdev.breezeapi.di.proxy.ProxyFactoryRegistry;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.*;
 
@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class CacheProxyTest {
 
     @Proxy
-    public interface Computations extends Cacheable {
+    interface Computations extends Cacheable {
 
         @Cached(ttl = 500)
         default int computeStatic() throws InterruptedException {
@@ -31,20 +31,20 @@ public class CacheProxyTest {
 
     }
 
-    public static ProxyFactory proxyFactory;
-    public Computations computations;
+    static ProxyFactoryRegistry proxyFactory;
+    static CacheManager cacheManager;
+    Computations computations;
 
     @BeforeAll
     static void createProxyFactory() {
-        proxyFactory = new ProxyFactory(
-                new ProxyHandlerRegistry()
-                        .register(CacheProxyHandler.class, 0)
-        );
+        cacheManager = new CacheManager();
+        proxyFactory = new ProxyFactoryRegistry()
+                .register(new CacheProxyHandlerFactory(cacheManager), 0);
     }
 
     @BeforeEach
     void createComputations() {
-        computations = proxyFactory.create(Computations.class).orElse(null);
+        computations = proxyFactory.createObject(Computations.class).orElse(null);
     }
 
     <T> Pair<Long, T> measureTime(TimeMeasureFunction<T> function) throws Throwable {
