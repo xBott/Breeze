@@ -27,7 +27,6 @@ public class CacheProxyTest {
 
     @FunctionalInterface
     public interface TimeMeasureFunction<R> extends Cacheable {
-
         R invoke() throws Throwable;
 
     }

@@ -1,6 +1,5 @@
 package me.bottdev.breezeapi.cache.proxy;
 
-import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.cache.Cache;
 import me.bottdev.breezeapi.cache.CacheBuilder;
 import me.bottdev.breezeapi.cache.CacheManager;
