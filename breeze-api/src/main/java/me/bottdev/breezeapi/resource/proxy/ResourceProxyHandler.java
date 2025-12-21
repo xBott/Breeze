@@ -1,5 +1,6 @@
 package me.bottdev.breezeapi.resource.proxy;
 
+import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.di.proxy.ProxyHandler;
 import me.bottdev.breezeapi.di.proxy.ProxyResult;
 import me.bottdev.breezeapi.resource.Resource;
@@ -17,15 +18,13 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.*;
 
+@RequiredArgsConstructor
 public class ResourceProxyHandler implements ProxyHandler {
+
+    private final ResourceSourceRegistry resourceSourceRegistry;
 
     private boolean isMethodAnnotated(Method method) {
         return method.isAnnotationPresent(ProvideResource.class);
-    }
-
-    @Override
-    public boolean supports(Class<?> iface) {
-        return ResourceProvider.class.isAssignableFrom(iface);
     }
 
     @Override
@@ -36,20 +35,19 @@ public class ResourceProxyHandler implements ProxyHandler {
             return ProxyResult.of(value);
         }
 
-        if (method.isAnnotationPresent(ProvideResource.class)) {
+        if (isMethodAnnotated(method)) {
 
             ProvideResource annotation = method.getAnnotation(ProvideResource.class);
             Class<? extends Resource> type = annotation.type();
             boolean isTree = annotation.isTree();
 
-            Object result;
-            result = handleSources(method, type, isTree);
+            Object result = handleSources(method, type, isTree);
+            System.out.println("RESULT: " + result);
 
-            //return handleResult(method, result);
-            return ProxyResult.of(result);
+            return ProxyResult.of(handleResult(method, result));
         }
 
-        return ProxyResult.empty();
+        return ProxyResult.of(handleEmpty(method));
 
     }
 
@@ -60,7 +58,7 @@ public class ResourceProxyHandler implements ProxyHandler {
         for (SourceDescriptor descriptor : descriptors) {
 
             SourceType sourceType = descriptor.getType();
-            Optional<ResourceSource> sourceOptional = ResourceSourceRegistry.get(sourceType);
+            Optional<ResourceSource> sourceOptional = resourceSourceRegistry.get(sourceType);
             if (sourceOptional.isEmpty()) continue;
 
             ResourceSource source = sourceOptional.get();
@@ -85,7 +83,7 @@ public class ResourceProxyHandler implements ProxyHandler {
 
     private Object handleSingle(ResourceTree<FileResource> resourceTree, Class<? extends Resource> requiredType) {
         return resourceTree.getSingle()
-                .map(resource ->
+                .flatMap(resource ->
                         ResourceConverter.convertSingle(requiredType, resource)
                 ).orElse(null);
     }
