@@ -7,7 +7,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@ResourceSourceDef(type = SourceType.DRIVE, defaultPriority = 100)
+@ResourceSourceDef(type = SourceType.DRIVE, defaultPriority = 0)
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface DriveSource {
