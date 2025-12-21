@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 
 public interface StringWriter<T> {
 
@@ -11,13 +12,14 @@ public interface StringWriter<T> {
 
     default void writeString(T target, BufferedWriterConsumer consumer) throws IOException {
 
-        try (OutputStream outputStream = getOutputStream(target)) {
+        try (OutputStream outputStream = getOutputStream(target);
+             BufferedWriter bufferedWriter = new BufferedWriter(
+                     new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)
+             )) {
 
-            BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(outputStream));
             consumer.accept(bufferedWriter);
-
         }
-
     }
+
 
 }
