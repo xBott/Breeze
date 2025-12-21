@@ -31,7 +31,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class DriveResourceSource implements ResourceSource {
 
-    private final BreezeLogger logger = new SimpleTreeLogger("DriveProvide");
+    private final BreezeLogger logger = new SimpleTreeLogger("DriveSource");
 
     private final Path enginePath;
 
