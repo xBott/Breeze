@@ -2,7 +2,7 @@ package me.bottdev.breezecore.di.readers;
 
 import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.di.*;
-import me.bottdev.breezeapi.di.proxy.ProxyFactory;
+import me.bottdev.breezeapi.di.proxy.ProxyFactoryRegistry;
 import me.bottdev.breezeapi.di.suppliers.SingletonSupplier;
 import me.bottdev.breezeapi.index.types.BreezeProxyIndex;
 import me.bottdev.breezeapi.log.BreezeLogger;
@@ -13,7 +13,7 @@ import java.util.Optional;
 public class ProxyReader implements ContextIndexReader<BreezeProxyIndex> {
 
     private final BreezeLogger logger;
-    private final ProxyFactory proxyFactory;
+    private final ProxyFactoryRegistry factoryRegistry;
 
     @Override
     public Class<BreezeProxyIndex> getIndexClass() {
@@ -30,7 +30,7 @@ public class ProxyReader implements ContextIndexReader<BreezeProxyIndex> {
                 String path = entry.getClassPath();
                 Class<?> clazz = classLoader.loadClass(path);
 
-                Optional<?> proxyOptional = proxyFactory.create(clazz);
+                Optional<?> proxyOptional = factoryRegistry.createObject(clazz);
                 if (proxyOptional.isEmpty()) continue;
 
                 Object proxy = proxyOptional.get();
