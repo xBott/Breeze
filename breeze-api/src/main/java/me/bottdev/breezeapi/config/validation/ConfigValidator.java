@@ -2,7 +2,7 @@ package me.bottdev.breezeapi.config.validation;
 
 import me.bottdev.breezeapi.config.Configuration;
 import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.SimpleTreeLogger;
+import me.bottdev.breezeapi.log.types.SimpleTreeLogger;
 import me.bottdev.breezeapi.serialization.ObjectNode;
 
 import java.lang.annotation.Annotation;

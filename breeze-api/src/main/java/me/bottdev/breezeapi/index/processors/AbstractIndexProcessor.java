@@ -5,7 +5,7 @@ import me.bottdev.breezeapi.index.BreezeIndex;
 import me.bottdev.breezeapi.index.BreezeIndexRegistry;
 import me.bottdev.breezeapi.index.BreezeIndexSerializer;
 import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.SimpleTreeLogger;
+import me.bottdev.breezeapi.log.types.SimpleTreeLogger;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;

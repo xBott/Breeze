@@ -5,7 +5,7 @@ import me.bottdev.breezeapi.commons.file.input.BreezeFileReader;
 import me.bottdev.breezeapi.commons.file.output.BreezeFileWriter;
 import me.bottdev.breezeapi.commons.file.temp.TempFile;
 import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.SimpleTreeLogger;
+import me.bottdev.breezeapi.log.types.SimpleTreeLogger;
 import me.bottdev.breezeapi.resource.Resource;
 import me.bottdev.breezeapi.resource.source.SourceType;
 
@@ -66,7 +66,10 @@ public interface FileResource extends Resource {
             TempFile tempFile = getTempFile();
 
             Optional<File> targetOptional = tempFile.getSourceFile();
-            if (targetOptional.isEmpty()) return false;
+            if (targetOptional.isEmpty()) {
+                logger.warn("No source file found for file resource {}.", getTempFile().getAbsolutePath());
+                return false;
+            }
 
             File source = tempFile.toFile();
             File target = targetOptional.get();

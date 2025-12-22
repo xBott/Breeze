@@ -5,7 +5,7 @@ import me.bottdev.breezeapi.events.Event;
 import me.bottdev.breezeapi.events.EventBus;
 import me.bottdev.breezeapi.events.Listener;
 import me.bottdev.breezeapi.events.annotations.Listen;
-import me.bottdev.breezeapi.log.SimpleTreeLogger;
+import me.bottdev.breezeapi.log.types.SimpleTreeLogger;
 import org.junit.jupiter.api.Test;
 
 public class EventTest {

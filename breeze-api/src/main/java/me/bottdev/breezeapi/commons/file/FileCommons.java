@@ -3,7 +3,7 @@ package me.bottdev.breezeapi.commons.file;
 import me.bottdev.breezeapi.commons.file.input.BreezeFileReader;
 import me.bottdev.breezeapi.commons.file.output.BreezeFileWriter;
 import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.SimpleTreeLogger;
+import me.bottdev.breezeapi.log.types.SimpleTreeLogger;
 
 import java.io.*;
 import java.nio.file.Files;

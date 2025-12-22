@@ -1,8 +1,10 @@
-package me.bottdev.breezeapi.log;
+package me.bottdev.breezeapi.log.types;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import me.bottdev.breezeapi.log.LogLevel;
+import me.bottdev.breezeapi.log.TreeLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

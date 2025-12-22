@@ -2,6 +2,7 @@ package resource;
 
 import me.bottdev.breezeapi.di.annotations.Proxy;
 import me.bottdev.breezeapi.di.proxy.ProxyFactoryRegistry;
+import me.bottdev.breezeapi.log.types.SimpleTreeLogger;
 import me.bottdev.breezeapi.resource.annotations.DummySource;
 import me.bottdev.breezeapi.resource.annotations.ProvideResource;
 import me.bottdev.breezeapi.resource.proxy.ResourceProvider;
@@ -16,18 +17,21 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class ResourceProxyTest {
 
     @Proxy
-    interface SomeResourceProvider extends ResourceProvider {
+    public interface SomeResourceProvider extends ResourceProvider {
 
         @ProvideResource
         @DummySource(value = "Version is 0.2!")
         Optional<SingleFileResource> getVersion();
 
     }
+
+    static final SimpleTreeLogger logger = new SimpleTreeLogger("ResourceProxyTest");
 
     static ProxyFactoryRegistry proxyFactory;
     SomeResourceProvider provider;
@@ -54,10 +58,48 @@ public class ResourceProxyTest {
 
     @Test
     void shouldReturnCorrectVersion() {
-        Optional<SingleFileResource> versionOptional = provider.getVersion();
-        versionOptional
-                .flatMap(SingleFileResource::read)
-                .ifPresent(System.out::println);
+
+        logger.withSection("Test read:", "", () -> {
+
+            Optional<SingleFileResource> versionOptional = provider.getVersion();
+
+            String content = versionOptional
+                    .flatMap(SingleFileResource::read)
+                    .orElse("Resource is empty!");
+
+            logger.info(" Read content: {}", content);
+
+            assertEquals("Version is 0.2!\n", content);
+
+        });
+
+    }
+
+    @Test
+    void shouldReadAndWrite() {
+
+        logger.withSection("Test read and write:", "", () -> {
+
+            Optional<SingleFileResource> versionOptional = provider.getVersion();
+            if (versionOptional.isEmpty()) return;
+
+            SingleFileResource resource = versionOptional.get();
+
+            String contentBefore = resource.read().orElse("Resource is empty!");
+            logger.info(" (Before) Read content: {}", contentBefore);
+
+            assertEquals("Version is 0.2!\n", contentBefore);
+
+            resource.write("Updated data");
+            String contentAfter = resource.read().orElse("Resource is empty!");
+            logger.info(" (After) Read content: {}", contentAfter);
+
+            assertEquals("Updated data\n", contentAfter);
+
+            resource.save();
+
+        });
+
     }
 
 }

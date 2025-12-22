@@ -42,7 +42,6 @@ public class ResourceProxyHandler implements ProxyHandler {
             boolean isTree = annotation.isTree();
 
             Object result = handleSources(method, type, isTree);
-            System.out.println("RESULT: " + result);
 
             return ProxyResult.of(handleResult(method, result));
         }

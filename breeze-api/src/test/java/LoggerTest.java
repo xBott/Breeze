@@ -1,4 +1,4 @@
-import me.bottdev.breezeapi.log.SimpleTreeLogger;
+import me.bottdev.breezeapi.log.types.SimpleTreeLogger;
 import me.bottdev.breezeapi.log.TreeLogger;
 import org.junit.jupiter.api.Test;
 

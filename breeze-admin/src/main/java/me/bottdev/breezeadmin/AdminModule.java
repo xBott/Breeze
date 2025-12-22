@@ -5,7 +5,7 @@ import me.bottdev.breezeapi.log.BreezeLogger;
 import me.bottdev.breezeapi.modules.Module;
 import me.bottdev.breezeapi.modules.ModuleStatus;
 import me.bottdev.breezeapi.modules.annotations.ModuleInfo;
-import me.bottdev.breezeapi.log.SimpleTreeLogger;
+import me.bottdev.breezeapi.log.types.SimpleTreeLogger;
 
 import java.io.File;
 

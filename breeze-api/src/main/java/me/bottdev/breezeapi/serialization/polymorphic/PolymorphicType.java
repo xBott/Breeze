@@ -2,7 +2,7 @@ package me.bottdev.breezeapi.serialization.polymorphic;
 
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.SimpleTreeLogger;
+import me.bottdev.breezeapi.log.types.SimpleTreeLogger;
 
 import java.util.HashMap;
 import java.util.HashSet;
