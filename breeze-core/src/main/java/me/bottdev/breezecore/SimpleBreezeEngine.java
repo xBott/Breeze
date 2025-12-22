@@ -94,7 +94,7 @@ public class SimpleBreezeEngine implements BreezeEngine {
 
         ResourceSourceRegistry resourceSourceRegistry = new ResourceSourceRegistry()
                 .register(SourceType.DRIVE, new DriveResourceSource(getDataFolder()))
-                .register(SourceType.JAR, new JarResourceSource(getDataFolder()))
+                .register(SourceType.JAR, new JarResourceSource())
                 .register(SourceType.DUMMY, new DummyResourceSource());
 
         ProxyFactoryRegistry proxyFactoryRegistry = new ProxyFactoryRegistry()
