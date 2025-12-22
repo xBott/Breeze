@@ -7,7 +7,7 @@ import me.bottdev.breezeapi.di.annotations.Proxy;
 import me.bottdev.breezeapi.resource.proxy.ResourceProvider;
 import me.bottdev.breezeapi.config.ConfigLoader;
 import me.bottdev.breezeapi.config.validation.ConfigValidator;
-import me.bottdev.breezeapi.resource.annotations.DriveSource;
+import me.bottdev.breezeapi.resource.annotations.sources.DriveSource;
 import me.bottdev.breezeapi.resource.annotations.ProvideResource;
 import me.bottdev.breezeapi.resource.types.file.SingleFileResource;
 import me.bottdev.breezeapi.serialization.mappers.JsonMapper;
