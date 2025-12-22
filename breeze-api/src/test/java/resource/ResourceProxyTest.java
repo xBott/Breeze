@@ -159,9 +159,9 @@ public class ResourceProxyTest {
         logger.withSection("Test jar tree read:", "", () -> {
             ResourceTree<SingleFileResource> tree = provider.getTree();
 
-            tree.getData().forEach((key, resource) -> {
-                logger.info(key + ": " + resource.readTrimmed().orElse("Resource is empty!"));
-            });
+            tree.getData().forEach((key, resource) ->
+                    logger.info(key + ": " + resource.readTrimmed().orElse("Resource is empty!"))
+            );
 
             int size = tree.getSize();
             logger.info("Read {} resources", size);
