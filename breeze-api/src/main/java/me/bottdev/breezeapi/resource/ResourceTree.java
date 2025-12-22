@@ -11,6 +11,10 @@ public class ResourceTree<T extends Resource> {
     @Getter
     private final HashMap<String, T> data = new HashMap<>();
 
+    public int getSize() {
+        return data.size();
+    }
+
     public boolean isEmpty() {
         return data.isEmpty();
     }
