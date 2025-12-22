@@ -23,9 +23,6 @@ public interface TreeLogger extends BreezeLogger, ColoredLogger {
 
     default String formatTree(String spacer, String prefix, String message) {
         return applyColors(
-                "[" +
-                getName() +
-                "] " +
                 indent(spacer) +
                 prefix +
                 (getStack().isEmpty() || getStack().getLast().isEmpty() ? "" : "[" + getStack().getLast() + "]") +
