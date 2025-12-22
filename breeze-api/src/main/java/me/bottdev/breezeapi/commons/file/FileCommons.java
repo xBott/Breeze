@@ -19,6 +19,26 @@ public class FileCommons {
         directory.mkdirs();
     }
 
+    public static void createFileIfNotExists(File file) {
+        if (file.exists()) return;
+
+        if (file.isDirectory()) {
+            file.mkdirs();
+
+        } else {
+
+            try {
+                file.getParentFile().mkdirs();
+                file.createNewFile();
+
+            } catch (IOException ex) {
+                logger.error("Failed to create file", ex);
+            }
+
+        }
+
+    }
+
     public static String getExtension(String name) {
         int firstDot = name.indexOf('.');
         if (firstDot == -1) return "";
@@ -49,27 +69,8 @@ public class FileCommons {
 
     }
 
-    public void createFileIfNotExists(File file) {
-        if (file.exists()) return;
-
-        if (file.isDirectory()) {
-            file.mkdirs();
-
-        } else {
-
-            try {
-                file.getParentFile().mkdirs();
-                file.createNewFile();
-
-            } catch (IOException ex) {
-                logger.error("Failed to create file", ex);
-            }
-
-        }
-
-    }
-
     public static File createFileOrDirectory(Path path) throws IOException {
+        if (Files.exists(path)) return path.toFile();
         if (Files.isDirectory(path)) {
             Files.createDirectories(path);
 
@@ -85,7 +86,7 @@ public class FileCommons {
 
         if (!source.exists() || source.isDirectory() || target.isDirectory()) return;
 
-        createDirectoryIfNotExists(target);
+        createFileIfNotExists(target);
 
         new BreezeFileWriter().writeChunks(target, out -> {
 
