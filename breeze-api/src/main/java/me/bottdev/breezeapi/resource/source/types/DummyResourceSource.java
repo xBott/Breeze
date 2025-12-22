@@ -5,9 +5,9 @@ import me.bottdev.breezeapi.commons.file.output.BreezeFileWriter;
 import me.bottdev.breezeapi.commons.file.temp.TempFile;
 import me.bottdev.breezeapi.commons.file.temp.TempFiles;
 import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.types.SimpleTreeLogger;
+import me.bottdev.breezeapi.log.types.SimpleLogger;
 import me.bottdev.breezeapi.resource.ResourceTree;
-import me.bottdev.breezeapi.resource.annotations.DummySource;
+import me.bottdev.breezeapi.resource.annotations.sources.DummySource;
 import me.bottdev.breezeapi.resource.source.ResourceSource;
 import me.bottdev.breezeapi.resource.source.SourceType;
 import me.bottdev.breezeapi.resource.types.FileResource;
@@ -21,7 +21,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class DummyResourceSource implements ResourceSource {
 
-    private final BreezeLogger logger = new SimpleTreeLogger("DummySource");
+    private final BreezeLogger logger = new SimpleLogger("DummySource");
 
     @Override
     public ResourceTree<FileResource> provide(Method method) {
