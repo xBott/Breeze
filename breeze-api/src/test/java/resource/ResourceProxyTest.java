@@ -64,12 +64,12 @@ public class ResourceProxyTest {
             Optional<SingleFileResource> versionOptional = provider.getVersion();
 
             String content = versionOptional
-                    .flatMap(SingleFileResource::read)
+                    .flatMap(SingleFileResource::readTrimmed)
                     .orElse("Resource is empty!");
 
             logger.info(" Read content: {}", content);
 
-            assertEquals("Version is 0.2!\n", content);
+            assertEquals("Version is 0.2!", content);
 
         });
 
@@ -85,16 +85,16 @@ public class ResourceProxyTest {
 
             SingleFileResource resource = versionOptional.get();
 
-            String contentBefore = resource.read().orElse("Resource is empty!");
+            String contentBefore = resource.readTrimmed().orElse("Resource is empty!");
             logger.info(" (Before) Read content: {}", contentBefore);
 
-            assertEquals("Version is 0.2!\n", contentBefore);
+            assertEquals("Version is 0.2!", contentBefore);
 
             resource.write("Updated data");
-            String contentAfter = resource.read().orElse("Resource is empty!");
+            String contentAfter = resource.readTrimmed().orElse("Resource is empty!");
             logger.info(" (After) Read content: {}", contentAfter);
 
-            assertEquals("Updated data\n", contentAfter);
+            assertEquals("Updated data", contentAfter);
 
             resource.save();
 
