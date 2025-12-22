@@ -166,7 +166,7 @@ public class ResourceProxyTest {
             int size = tree.getSize();
             logger.info("Read {} resources", size);
 
-            assertEquals(2, size);
+            assertEquals(3, size);
         });
 
     }
