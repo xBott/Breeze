@@ -7,9 +7,9 @@ import me.bottdev.breezeapi.commons.file.temp.TempFiles;
 import me.bottdev.breezeapi.commons.file.input.BreezeFileReader;
 import me.bottdev.breezeapi.commons.file.output.BreezeFileWriter;
 import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.types.SimpleTreeLogger;
+import me.bottdev.breezeapi.log.types.SimpleLogger;
 import me.bottdev.breezeapi.resource.ResourceTree;
-import me.bottdev.breezeapi.resource.annotations.DriveSource;
+import me.bottdev.breezeapi.resource.annotations.sources.DriveSource;
 import me.bottdev.breezeapi.resource.source.ResourceSource;
 import me.bottdev.breezeapi.resource.source.SourceType;
 import me.bottdev.breezeapi.resource.types.FileResource;
@@ -31,7 +31,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class DriveResourceSource implements ResourceSource {
 
-    private final BreezeLogger logger = new SimpleTreeLogger("DriveSource");
+    private final BreezeLogger logger = new SimpleLogger("DriveSource");
 
     private final Path enginePath;
 
