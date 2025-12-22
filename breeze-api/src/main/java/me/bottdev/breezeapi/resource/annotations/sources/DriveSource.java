@@ -1,5 +1,6 @@
-package me.bottdev.breezeapi.resource.annotations;
+package me.bottdev.breezeapi.resource.annotations.sources;
 
+import me.bottdev.breezeapi.resource.annotations.ResourceSourceDef;
 import me.bottdev.breezeapi.resource.source.SourceType;
 
 import java.lang.annotation.ElementType;
