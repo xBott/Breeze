@@ -1,4 +1,4 @@
-package me.bottdev.breezeadmin;
+package me.bottdev.breezeadmin.components;
 
 import lombok.Getter;
 import me.bottdev.breezeapi.di.annotations.Component;
@@ -11,11 +11,11 @@ import java.util.List;
 public class AdminUtils {
 
     @Getter
-    private List<String> adminNameList;
+    private final List<String> adminNameList;
 
     @Inject
     public AdminUtils(
-        @Named("adminnamelist") List<String> adminNameList
+        List<String> adminNameList
     ) {
         this.adminNameList = adminNameList;
     }

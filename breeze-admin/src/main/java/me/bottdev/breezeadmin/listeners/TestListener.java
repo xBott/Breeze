@@ -1,5 +1,6 @@
-package me.bottdev.breezeadmin;
+package me.bottdev.breezeadmin.listeners;
 
+import me.bottdev.breezeadmin.events.TestEvent;
 import me.bottdev.breezeapi.di.annotations.Component;
 import me.bottdev.breezeapi.events.Listener;
 import me.bottdev.breezeapi.events.annotations.Listen;

@@ -1,4 +1,4 @@
-package me.bottdev.breezeadmin;
+package me.bottdev.breezeadmin.suppliers;
 
 import me.bottdev.breezeapi.di.annotations.Supplier;
 import me.bottdev.breezeapi.di.annotations.Supply;

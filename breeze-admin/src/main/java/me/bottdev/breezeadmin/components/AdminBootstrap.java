@@ -1,4 +1,4 @@
-package me.bottdev.breezeadmin;
+package me.bottdev.breezeadmin.components;
 
 import me.bottdev.breezeadmin.providers.SettingsProvider;
 import me.bottdev.breezeapi.components.bootstrap.Bootstrap;
@@ -15,7 +15,7 @@ public class AdminBootstrap implements Bootstrap {
     private final SettingsProvider settingsProvider;
 
     @Inject
-    public AdminBootstrap(@Named("settingsProvider") SettingsProvider settingsProvider) {
+    public AdminBootstrap(SettingsProvider settingsProvider) {
         this.settingsProvider = settingsProvider;
     }
 

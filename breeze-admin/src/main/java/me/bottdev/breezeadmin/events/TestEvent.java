@@ -1,4 +1,4 @@
-package me.bottdev.breezeadmin;
+package me.bottdev.breezeadmin.events;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
