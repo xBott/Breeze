@@ -105,17 +105,15 @@ public class BreezeComponentIndexProcessor extends AbstractIndexProcessor<Breeze
 
                 for (VariableElement param : constructor.getParameters()) {
 
-                    if (param.getAnnotation(Named.class) != null) {
+                    TypeMirror typeMirror = param.asType();
+                    Element fieldTypeElement = getTypeUtils().asElement(typeMirror);
 
-                        TypeMirror typeMirror = param.asType();
-                        Element fieldTypeElement = getTypeUtils().asElement(typeMirror);
-
-                        if (fieldTypeElement != null && fieldTypeElement.getAnnotation(Component.class) != null) {
-                            injectedParams.add(param);
-                        }
-
+                    if (fieldTypeElement != null && fieldTypeElement.getAnnotation(Component.class) != null) {
+                        injectedParams.add(param);
                     }
+
                 }
+
             }
         }
 
