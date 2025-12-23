@@ -63,7 +63,10 @@ public class CacheProxyHandler implements ProxyHandler, ProxyPostHandler {
             return invokeCachePut(proxy, method, args);
 
         } else if (method.isAnnotationPresent(CacheEvict.class)) {
+            return invokeCacheEvict(proxy, method, args);
 
+        } else if (method.isDefault()) {
+            return invokeDefault(proxy, method, args);
         }
 
         return ProxyResult.empty();
@@ -87,32 +90,21 @@ public class CacheProxyHandler implements ProxyHandler, ProxyPostHandler {
 
     }
 
-    //    @Override
-//    public ProxyResult invoke(Class<?> targetClass, Object proxy, Method method, Object[] args) throws Throwable {
-//
-//        if (!isMethodAnnotated(method)) {
-//            if (method.isDefault()) return invokeDefault(proxy, method, args);
-//            return ProxyResult.empty();
-//        }
-//
-//        Optional<Object> cached = getCached(targetClass, method, args);
-//        if (cached.isEmpty()) {
-//            if (method.isDefault()) {
-//                return invokeDefault(proxy, method, args);
-//            }
-//            return ProxyResult.empty();
-//        }
-//
-//        return ProxyResult.of(cached.get());
-//
-//    }
+    private ProxyResult invokeCacheEvict(Object proxy, Method method, Object[] args) throws Throwable {
 
-    private Optional<Object> getCached(String group, String key) {
+        CacheEvict cachePut = method.getAnnotation(CacheEvict.class);
+        String group = cachePut.group();
+        String keyFormat = cachePut.key();
 
-        Cache<String, Object> cache = getCache(group);
-        if (cache == null) return Optional.empty();
+        Map<String, Object> cacheSubKeys = getCacheSubKeys(method, args);
+        String cacheKey = getCacheKey(keyFormat, cacheSubKeys);
 
-        return cache.get(key);
+        evictCache(group, cacheKey);
+
+        if (method.isDefault()) return invokeDefault(proxy, method, args);
+
+        return ProxyResult.empty();
+
     }
 
     @Override
@@ -133,6 +125,14 @@ public class CacheProxyHandler implements ProxyHandler, ProxyPostHandler {
 
     }
 
+    private Optional<Object> getCached(String group, String key) {
+
+        Cache<String, Object> cache = getCache(group);
+        if (cache == null) return Optional.empty();
+
+        return cache.get(key);
+    }
+
     private void putCache(String group, String key, Object value, int ttl) {
 
         Cache<String, Object> cache = getCache(group);
@@ -144,6 +144,14 @@ public class CacheProxyHandler implements ProxyHandler, ProxyPostHandler {
         } else {
             cache.put(key, value);
         }
+
+    }
+
+    private void evictCache(String group, String key) {
+
+        Cache<String, Object> cache = getCache(group);
+        if (cache == null) return;
+        cache.remove(key);
 
     }
 
