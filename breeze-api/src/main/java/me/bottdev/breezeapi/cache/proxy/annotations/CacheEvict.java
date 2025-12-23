@@ -10,6 +10,6 @@ import java.lang.annotation.Target;
 public @interface CacheEvict {
     String group() default "default";
     String key() default "default";
-    int ttl() default 1000;
+    boolean all() default false;
 
 }
