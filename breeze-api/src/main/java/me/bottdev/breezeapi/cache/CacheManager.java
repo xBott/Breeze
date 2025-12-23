@@ -1,6 +1,6 @@
 package me.bottdev.breezeapi.cache;
 
-import me.bottdev.breezeapi.commons.Lifecycle;
+import me.bottdev.breezeapi.lifecycle.Lifecycle;
 
 import java.util.Collections;
 import java.util.Map;
@@ -8,7 +8,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class CacheManager implements Lifecycle {
+public class CacheManager extends Lifecycle {
 
     private final Map<String, Cache<?, ?>> caches = new ConcurrentHashMap<>();
 
@@ -69,7 +69,12 @@ public class CacheManager implements Lifecycle {
     }
 
     @Override
-    public void shutdown() {
+    public void onStart() {
+
+    }
+
+    @Override
+    public void onShutdown() {
         clear();
     }
 }

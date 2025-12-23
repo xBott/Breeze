@@ -1,7 +1,7 @@
 package me.bottdev.breezeapi.cache;
 
 import lombok.Getter;
-import me.bottdev.breezeapi.commons.Lifecycle;
+import me.bottdev.breezeapi.lifecycle.Lifecycle;
 
 import java.time.Duration;
 import java.util.Collections;
@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class LRUCache<K, V> implements Cache<K, V>, Lifecycle {
+public class LRUCache<K, V> extends Lifecycle implements Cache<K, V> {
 
     @Getter
     private final int maxSize;
@@ -123,7 +123,12 @@ public class LRUCache<K, V> implements Cache<K, V>, Lifecycle {
     }
 
     @Override
-    public void shutdown() {
+    public void onStart() {
+
+    }
+
+    @Override
+    public void onShutdown() {
         cleanupExecutor.shutdown();
     }
 
