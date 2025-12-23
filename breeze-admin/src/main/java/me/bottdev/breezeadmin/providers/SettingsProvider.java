@@ -2,7 +2,7 @@ package me.bottdev.breezeadmin.providers;
 
 import me.bottdev.breezeadmin.config.SettingsConfiguration;
 import me.bottdev.breezeapi.cache.proxy.Cacheable;
-import me.bottdev.breezeapi.cache.proxy.annotations.Cached;
+import me.bottdev.breezeapi.cache.proxy.annotations.CachePut;
 import me.bottdev.breezeapi.di.annotations.Proxy;
 import me.bottdev.breezeapi.resource.proxy.ResourceProvider;
 import me.bottdev.breezeapi.config.ConfigLoader;
@@ -17,7 +17,7 @@ import java.util.Optional;
 @Proxy
 public interface SettingsProvider extends ResourceProvider, Cacheable {
 
-    @Cached
+    @CachePut
     @ProvideResource
     @DriveSource(path = "Admin/settings.json", defaultValue = "{}")
     Optional<SingleFileResource> getSettingsResource();
