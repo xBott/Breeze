@@ -95,11 +95,16 @@ public class CacheProxyHandler implements ProxyHandler, ProxyPostHandler {
         CacheEvict cachePut = method.getAnnotation(CacheEvict.class);
         String group = cachePut.group();
         String keyFormat = cachePut.key();
+        boolean isAll = cachePut.all();
 
         Map<String, Object> cacheSubKeys = getCacheSubKeys(method, args);
-        String cacheKey = getCacheKey(keyFormat, cacheSubKeys);
 
-        evictCache(group, cacheKey);
+        if (isAll) {
+            evictCacheAll(group);
+        } else {
+            String cacheKey = getCacheKey(keyFormat, cacheSubKeys);
+            evictCache(group, cacheKey);
+        }
 
         if (method.isDefault()) return invokeDefault(proxy, method, args);
 
@@ -145,6 +150,12 @@ public class CacheProxyHandler implements ProxyHandler, ProxyPostHandler {
             cache.put(key, value);
         }
 
+    }
+
+    private void evictCacheAll(String group) {
+        Cache<String, Object> cache = getCache(group);
+        if (cache == null) return;
+        cache.clear();
     }
 
     private void evictCache(String group, String key) {
