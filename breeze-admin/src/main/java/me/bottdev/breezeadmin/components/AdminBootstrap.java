@@ -4,7 +4,6 @@ import me.bottdev.breezeadmin.providers.SettingsProvider;
 import me.bottdev.breezeapi.components.bootstrap.Bootstrap;
 import me.bottdev.breezeapi.di.annotations.Component;
 import me.bottdev.breezeapi.di.annotations.Inject;
-import me.bottdev.breezeapi.di.annotations.Named;
 import me.bottdev.breezeapi.log.BreezeLogger;
 import me.bottdev.breezeapi.log.types.SimpleTreeLogger;
 

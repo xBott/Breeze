@@ -22,17 +22,15 @@ public interface SettingsProvider extends ResourceProvider, Cacheable {
     @DriveSource(path = "Admin/settings.json", defaultValue = "{}")
     Optional<SingleFileResource> getSettingsResource();
     //ДОБАВИТЬ СОХРАНЕНИЕ РЕСУРСОВ
-    //ДОБАВИТЬ КЕШ (Ресурсы и конфиги раздельно)
-    //ДОБАВИТЬ ПЕРЕЗАГРУЗКУ РЕСУРСОВ И КОНФИГОВ (WatcherService + CheckSum?)
+    //ДОБАВИТЬ КЕШ (Внешний и внутренний внутри файла)
+    //ДОБАВИТЬ ПЕРЕЗАГРУЗКУ РЕСУРСОВ (WatcherService) Добавить регистрацию через аннотацию
 
     default Optional<SettingsConfiguration> getSettingsConfiguration() {
 
         ConfigLoader loader = new ConfigLoader(new JsonMapper(), new ConfigValidator());
 
-        getSettingsResource().ifPresent(resource -> resource.writeAndSave("{}"));
-
-        return getSettingsResource().map(resource ->
-            loader.loadConfig(resource, SettingsConfiguration.class).get()
+        return getSettingsResource().flatMap(resource ->
+            loader.loadConfig(resource, SettingsConfiguration.class)
         );
 
     }
