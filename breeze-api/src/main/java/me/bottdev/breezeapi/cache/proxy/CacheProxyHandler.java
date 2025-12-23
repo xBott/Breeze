@@ -4,94 +4,145 @@ import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.cache.Cache;
 import me.bottdev.breezeapi.cache.CacheBuilder;
 import me.bottdev.breezeapi.cache.CacheManager;
-import me.bottdev.breezeapi.cache.proxy.annotations.Cached;
+import me.bottdev.breezeapi.cache.proxy.annotations.CacheEvict;
+import me.bottdev.breezeapi.cache.proxy.annotations.CachePut;
+import me.bottdev.breezeapi.commons.reflection.MethodParameterDiscoverer;
 import me.bottdev.breezeapi.di.proxy.ProxyHandler;
 import me.bottdev.breezeapi.di.proxy.ProxyPostHandler;
 import me.bottdev.breezeapi.di.proxy.ProxyResult;
 
 import java.lang.reflect.Method;
 import java.time.Duration;
-import java.util.Optional;
+import java.util.*;
 
 @RequiredArgsConstructor
 public class CacheProxyHandler implements ProxyHandler, ProxyPostHandler {
 
     private final CacheManager cacheManager;
 
-    private boolean isMethodAnnotated(Method method) {
-        return method.isAnnotationPresent(Cached.class);
+    private Map<String, Object> getCacheSubKeys(Method method, Object[] args) {
+
+        String[] names = MethodParameterDiscoverer.getParameterNames(method);
+
+        if (names == null || args == null || names.length != args.length) {
+            return Map.of();
+        }
+
+        Map<String, Object> cacheSubKeys = new LinkedHashMap<>();
+
+        for (int i = 0; i < names.length; i++) {
+            cacheSubKeys.put(names[i], args[i]);
+        }
+
+        return cacheSubKeys;
     }
 
-    private MethodInvocationKey getMethodCacheSignature(Method method, Object[] args) {
-        return new MethodInvocationKey(method, args);
-    }
-
-    private int getTTL(Method method) {
-        Cached cached = method.getAnnotation(Cached.class);
-        return cached == null ? 1000 : cached.ttl();
-    }
-
-    private Cache<MethodInvocationKey, Object> getCache(Class<?> targetClass) {
-        String cacheName = targetClass.getName() + ".method-cache";
+    private Cache<String, Object> getCache(String group) {
         return cacheManager.getOrCreate(
-                cacheName,
-                new CacheBuilder<MethodInvocationKey, Object>().maxSize(10)
+                group,
+                new CacheBuilder<String, Object>().maxSize(10)
         );
     }
+
+    private String getCacheKey(String format, Map<String, Object> cacheSubKeys) {
+        String result = format;
+
+        for (Map.Entry<String, Object> entry : cacheSubKeys.entrySet()) {
+            String placeholder = "{" + entry.getKey() + "}";
+            result = result.replace(placeholder, String.valueOf(entry.getValue()));
+        }
+
+        return result;
+    }
+
 
     @Override
     public ProxyResult invoke(Class<?> targetClass, Object proxy, Method method, Object[] args) throws Throwable {
 
-        if (!isMethodAnnotated(method)) {
-            if (method.isDefault()) return invokeDefault(proxy, method, args);
-            return ProxyResult.empty();
+        if (method.isAnnotationPresent(CachePut.class)) {
+            return invokeCachePut(proxy, method, args);
+
+        } else if (method.isAnnotationPresent(CacheEvict.class)) {
+
         }
 
-        Optional<Object> cached = getCached(targetClass, method, args);
-        if (cached.isEmpty()) {
-            if (method.isDefault()) {
-                return invokeDefault(proxy, method, args);
-            }
-            return ProxyResult.empty();
-        }
+        return ProxyResult.empty();
+    }
 
-        return ProxyResult.of(cached.get());
+    private ProxyResult invokeCachePut(Object proxy, Method method, Object[] args) throws Throwable {
+
+        CachePut cachePut = method.getAnnotation(CachePut.class);
+        String group = cachePut.group();
+        String keyFormat = cachePut.key();
+
+        Map<String, Object> cacheSubKeys = getCacheSubKeys(method, args);
+        String cacheKey = getCacheKey(keyFormat, cacheSubKeys);
+
+        Optional<Object> cached = getCached(group, cacheKey);
+        if (cached.isPresent()) return ProxyResult.of(cached.get());
+
+        if (method.isDefault()) return invokeDefault(proxy, method, args);
+
+        return ProxyResult.empty();
 
     }
 
-    private Optional<Object> getCached(Class<?> targetClass, Method method, Object[] args) {
+    //    @Override
+//    public ProxyResult invoke(Class<?> targetClass, Object proxy, Method method, Object[] args) throws Throwable {
+//
+//        if (!isMethodAnnotated(method)) {
+//            if (method.isDefault()) return invokeDefault(proxy, method, args);
+//            return ProxyResult.empty();
+//        }
+//
+//        Optional<Object> cached = getCached(targetClass, method, args);
+//        if (cached.isEmpty()) {
+//            if (method.isDefault()) {
+//                return invokeDefault(proxy, method, args);
+//            }
+//            return ProxyResult.empty();
+//        }
+//
+//        return ProxyResult.of(cached.get());
+//
+//    }
 
-        Cache<MethodInvocationKey, Object> cache = getCache(targetClass);
+    private Optional<Object> getCached(String group, String key) {
+
+        Cache<String, Object> cache = getCache(group);
         if (cache == null) return Optional.empty();
 
-        MethodInvocationKey methodCacheSignature = getMethodCacheSignature(method, args);
-
-        return cache.get(methodCacheSignature);
+        return cache.get(key);
     }
 
     @Override
     public void invokePost(Class<?> targetClass, Object proxy, Method method, Object[] args, ProxyResult result) {
 
-        if (!isMethodAnnotated(method) || result.isEmpty()) return;
+        if (!method.isAnnotationPresent(CachePut.class) || result.isEmpty()) return;
+
+        CachePut cachePut = method.getAnnotation(CachePut.class);
+        String group = cachePut.group();
+        String keyFormat = cachePut.key();
+        int ttl = cachePut.ttl();
+
+        Map<String, Object> cacheSubKeys = getCacheSubKeys(method, args);
+        String key = getCacheKey(keyFormat, cacheSubKeys);
 
         Object value = result.getValue();
-        putCache(targetClass, method, args, value);
+        putCache(group, key, value, ttl);
 
     }
 
-    private void putCache(Class<?> targetClass, Method method, Object[] args, Object value) {
+    private void putCache(String group, String key, Object value, int ttl) {
 
-        Cache<MethodInvocationKey, Object> cache = getCache(targetClass);
+        Cache<String, Object> cache = getCache(group);
         if (cache == null) return;
 
-        MethodInvocationKey methodCacheSignature = getMethodCacheSignature(method, args);
-        int ttl = getTTL(method);
-
         if (ttl > 0) {
-            cache.put(methodCacheSignature, value, Duration.ofMillis(ttl));
+            cache.put(key, value, Duration.ofMillis(ttl));
 
         } else {
-            cache.put(methodCacheSignature, value);
+            cache.put(key, value);
         }
 
     }

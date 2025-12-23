@@ -3,7 +3,7 @@ package cache;
 import me.bottdev.breezeapi.cache.CacheManager;
 import me.bottdev.breezeapi.cache.proxy.CacheProxyHandlerFactory;
 import me.bottdev.breezeapi.cache.proxy.Cacheable;
-import me.bottdev.breezeapi.cache.proxy.annotations.Cached;
+import me.bottdev.breezeapi.cache.proxy.annotations.CachePut;
 import me.bottdev.breezeapi.di.annotations.Proxy;
 import me.bottdev.breezeapi.di.proxy.ProxyFactoryRegistry;
 import org.apache.commons.lang3.tuple.Pair;
@@ -21,10 +21,19 @@ public class CacheProxyTest {
     @Proxy
     public interface Computations extends Cacheable {
 
-        @Cached(ttl = 500)
+        @CachePut(ttl = 500, group = "static")
         default int computeStatic() throws InterruptedException {
             Thread.sleep(1000);
-            return 10000;
+            return 1000;
+        }
+
+        @CachePut(ttl = 500, group = "dynamic", key = "{a}.{b}")
+        default int computeDynamic(int a, int b) throws InterruptedException {
+            int sum = a + b;
+            for (int i = 0; i < sum; i++) {
+                Thread.sleep(500);
+            }
+            return sum * 500;
         }
 
     }
@@ -48,7 +57,7 @@ public class CacheProxyTest {
 
     @BeforeEach
     void createComputations() {
-        cacheManager.remove(Computations.class.getName() + ".method-cache");
+        cacheManager.clear();
         computations = proxyFactory.createObject(Computations.class).orElse(null);
     }
 
@@ -76,7 +85,7 @@ public class CacheProxyTest {
         System.out.printf("  before cache %dms\n", before.getLeft());
         System.out.printf("  after cache %dms\n", after.getLeft());
 
-        assertEquals(10000, before.getRight());
+        assertEquals(1000, before.getRight());
         assertEquals(before.getRight(), after.getRight());
         assertTrue(after.getLeft() < before.getLeft());
     }
@@ -96,7 +105,7 @@ public class CacheProxyTest {
         after = measureTime(() -> computations.computeStatic());
         System.out.printf("  after ttl expire %dms\n", after.getLeft());
 
-        assertEquals(10000, before.getRight());
+        assertEquals(1000, before.getRight());
         assertEquals(before.getRight(), after.getRight());
     }
 
@@ -109,7 +118,7 @@ public class CacheProxyTest {
     }
 
     @Test
-    void shouldCacheStaticComputationAsync() throws Exception {
+    void shouldCacheStaticComputationAsync() {
         System.out.println("Test async (deterministic):");
 
         CountDownLatch startLatch = new CountDownLatch(1);
@@ -155,6 +164,14 @@ public class CacheProxyTest {
                 totalMs < maxAsync * 1.5,
                 "Async computations were executed more than once"
         );
+    }
+
+    @Test
+    void shouldCacheDynamicComputation() throws Throwable {
+
+        int value = computations.computeDynamic(1, 1);
+        System.out.printf("Test dynamic computation: %s\n", value);
+
     }
 
 
