@@ -7,6 +7,7 @@ import me.bottdev.breezeapi.di.BreezeContext;
 import me.bottdev.breezeapi.di.ContextBootstrapper;
 import me.bottdev.breezeapi.events.EventBus;
 import me.bottdev.breezeapi.index.BreezeIndexLoader;
+import me.bottdev.breezeapi.lifecycle.LifecycleManager;
 import me.bottdev.breezeapi.log.TreeLogger;
 import me.bottdev.breezeapi.modules.ModuleManager;
 import me.bottdev.breezeapi.serialization.MapperRegistry;
@@ -29,6 +30,8 @@ public interface BreezeEngine {
 
     ModuleManager getModuleManager();
 
+    LifecycleManager getLifecycleManager();
+
     CacheManager getCacheManager();
 
     EventBus getEventBus();
@@ -44,6 +47,7 @@ public interface BreezeEngine {
     default void addShutdownHook() {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             TempFiles.cleanup();
+            getLifecycleManager().shutdownAll();
             getCacheManager().shutdown();
         }));
     }

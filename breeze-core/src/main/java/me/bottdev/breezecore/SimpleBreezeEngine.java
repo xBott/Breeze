@@ -16,6 +16,7 @@ import me.bottdev.breezeapi.events.ListenerAutoLoader;
 import me.bottdev.breezeapi.index.BreezeIndexBucket;
 import me.bottdev.breezeapi.index.BreezeIndexLoader;
 import me.bottdev.breezeapi.di.BreezeContext;
+import me.bottdev.breezeapi.lifecycle.LifecycleManager;
 import me.bottdev.breezeapi.log.types.SimpleTreeLogger;
 import me.bottdev.breezeapi.log.TreeLogger;
 import me.bottdev.breezeapi.modules.ModuleManager;
@@ -47,6 +48,7 @@ public class SimpleBreezeEngine implements BreezeEngine {
     private final BreezeContext context = new SimpleBreezeContext(logger);
     private final AutoLoaderRegistry autoLoaderRegistry = new AutoLoaderRegistry(logger);
     private final ModuleManager moduleManager = new SimpleModuleManager(this, logger);
+    private final LifecycleManager lifecycleManager = new LifecycleManager();
     private final CacheManager cacheManager = new CacheManager();
     private final EventBus eventBus = new EventBus(logger);
 
