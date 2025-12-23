@@ -3,6 +3,7 @@ package cache;
 import me.bottdev.breezeapi.cache.CacheManager;
 import me.bottdev.breezeapi.cache.proxy.CacheProxyHandlerFactory;
 import me.bottdev.breezeapi.cache.proxy.Cacheable;
+import me.bottdev.breezeapi.cache.proxy.annotations.CacheEvict;
 import me.bottdev.breezeapi.cache.proxy.annotations.CachePut;
 import me.bottdev.breezeapi.di.annotations.Proxy;
 import me.bottdev.breezeapi.di.proxy.ProxyFactoryRegistry;
@@ -18,12 +19,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CacheProxyTest {
 
+
     @Proxy
     public interface Computations extends Cacheable {
 
         @CachePut(ttl = 500, group = "static")
         default int computeStatic() throws InterruptedException {
-            Thread.sleep(1000);
+            Thread.sleep(100);
             return 1000;
         }
 
@@ -31,10 +33,19 @@ public class CacheProxyTest {
         default int computeDynamic(int a, int b) throws InterruptedException {
             int sum = a + b;
             for (int i = 0; i < sum; i++) {
-                Thread.sleep(500);
+                Thread.sleep(50);
             }
             return sum * 500;
         }
+
+        @CachePut(group = "constant", key = "{a}")
+        default int computeSquare(int a) throws InterruptedException {
+            Thread.sleep(100);
+            return a * a;
+        }
+
+        @CacheEvict(group = "constant", key = "{a}")
+        void resetSquare(int a);
 
     }
 
@@ -76,14 +87,14 @@ public class CacheProxyTest {
     }
 
     @Test
-    void shouldCacheStaticComputation() throws Throwable {
-        System.out.println("Test without ttl:");
+    void shouldCacheStaticComputation() {
+        System.out.println("Test cache without ttl:");
 
         Pair<Long, Integer> before = measureTime(() -> computations.computeStatic());
         Pair<Long, Integer> after = measureTime(() -> computations.computeStatic());
 
-        System.out.printf("  before cache %dms\n", before.getLeft());
-        System.out.printf("  after cache %dms\n", after.getLeft());
+        System.out.printf("   before cache %dms\n", before.getLeft());
+        System.out.printf("   after cache %dms\n", after.getLeft());
 
         assertEquals(1000, before.getRight());
         assertEquals(before.getRight(), after.getRight());
@@ -92,18 +103,18 @@ public class CacheProxyTest {
 
     @Test
     void shouldCacheStaticComputationTTL() throws Throwable {
-        System.out.println("Test with ttl:");
+        System.out.println("Test cache with ttl:");
 
         Pair<Long, Integer> before = measureTime(() -> computations.computeStatic());
         Pair<Long, Integer> after = measureTime(() -> computations.computeStatic());
 
-        System.out.printf("  before cache %dms\n", before.getLeft());
-        System.out.printf("  after cache %dms\n", after.getLeft());
-        System.out.println("  delay 1000ms");
+        System.out.printf("   before cache %dms\n", before.getLeft());
+        System.out.printf("   after cache %dms\n", after.getLeft());
+        System.out.println("   delay 1000ms");
         Thread.sleep(1000);
 
         after = measureTime(() -> computations.computeStatic());
-        System.out.printf("  after ttl expire %dms\n", after.getLeft());
+        System.out.printf("   after ttl expire %dms\n", after.getLeft());
 
         assertEquals(1000, before.getRight());
         assertEquals(before.getRight(), after.getRight());
@@ -119,7 +130,7 @@ public class CacheProxyTest {
 
     @Test
     void shouldCacheStaticComputationAsync() {
-        System.out.println("Test async (deterministic):");
+        System.out.println("Test cache async (deterministic):");
 
         CountDownLatch startLatch = new CountDownLatch(1);
 
@@ -167,13 +178,41 @@ public class CacheProxyTest {
     }
 
     @Test
-    void shouldCacheDynamicComputation() throws Throwable {
+    void shouldCacheDynamicComputation() {
+        System.out.println("Test cache parameters:");
 
-        int value = computations.computeDynamic(1, 1);
-        System.out.printf("Test dynamic computation: %s\n", value);
+        Pair<Long, Integer> beforeCache = measureTime(() -> computations.computeDynamic(1, 1));
+        System.out.printf("   before cache %dms\n", beforeCache.getLeft());
 
+        Pair<Long, Integer> afterCache = measureTime(() -> computations.computeDynamic(1, 1));
+        System.out.printf("   after cache %dms\n", afterCache.getLeft());
+
+        assertTrue(afterCache.getLeft() < beforeCache.getLeft());
     }
 
 
+    @Test
+    void shouldCacheAndEvictState() {
+
+        System.out.println("Test cache put and evict:");
+
+        int a = 1000;
+
+        Pair<Long, Integer> beforeCache = measureTime(() -> computations.computeSquare(a));
+        System.out.printf("   before cache %dms\n", beforeCache.getLeft());
+
+        Pair<Long, Integer> afterCache = measureTime(() -> computations.computeSquare(a));
+        System.out.printf("   after cache %dms\n", afterCache.getLeft());
+
+        assertTrue(afterCache.getLeft() < beforeCache.getLeft());
+
+        computations.resetSquare(a);
+
+        Pair<Long, Integer> afterEvict = measureTime(() -> computations.computeSquare(a));
+        System.out.printf("   after cache evict %dms\n", afterEvict.getLeft());
+
+        assertTrue(afterCache.getLeft() < afterEvict.getLeft());
+
+    }
 
 }
