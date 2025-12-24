@@ -1,4 +1,4 @@
-package me.bottdev.breezeapi.dependency;
+package me.bottdev.breezeapi.di.dependency;
 
 import me.bottdev.breezeapi.commons.structures.graph.GraphEdge;
 import me.bottdev.breezeapi.commons.structures.graph.GraphNode;

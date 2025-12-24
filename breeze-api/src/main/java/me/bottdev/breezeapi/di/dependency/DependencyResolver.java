@@ -1,4 +1,4 @@
-package me.bottdev.breezeapi.dependency;
+package me.bottdev.breezeapi.di.dependency;
 
 import me.bottdev.breezeapi.log.BreezeLogger;
 
