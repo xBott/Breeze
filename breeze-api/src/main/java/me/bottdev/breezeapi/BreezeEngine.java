@@ -48,7 +48,6 @@ public interface BreezeEngine {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             TempFiles.cleanup();
             getLifecycleManager().shutdownAll();
-            getCacheManager().shutdown();
         }));
     }
 
