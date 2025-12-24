@@ -32,28 +32,28 @@ public class ResourceProxyTest {
     @Proxy
     public interface SomeResourceProvider extends ResourceProvider, Cacheable {
 
-        @CachePut
+        @CachePut(group = "resources", ttl = 60_000)
         @ProvideResource
         @DummySource(value = "Version is 0.2!")
         Optional<SingleFileResource> getVersion();
 
-        @CachePut
+        @CachePut(group = "resources", ttl = 60_000)
         @ProvideResource
         @DummySource(value = "Message to edit")
         Optional<SingleFileResource> getMutableResource();
 
-        @CachePut
+        @CachePut(group = "resources", ttl = 60_000)
         @ProvideResource
         @JarSource(path = "test_resource.txt")
         Optional<SingleFileResource> getTestResource();
 
-        @CachePut
+        @CachePut(group = "resources", ttl = 60_000)
         @ProvideResource
         @JarSource(path = "not_existing.txt")
         @DummySource(value = "Dummy")
         Optional<SingleFileResource> getChainedResource();
 
-        @CachePut
+        @CachePut(group = "resources", ttl = 60_000)
         @ProvideResource(isTree = true)
         @JarSource(path = "tree")
         ResourceTree<SingleFileResource> getTree();
@@ -82,6 +82,7 @@ public class ResourceProxyTest {
 
     @BeforeEach
     void setup() {
+        cacheManager.clear();
         provider = proxyFactory.createObject(SomeResourceProvider.class).orElse(null);
     }
 
