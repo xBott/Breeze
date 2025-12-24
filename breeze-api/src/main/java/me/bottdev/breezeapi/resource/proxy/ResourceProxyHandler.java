@@ -1,6 +1,5 @@
 package me.bottdev.breezeapi.resource.proxy;
 
-import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.di.proxy.ProxyHandler;
 import me.bottdev.breezeapi.di.proxy.ProxyResult;
 import me.bottdev.breezeapi.resource.Resource;
@@ -13,24 +12,22 @@ import me.bottdev.breezeapi.resource.source.SourceType;
 import me.bottdev.breezeapi.resource.source.descriptor.SourceDescriptor;
 import me.bottdev.breezeapi.resource.source.descriptor.SourceDescriptorFactory;
 import me.bottdev.breezeapi.resource.types.FileResource;
-import me.bottdev.breezeapi.resource.watcher.ResourceWatcher;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
-@RequiredArgsConstructor
-public class ResourceProxyHandler implements ProxyHandler {
+public interface ResourceProxyHandler extends ProxyHandler {
 
-    private final ResourceSourceRegistry resourceSourceRegistry;
-    private final ResourceWatcher resourceWatcher;
+    ResourceSourceRegistry getResourceSourceRegistry();
 
     private boolean isMethodAnnotated(Method method) {
         return method.isAnnotationPresent(ProvideResource.class);
     }
 
     @Override
-    public ProxyResult invoke(Class<?> targetClass, Object proxy, Method method, Object[] args) throws Throwable {
+    default ProxyResult invoke(Class<?> targetClass, Object proxy, Method method, Object[] args) throws Throwable {
 
         if (method.isDefault()) {
             Object value = InvocationHandler.invokeDefault(proxy, method, args);
@@ -59,7 +56,7 @@ public class ResourceProxyHandler implements ProxyHandler {
         for (SourceDescriptor descriptor : descriptors) {
 
             SourceType sourceType = descriptor.getType();
-            Optional<ResourceSource> sourceOptional = resourceSourceRegistry.get(sourceType);
+            Optional<ResourceSource> sourceOptional = getResourceSourceRegistry().get(sourceType);
             if (sourceOptional.isEmpty()) continue;
 
             ResourceSource source = sourceOptional.get();
