@@ -4,6 +4,7 @@ import me.bottdev.breezeadmin.config.SettingsConfiguration;
 import me.bottdev.breezeapi.cache.proxy.Cacheable;
 import me.bottdev.breezeapi.cache.proxy.annotations.CachePut;
 import me.bottdev.breezeapi.di.annotations.Proxy;
+import me.bottdev.breezeapi.resource.annotations.HotReload;
 import me.bottdev.breezeapi.resource.proxy.ResourceProvider;
 import me.bottdev.breezeapi.config.ConfigLoader;
 import me.bottdev.breezeapi.config.validation.ConfigValidator;
@@ -17,14 +18,13 @@ import java.util.Optional;
 @Proxy
 public interface SettingsProvider extends ResourceProvider, Cacheable {
 
-    @CachePut
+    @CachePut(group = "admin_settings", key = "resource", size = 2, ttl = 60_000)
     @ProvideResource
     @DriveSource(path = "Admin/settings.json", defaultValue = "{}")
+    @HotReload(evictCache = true, cacheGroup = "admin_settings")
     Optional<SingleFileResource> getSettingsResource();
-    //ДОБАВИТЬ СОХРАНЕНИЕ РЕСУРСОВ
-    //ДОБАВИТЬ КЕШ (Внешний и внутренний внутри файла)
-    //ДОБАВИТЬ ПЕРЕЗАГРУЗКУ РЕСУРСОВ (WatcherService) Добавить регистрацию через аннотацию
 
+    @CachePut(group = "admin_settings", key = "config", size = 2, ttl = 60_000)
     default Optional<SettingsConfiguration> getSettingsConfiguration() {
 
         ConfigLoader loader = new ConfigLoader(new JsonMapper(), new ConfigValidator());
