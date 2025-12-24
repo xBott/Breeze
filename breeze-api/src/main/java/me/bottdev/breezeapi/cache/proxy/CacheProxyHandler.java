@@ -37,10 +37,14 @@ public class CacheProxyHandler implements ProxyHandler, ProxyPostHandler {
         return cacheSubKeys;
     }
 
-    private Cache<String, Object> getCache(String group) {
+    private Optional<Cache<String, Object>> getCache(String group) {
+        return cacheManager.get(group);
+    }
+
+    private Cache<String, Object> getOrCreateCache(String group, int size) {
         return cacheManager.getOrCreate(
                 group,
-                new CacheBuilder<String, Object>().maxSize(10)
+                new CacheBuilder<String, Object>().maxSize(size)
         );
     }
 
@@ -120,27 +124,24 @@ public class CacheProxyHandler implements ProxyHandler, ProxyPostHandler {
         CachePut cachePut = method.getAnnotation(CachePut.class);
         String group = cachePut.group();
         String keyFormat = cachePut.key();
+        int size = cachePut.size();
         int ttl = cachePut.ttl();
 
         Map<String, Object> cacheSubKeys = getCacheSubKeys(method, args);
         String key = getCacheKey(keyFormat, cacheSubKeys);
 
         Object value = result.getValue();
-        putCache(group, key, value, ttl);
+        putCache(group, key, value, size, ttl);
 
     }
 
     private Optional<Object> getCached(String group, String key) {
-
-        Cache<String, Object> cache = getCache(group);
-        if (cache == null) return Optional.empty();
-
-        return cache.get(key);
+        return getCache(group).map(cache -> cache.get(key));
     }
 
-    private void putCache(String group, String key, Object value, int ttl) {
+    private void putCache(String group, String key, Object value, int size, int ttl) {
 
-        Cache<String, Object> cache = getCache(group);
+        Cache<String, Object> cache = getOrCreateCache(group, size);
         if (cache == null) return;
 
         if (ttl > 0) {
@@ -153,17 +154,11 @@ public class CacheProxyHandler implements ProxyHandler, ProxyPostHandler {
     }
 
     private void evictCacheAll(String group) {
-        Cache<String, Object> cache = getCache(group);
-        if (cache == null) return;
-        cache.clear();
+        getCache(group).ifPresent(Cache::clear);
     }
 
     private void evictCache(String group, String key) {
-
-        Cache<String, Object> cache = getCache(group);
-        if (cache == null) return;
-        cache.remove(key);
-
+        getCache(group).ifPresent(cache -> cache.remove(key));
     }
 
 }
