@@ -4,6 +4,7 @@ import lombok.Getter;
 import me.bottdev.breezeapi.BreezeEngine;
 import me.bottdev.breezeapi.autoload.AutoLoaderRegistry;
 import me.bottdev.breezeapi.cache.CacheManager;
+import me.bottdev.breezeapi.cache.CacheManagerBuilder;
 import me.bottdev.breezeapi.cache.proxy.CacheProxyHandlerFactory;
 import me.bottdev.breezeapi.components.bootstrap.Bootstrap;
 import me.bottdev.breezeapi.components.bootstrap.BootstrapAutoLoader;
@@ -26,6 +27,8 @@ import me.bottdev.breezeapi.resource.source.SourceType;
 import me.bottdev.breezeapi.resource.source.types.DriveResourceSource;
 import me.bottdev.breezeapi.resource.source.types.DummyResourceSource;
 import me.bottdev.breezeapi.resource.source.types.JarResourceSource;
+import me.bottdev.breezeapi.resource.watcher.ResourceWatcher;
+import me.bottdev.breezeapi.resource.watcher.ResourceWatcherBuilder;
 import me.bottdev.breezeapi.serialization.MapperRegistry;
 import me.bottdev.breezeapi.serialization.MapperType;
 import me.bottdev.breezeapi.serialization.mappers.JsonMapper;
@@ -42,14 +45,19 @@ import java.nio.file.Path;
 public class SimpleBreezeEngine implements BreezeEngine {
 
     private final TreeLogger logger = new SimpleTreeLogger("SimpleBreezeEngine");
-    private final BreezeIndexLoader indexLoader = new BreezeIndexLoader(logger);
     private final MapperRegistry mapperRegistry = new MapperRegistry();
+
+    private final BreezeIndexLoader indexLoader = new BreezeIndexLoader(logger);
     private final ContextBootstrapper contextBootstrapper = new ContextBootstrapper();
     private final BreezeContext context = new SimpleBreezeContext(logger);
     private final AutoLoaderRegistry autoLoaderRegistry = new AutoLoaderRegistry(logger);
+
     private final ModuleManager moduleManager = new SimpleModuleManager(this, logger);
+
     private final LifecycleManager lifecycleManager = new LifecycleManager();
-    private final CacheManager cacheManager = new CacheManager();
+    private final CacheManager cacheManager = lifecycleManager.create(new CacheManagerBuilder());
+    private final ResourceWatcher resourceWatcher = lifecycleManager.create(new ResourceWatcherBuilder());
+
     private final EventBus eventBus = new EventBus(logger);
 
     private final Path dataFolder;
@@ -101,7 +109,7 @@ public class SimpleBreezeEngine implements BreezeEngine {
 
         ProxyFactoryRegistry proxyFactoryRegistry = new ProxyFactoryRegistry()
                 .register(new CacheProxyHandlerFactory(cacheManager), 0)
-                .register(new ResourceProxyHandlerFactory(resourceSourceRegistry), 1);
+                .register(new ResourceProxyHandlerFactory(resourceSourceRegistry, resourceWatcher), 1);
 
         contextBootstrapper
                 .addReader(new SupplierReader(logger), 0)

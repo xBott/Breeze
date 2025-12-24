@@ -1,6 +1,6 @@
 package me.bottdev.breezeapi.di.proxy;
 
-import me.bottdev.breezeapi.commons.priority.PriorityList;
+import me.bottdev.breezeapi.commons.structures.priority.PriorityList;
 import me.bottdev.breezeapi.di.annotations.Proxy;
 import org.apache.commons.lang3.tuple.Pair;
 

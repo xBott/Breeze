@@ -4,7 +4,6 @@ import com.google.auto.service.AutoService;
 import me.bottdev.breezeapi.di.SupplyType;
 import me.bottdev.breezeapi.di.annotations.Component;
 import me.bottdev.breezeapi.di.annotations.Inject;
-import me.bottdev.breezeapi.di.annotations.Named;
 import me.bottdev.breezeapi.index.processors.AbstractIndexProcessor;
 import me.bottdev.breezeapi.index.processors.ClassIndexProcessor;
 import me.bottdev.breezeapi.index.types.BreezeComponentIndex;

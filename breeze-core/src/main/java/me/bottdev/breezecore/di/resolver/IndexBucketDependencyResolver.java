@@ -2,7 +2,7 @@ package me.bottdev.breezecore.di.resolver;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import me.bottdev.breezeapi.dependency.GraphDependencyResolver;
+import me.bottdev.breezeapi.di.dependency.GraphDependencyResolver;
 import me.bottdev.breezeapi.index.BreezeIndexBucket;
 import me.bottdev.breezeapi.index.BreezeIndexBucketContainer;
 import me.bottdev.breezeapi.log.TreeLogger;

@@ -1,7 +1,7 @@
 package me.bottdev.breezeapi.index.types;
 
 import lombok.*;
-import me.bottdev.breezeapi.dependency.Dependent;
+import me.bottdev.breezeapi.di.dependency.Dependent;
 
 import java.util.List;
 

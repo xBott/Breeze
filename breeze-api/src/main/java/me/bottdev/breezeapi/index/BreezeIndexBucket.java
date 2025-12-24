@@ -2,13 +2,12 @@ package me.bottdev.breezeapi.index;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import me.bottdev.breezeapi.dependency.Dependent;
+import me.bottdev.breezeapi.di.dependency.Dependent;
 import me.bottdev.breezeapi.index.types.BreezeModuleIndex;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class BreezeIndexBucket implements Dependent {

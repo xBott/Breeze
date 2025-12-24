@@ -1,6 +1,6 @@
 package me.bottdev.breezeapi.di;
 
-import me.bottdev.breezeapi.commons.priority.PriorityList;
+import me.bottdev.breezeapi.commons.structures.priority.PriorityList;
 import me.bottdev.breezeapi.index.BreezeIndex;
 import me.bottdev.breezeapi.index.BreezeIndexBucket;
 

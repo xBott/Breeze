@@ -1,7 +1,7 @@
 package me.bottdev.breezeapi.di.proxy;
 
 import lombok.RequiredArgsConstructor;
-import me.bottdev.breezeapi.commons.priority.PriorityList;
+import me.bottdev.breezeapi.commons.structures.priority.PriorityList;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;

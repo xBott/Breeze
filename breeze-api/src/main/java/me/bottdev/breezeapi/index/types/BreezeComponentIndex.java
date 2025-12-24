@@ -1,14 +1,13 @@
 package me.bottdev.breezeapi.index.types;
 
 import lombok.*;
-import me.bottdev.breezeapi.dependency.Dependent;
-import me.bottdev.breezeapi.dependency.DependentContainer;
+import me.bottdev.breezeapi.di.dependency.Dependent;
+import me.bottdev.breezeapi.di.dependency.DependentContainer;
 import me.bottdev.breezeapi.di.SupplyType;
 import me.bottdev.breezeapi.index.IndexEntry;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class BreezeComponentIndex implements
         MultipleBreezeIndex<BreezeComponentIndex.Entry>,

@@ -1,6 +1,6 @@
 package me.bottdev.breezeapi.resource.watcher;
 
-import me.bottdev.breezeapi.commons.BiMap;
+import me.bottdev.breezeapi.commons.structures.BiMap;
 import me.bottdev.breezeapi.commons.file.temp.TempFile;
 import me.bottdev.breezeapi.lifecycle.Lifecycle;
 import me.bottdev.breezeapi.log.BreezeLogger;
@@ -27,10 +27,6 @@ public class ResourceWatcher extends Lifecycle {
 
     public ResourceWatcher() throws IOException {
         this.watchService = FileSystems.getDefault().newWatchService();
-    }
-
-    public boolean isRegistered(Path dir) {
-        return registeredResources.containsValue(dir);
     }
 
     public boolean isRegistered(FileResource resource) {

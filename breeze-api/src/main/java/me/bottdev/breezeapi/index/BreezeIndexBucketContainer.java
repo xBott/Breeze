@@ -3,7 +3,7 @@ package me.bottdev.breezeapi.index;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Singular;
-import me.bottdev.breezeapi.dependency.DependentContainer;
+import me.bottdev.breezeapi.di.dependency.DependentContainer;
 
 import java.util.List;
 
