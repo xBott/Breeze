@@ -36,17 +36,20 @@ public interface ResourceProxyHandler extends ProxyHandler {
 
         if (isMethodAnnotated(method)) {
 
-            ProvideResource annotation = method.getAnnotation(ProvideResource.class);
-            Class<? extends Resource> type = annotation.type();
-            boolean isTree = annotation.isTree();
-
-            Object result = handleSources(method, type, isTree);
-
-            return ProxyResult.of(handleResult(method, result));
+            Object result = provideResult(method);
+            return ProxyResult.of(wrapResult(method, result));
         }
 
         return ProxyResult.of(handleEmpty(method));
 
+    }
+
+    default Object provideResult(Method method) {
+        ProvideResource annotation = method.getAnnotation(ProvideResource.class);
+        Class<? extends Resource> type = annotation.type();
+        boolean isTree = annotation.isTree();
+
+        return handleSources(method, type, isTree);
     }
 
     private Object handleSources(Method method, Class<? extends Resource> requiredType, boolean isTree) {
@@ -86,7 +89,7 @@ public interface ResourceProxyHandler extends ProxyHandler {
                 ).orElse(null);
     }
 
-    private Object handleResult(Method method, Object result) {
+    private Object wrapResult(Method method, Object result) {
         Class<?> returnType = method.getReturnType();
 
         if (returnType == void.class || returnType == Void.class) {
