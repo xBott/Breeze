@@ -1,13 +1,17 @@
 package resource;
 
 import me.bottdev.breezeapi.cache.CacheManager;
+import me.bottdev.breezeapi.cache.CacheManagerBuilder;
 import me.bottdev.breezeapi.cache.proxy.CacheProxyHandlerFactory;
 import me.bottdev.breezeapi.cache.proxy.Cacheable;
 import me.bottdev.breezeapi.cache.proxy.annotations.CachePut;
 import me.bottdev.breezeapi.di.annotations.Proxy;
 import me.bottdev.breezeapi.di.proxy.ProxyFactoryRegistry;
+import me.bottdev.breezeapi.lifecycle.LifecycleManager;
 import me.bottdev.breezeapi.log.types.SimpleTreeLogger;
 import me.bottdev.breezeapi.resource.ResourceTree;
+import me.bottdev.breezeapi.resource.annotations.HotReload;
+import me.bottdev.breezeapi.resource.annotations.sources.DriveSource;
 import me.bottdev.breezeapi.resource.annotations.sources.DummySource;
 import me.bottdev.breezeapi.resource.annotations.ProvideResource;
 import me.bottdev.breezeapi.resource.annotations.sources.JarSource;
@@ -15,17 +19,22 @@ import me.bottdev.breezeapi.resource.proxy.ResourceProvider;
 import me.bottdev.breezeapi.resource.proxy.ResourceProxyHandlerFactory;
 import me.bottdev.breezeapi.resource.source.ResourceSourceRegistry;
 import me.bottdev.breezeapi.resource.source.SourceType;
+import me.bottdev.breezeapi.resource.source.types.DriveResourceSource;
 import me.bottdev.breezeapi.resource.source.types.DummyResourceSource;
 import me.bottdev.breezeapi.resource.source.types.JarResourceSource;
+import me.bottdev.breezeapi.resource.types.FileResource;
 import me.bottdev.breezeapi.resource.types.file.SingleFileResource;
+import me.bottdev.breezeapi.resource.watcher.ResourceWatcher;
+import me.bottdev.breezeapi.resource.watcher.ResourceWatcherBuilder;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Path;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ResourceProxyTest {
 
@@ -58,26 +67,57 @@ public class ResourceProxyTest {
         @JarSource(path = "tree")
         ResourceTree<SingleFileResource> getTree();
 
+
+        @ProvideResource
+        @HotReload(evictCache = true, cacheGroup = "drive")
+        @DriveSource(
+                path = "/Users/romanplakhotniuk/java/Breeze/breeze-api/build/classes/java/test/drive_resource.txt",
+                absolute = true,
+                defaultValue = "TEST"
+        )
+        Optional<SingleFileResource> getDriveResource();
+
+        @CachePut(group = "drive", ttl = 60_000)
+        default int getDriveResourceLength() {
+            return getDriveResource()
+                    .flatMap(FileResource::readTrimmed)
+                    .map(String::length)
+                    .orElse(0);
+        }
+
     }
 
     static final SimpleTreeLogger logger = new SimpleTreeLogger("ResourceProxyTest");
 
+    static LifecycleManager lifecycleManager;
     static ProxyFactoryRegistry proxyFactory;
     static CacheManager cacheManager;
+    static ResourceWatcher resourceWatcher;
     SomeResourceProvider provider;
 
     @BeforeAll
     static void createProxyFactory() {
 
-        cacheManager = new CacheManager();
+        lifecycleManager = new LifecycleManager();
+        cacheManager = lifecycleManager.create(new CacheManagerBuilder());
+        resourceWatcher = lifecycleManager.create(new ResourceWatcherBuilder());
 
         ResourceSourceRegistry resourceSourceRegistry = new ResourceSourceRegistry()
+                .register(SourceType.DRIVE, new DriveResourceSource(Path.of("/")))
                 .register(SourceType.JAR, new JarResourceSource())
                 .register(SourceType.DUMMY, new DummyResourceSource());
 
         proxyFactory = new ProxyFactoryRegistry()
                 .register(new CacheProxyHandlerFactory(cacheManager), 0)
-                .register(new ResourceProxyHandlerFactory(resourceSourceRegistry), 1);
+                .register(
+                        new ResourceProxyHandlerFactory(resourceSourceRegistry, resourceWatcher, cacheManager),
+                        1
+                );
+    }
+
+    @AfterAll
+    static void shutdown() {
+        lifecycleManager.shutdownAll();
     }
 
     @BeforeEach
@@ -188,6 +228,23 @@ public class ResourceProxyTest {
             assertEquals(3, size);
         });
 
+    }
+
+    @Test
+    void shouldReadDriveResource() {
+        logger.withSection("Test drive read:", "", () -> {
+
+            Optional<SingleFileResource> resourceOptional = provider.getDriveResource();
+
+            assertTrue(resourceOptional.isPresent());
+
+            SingleFileResource resource = resourceOptional.get();
+            String content = resource.readTrimmed().orElse("Resource is empty!");
+            logger.info(" Read content: {}", content);
+
+            assertEquals("TEST", content);
+
+        });
     }
 
 }
