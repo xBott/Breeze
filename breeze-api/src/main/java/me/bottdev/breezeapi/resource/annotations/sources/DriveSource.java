@@ -14,6 +14,7 @@ import java.lang.annotation.Target;
 public @interface DriveSource {
     int priority() default Integer.MIN_VALUE;
     String path() default "";
+    boolean absolute() default false;
     boolean createIfAbsent() default true;
     String defaultValue() default "";
 }
