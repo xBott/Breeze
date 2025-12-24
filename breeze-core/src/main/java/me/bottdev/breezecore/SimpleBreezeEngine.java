@@ -109,7 +109,10 @@ public class SimpleBreezeEngine implements BreezeEngine {
 
         ProxyFactoryRegistry proxyFactoryRegistry = new ProxyFactoryRegistry()
                 .register(new CacheProxyHandlerFactory(cacheManager), 0)
-                .register(new ResourceProxyHandlerFactory(resourceSourceRegistry, resourceWatcher), 1);
+                .register(
+                        new ResourceProxyHandlerFactory(resourceSourceRegistry, resourceWatcher, cacheManager),
+                        1
+                );
 
         contextBootstrapper
                 .addReader(new SupplierReader(logger), 0)
