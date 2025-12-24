@@ -43,10 +43,11 @@ public class DriveResourceSource implements ResourceSource {
         if (!method.isAnnotationPresent(DriveSource.class)) return resourceTree;
         DriveSource annotation = method.getAnnotation(DriveSource.class);
         String pathString = (annotation.path());
+        boolean absolute = annotation.absolute();
         boolean createIfAbsent = annotation.createIfAbsent();
         String defaultValue = annotation.defaultValue();
 
-        Path path = enginePath.resolve(pathString);
+        Path path = absolute ? Path.of(pathString) : enginePath.resolve(pathString);
 
         if (!Files.exists(path)) {
             if (!createIfAbsent) return resourceTree;
@@ -75,6 +76,7 @@ public class DriveResourceSource implements ResourceSource {
     }
 
     private void createFile(Path path, String defaultValue) throws IOException {
+        logger.info("Creating file {}", path);
         File created = FileCommons.createFileOrDirectory(path);
         BreezeFileWriter.INSTANCE.writeString(created, bufferedWriter ->
                 bufferedWriter.write(defaultValue)
