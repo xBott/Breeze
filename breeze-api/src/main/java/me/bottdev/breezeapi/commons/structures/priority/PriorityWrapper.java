@@ -1,4 +1,4 @@
-package me.bottdev.breezeapi.commons.priority;
+package me.bottdev.breezeapi.commons.structures.priority;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

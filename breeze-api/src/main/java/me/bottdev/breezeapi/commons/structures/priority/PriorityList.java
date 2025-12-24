@@ -1,4 +1,4 @@
-package me.bottdev.breezeapi.commons.priority;
+package me.bottdev.breezeapi.commons.structures.priority;
 
 import java.util.ArrayList;
 import java.util.Iterator;
