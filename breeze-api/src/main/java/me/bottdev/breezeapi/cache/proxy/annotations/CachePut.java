@@ -10,6 +10,7 @@ import java.lang.annotation.Target;
 public @interface CachePut {
     String group() default "default";
     String key() default "default";
+    int size() default 20;
     int ttl() default 1000;
 
 }
