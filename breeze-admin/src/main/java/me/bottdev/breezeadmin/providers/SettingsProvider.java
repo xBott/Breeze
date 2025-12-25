@@ -21,10 +21,9 @@ public interface SettingsProvider extends ResourceProvider, Cacheable {
     @CachePut(group = "admin_settings", key = "resource", size = 2, ttl = 60_000)
     @ProvideResource
     @DriveSource(path = "modules/Admin/settings.json", defaultValue = "{}")
-    @HotReload(evictCache = true, cacheGroup = "admin_settings")
+    @HotReload(eventId = "settings_reload")
     Optional<SingleFileResource> getSettingsResource();
 
-    @CachePut(group = "admin_settings", key = "config", size = 2, ttl = 60_000)
     default Optional<SettingsConfiguration> getSettingsConfiguration() {
 
         ConfigLoader loader = new ConfigLoader(new JsonMapper(), new ConfigValidator());
