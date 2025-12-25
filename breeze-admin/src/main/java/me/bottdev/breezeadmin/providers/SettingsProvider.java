@@ -20,7 +20,7 @@ public interface SettingsProvider extends ResourceProvider, Cacheable {
 
     @CachePut(group = "admin_settings", key = "resource", size = 2, ttl = 60_000)
     @ProvideResource
-    @DriveSource(path = "Admin/settings.json", defaultValue = "{}")
+    @DriveSource(path = "modules/Admin/settings.json", defaultValue = "{}")
     @HotReload(evictCache = true, cacheGroup = "admin_settings")
     Optional<SingleFileResource> getSettingsResource();
 
