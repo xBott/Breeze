@@ -5,12 +5,12 @@ import me.bottdev.breezeapi.components.bootstrap.Bootstrap;
 import me.bottdev.breezeapi.di.annotations.Component;
 import me.bottdev.breezeapi.di.annotations.Inject;
 import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.types.SimpleTreeLogger;
+import me.bottdev.breezeapi.log.types.SimpleLogger;
 
 @Component
 public class AdminBootstrap implements Bootstrap {
 
-    private final BreezeLogger logger = new SimpleTreeLogger("AdminBootstrap");
+    private final BreezeLogger logger = new SimpleLogger("AdminBootstrap");
     private final SettingsProvider settingsProvider;
 
     @Inject
