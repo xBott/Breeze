@@ -11,18 +11,30 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.*;
 
 public class ResourceWatcher extends Lifecycle {
 
+    private static final long DEBOUNCE_DELAY_MS = 200;
+
     private final BreezeLogger logger = new SimpleLogger("ResourceWatcher");
 
+    private volatile boolean running = false;
     private final WatchService watchService;
+    private Thread watchThread;
+
+    private final ScheduledExecutorService debounceExecutor =
+            Executors.newSingleThreadScheduledExecutor(r -> {
+                Thread t = new Thread(r, "resource-watcher-debounce");
+                t.setDaemon(true);
+                return t;
+            });
+    private final Map<FileResource, ScheduledFuture<?>> debounceTasks = new ConcurrentHashMap<>();
+
+
     private final BiMap<WatchKey, Path> watchKeys = new BiMap<>();
     private final BiMap<FileResource, Path> registeredResources = new BiMap<>();
     private final Map<FileResource, WatcherHookContainer> hookContainers = new HashMap<>();
-
-    private Thread watchThread;
-    private volatile boolean running = false;
 
 
     public ResourceWatcher() throws IOException {
@@ -113,9 +125,12 @@ public class ResourceWatcher extends Lifecycle {
             watchService.close();
         } catch (IOException ignored) {}
 
+        debounceExecutor.shutdown();
+
         watchKeys.clear();
         registeredResources.clear();
         hookContainers.clear();
+        debounceTasks.clear();
 
     }
 
@@ -168,19 +183,29 @@ public class ResourceWatcher extends Lifecycle {
         }
     }
 
-
     private void onChange(WatchEvent.Kind<?> kind, FileResource resource) {
 
-        try {
-            resource.getTempFile().update();
-            logger.info("{} has been changed: {}",  resource.getName(), kind.name());
-            acceptHooks(resource);
+        if (kind != StandardWatchEventKinds.ENTRY_MODIFY) return;
 
-        } catch (IOException ex) {
-            logger.error("Failed to update temp file {}", ex, resource.getTempFile());
+        ScheduledFuture<?> previous = debounceTasks.get(resource);
+        if (previous != null) {
+            previous.cancel(false);
         }
 
+        ScheduledFuture<?> future = debounceExecutor.schedule(() -> {
+            try {
+                resource.getTempFile().update();
+                logger.info("{} has been changed (debounced)", resource.getName());
+                acceptHooks(resource);
+
+            } catch (IOException ex) {
+                logger.error("Failed to update temp file {}", ex, resource.getTempFile());
+            }
+        }, DEBOUNCE_DELAY_MS, TimeUnit.MILLISECONDS);
+
+        debounceTasks.put(resource, future);
     }
+
 
     private void acceptHooks(FileResource resource) {
         WatcherHookContainer hookContainer = getHookContainer(resource);
