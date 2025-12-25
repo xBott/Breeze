@@ -86,9 +86,13 @@ public class CacheProxyHandler implements ProxyHandler, ProxyPostHandler {
         String cacheKey = getCacheKey(keyFormat, cacheSubKeys);
 
         Optional<Object> cached = getCached(group, cacheKey);
-        if (cached.isPresent()) return ProxyResult.of(cached.get());
+        if (cached.isPresent()) {
+            return ProxyResult.of(cached.get());
+        }
 
-        if (method.isDefault()) return invokeDefault(proxy, method, args);
+        if (method.isDefault()) {
+            return invokeDefault(proxy, method, args);
+        }
 
         return ProxyResult.empty();
 
@@ -136,7 +140,7 @@ public class CacheProxyHandler implements ProxyHandler, ProxyPostHandler {
     }
 
     private Optional<Object> getCached(String group, String key) {
-        return getCache(group).map(cache -> cache.get(key));
+        return getCache(group).flatMap(cache -> cache.get(key));
     }
 
     private void putCache(String group, String key, Object value, int size, int ttl) {
