@@ -6,6 +6,8 @@ import me.bottdev.breezeapi.autoload.AutoLoaderRegistry;
 import me.bottdev.breezeapi.cache.CacheManager;
 import me.bottdev.breezeapi.cache.CacheManagerBuilder;
 import me.bottdev.breezeapi.cache.proxy.CacheProxyHandlerFactory;
+import me.bottdev.breezeapi.commons.file.temp.TempFile;
+import me.bottdev.breezeapi.commons.file.temp.TempFiles;
 import me.bottdev.breezeapi.components.bootstrap.Bootstrap;
 import me.bottdev.breezeapi.components.bootstrap.BootstrapAutoLoader;
 import me.bottdev.breezeapi.di.ContextBootstrapper;
@@ -150,8 +152,10 @@ public class SimpleBreezeEngine implements BreezeEngine {
     public void stop() {
         logger.info("Stopping engine....");
         logger.withSection("Breeze Engine Stop", "", () -> {
-            stopModuleManager();
+            shutdownLifecycleManager();
             unregisterListeners();
+            stopModuleManager();
+            deleteTempFiles();
         });
         logger.info("Successfully stopped engine.");
     }
@@ -162,6 +166,14 @@ public class SimpleBreezeEngine implements BreezeEngine {
 
     private void unregisterListeners() {
         eventBus.unregisterAllListeners();
+    }
+
+    private void shutdownLifecycleManager() {
+        lifecycleManager.shutdownAll();
+    }
+
+    private void deleteTempFiles() {
+        TempFiles.cleanup();
     }
 
 }
