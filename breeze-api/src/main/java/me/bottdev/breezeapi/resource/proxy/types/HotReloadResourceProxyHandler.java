@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.cache.Cache;
 import me.bottdev.breezeapi.cache.CacheManager;
+import me.bottdev.breezeapi.log.BreezeLogger;
+import me.bottdev.breezeapi.log.types.SimpleLogger;
 import me.bottdev.breezeapi.resource.annotations.HotReload;
 import me.bottdev.breezeapi.resource.proxy.ResourceProxyHandler;
 import me.bottdev.breezeapi.resource.source.ResourceSourceRegistry;
@@ -15,9 +17,13 @@ import java.lang.reflect.Method;
 @RequiredArgsConstructor
 public class HotReloadResourceProxyHandler implements ResourceProxyHandler {
 
+    private final BreezeLogger logger =  new SimpleLogger("HotReloadResourceProxyHandler");
+
     @Getter
     private final ResourceSourceRegistry resourceSourceRegistry;
+    @Getter
     private final ResourceWatcher resourceWatcher;
+    @Getter
     private final CacheManager cacheManager;
 
     @Override
@@ -50,7 +56,9 @@ public class HotReloadResourceProxyHandler implements ResourceProxyHandler {
             String cacheGroup = hotReload.cacheGroup();
             evictCache(cacheGroup);
         }
-        changedResource.readTrimmed().ifPresent(System.out::println);
+        changedResource.readTrimmed().ifPresent(content -> {
+            logger.info("Content: \n{}", content);
+        });
     }
 
     private void evictCache(String cacheGroup) {
