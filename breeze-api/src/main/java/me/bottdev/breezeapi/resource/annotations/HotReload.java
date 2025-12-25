@@ -8,6 +8,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface HotReload {
-    boolean evictCache() default false;
-    String cacheGroup() default "";
+    String eventId() default "";
 }

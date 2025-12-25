@@ -2,69 +2,76 @@ package me.bottdev.breezeapi.resource.watcher;
 
 import me.bottdev.breezeapi.commons.structures.BiMap;
 import me.bottdev.breezeapi.commons.file.temp.TempFile;
-import me.bottdev.breezeapi.lifecycle.Lifecycle;
+import me.bottdev.breezeapi.events.EventBus;
+import me.bottdev.breezeapi.lifecycle.ThreadLifecycle;
 import me.bottdev.breezeapi.log.BreezeLogger;
 import me.bottdev.breezeapi.log.types.SimpleLogger;
+import me.bottdev.breezeapi.resource.events.ResourceWatchEvent;
 import me.bottdev.breezeapi.resource.types.FileResource;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
 
-public class ResourceWatcher extends Lifecycle {
+public class ResourceWatcher extends ThreadLifecycle {
 
     private static final long DEBOUNCE_DELAY_MS = 200;
 
     private final BreezeLogger logger = new SimpleLogger("ResourceWatcher");
 
-    private volatile boolean running = false;
     private final WatchService watchService;
-    private Thread watchThread;
+    private final EventBus eventBus;
 
     private final ScheduledExecutorService debounceExecutor =
-            Executors.newSingleThreadScheduledExecutor(r -> {
-                Thread t = new Thread(r, "resource-watcher-debounce");
-                t.setDaemon(true);
-                return t;
+            Executors.newSingleThreadScheduledExecutor(runnable -> {
+                Thread thread = new Thread(runnable, "resource-watcher-debounce");
+                thread.setDaemon(true);
+                return thread;
             });
-    private final Map<FileResource, ScheduledFuture<?>> debounceTasks = new ConcurrentHashMap<>();
+    private final Map<ResourceWatchSubject, ScheduledFuture<?>> debounceTasks = new ConcurrentHashMap<>();
 
 
-    private final BiMap<WatchKey, Path> watchKeys = new BiMap<>();
-    private final BiMap<FileResource, Path> registeredResources = new BiMap<>();
-    private final Map<FileResource, WatcherHookContainer> hookContainers = new HashMap<>();
+    private final BiMap<Path, WatchKey> watchKeys = new BiMap<>();
+    private final Map<Path, ResourceWatchSubject> watchSubjects = new HashMap<>();
 
 
-    public ResourceWatcher() throws IOException {
+    public ResourceWatcher(EventBus eventBus) throws IOException {
         this.watchService = FileSystems.getDefault().newWatchService();
+        this.eventBus = eventBus;
     }
 
     public boolean isRegistered(FileResource resource) {
-        return registeredResources.containsKey(resource);
+        return resource.getTempFile().getSourceFile()
+                .map(File::toPath)
+                .map(this::isRegistered)
+                .orElse(false);
+    }
+
+    public boolean isRegistered(Path path) {
+        return watchSubjects.containsKey(path);
     }
 
     private void registerWatcherDirectory(Path directory) {
 
-        if (!Files.isDirectory(directory)) {
-            return;
-        }
-
-        if (watchKeys.containsValue(directory)) {
+        if (!Files.isDirectory(directory) || watchKeys.containsKey(directory)) {
             return;
         }
 
         try {
 
-            WatchKey key = directory.register(
+            WatchKey watchKey = directory.register(
                     watchService,
                     StandardWatchEventKinds.ENTRY_MODIFY,
                     StandardWatchEventKinds.ENTRY_CREATE,
                     StandardWatchEventKinds.ENTRY_DELETE
             );
 
-            watchKeys.put(key, directory);
+            watchKeys.put(directory, watchKey);
+
+            logger.info("{} has been registered.", directory);
 
         } catch (IOException e) {
             throw new RuntimeException("Failed to register directory: " + directory, e);
@@ -72,71 +79,68 @@ public class ResourceWatcher extends Lifecycle {
 
     }
 
-    public void registerResource(FileResource resource) {
+    public void registerResource(FileResource resource, String eventId) {
+
+        if (isRegistered(resource)) {
+            logger.info("{} is already registered.", resource.getName());
+            return;
+        }
 
         TempFile tempFile = resource.getTempFile();
 
         tempFile.getSourceFile().ifPresent(file -> {
 
-                Path path = file.toPath();
-                Path parentPath = path.getParent();
+                Path sourcePath = file.toPath();
+                Path parentDirectory = sourcePath.getParent();
 
-                if (registeredResources.containsKey(resource)) {
-                    return;
-                }
+                ResourceWatchSubject watchSubject = new ResourceWatchSubject(resource, eventId);
+                watchSubjects.put(sourcePath, watchSubject);
+                registerWatcherDirectory(parentDirectory);
 
-                registeredResources.put(resource, path);
-                registerWatcherDirectory(parentPath);
-
-                logger.info("{} has been registered", resource.getName());
+                logger.info("{} has been registered.", resource.getName());
 
         });
 
     }
 
-    public WatcherHookContainer getHookContainer(FileResource resource) {
-        return hookContainers.computeIfAbsent(
-                resource,
-                ignored -> new WatcherHookContainer()
-        );
+    @Override
+    protected boolean isDaemon() {
+        return true;
     }
 
+    @Override
+    protected String getThreadName() {
+        return "resource-watcher";
+    }
 
     @Override
     protected void onStart() {
-        if (running) return;
-        running = true;
-
-        watchThread = new Thread(this::processEvents, "resource-watcher");
-        watchThread.setDaemon(true);
-        watchThread.start();
+        logger.info("Resource watcher has been started!");
     }
 
     @Override
     protected void onShutdown() {
 
-        running = false;
-
-        if (watchThread != null) {
-            watchThread.interrupt();
-        }
-
         try {
             watchService.close();
-        } catch (IOException ignored) {}
+        } catch (IOException ex) {
+            logger.error("Failed to close watch service: ", ex);
+        }
 
         debounceExecutor.shutdown();
+        debounceTasks.clear();
 
         watchKeys.clear();
-        registeredResources.clear();
-        hookContainers.clear();
-        debounceTasks.clear();
+        watchSubjects.clear();
+
+        logger.info("Resource watcher is shut down.");
 
     }
 
-    private void processEvents() {
+    @Override
+    protected void threadRun() {
 
-        while (running) {
+        while (isRunning()) {
 
             WatchKey key;
             try {
@@ -146,71 +150,86 @@ public class ResourceWatcher extends Lifecycle {
                 break;
             }
 
-            Path directory = watchKeys.getByKey(key);
+
+            Path directory = watchKeys.getByValue(key);
             if (directory == null) {
                 key.reset();
                 continue;
             }
 
-            for (WatchEvent<?> event : key.pollEvents()) {
-                WatchEvent.Kind<?> kind = event.kind();
-
-                if (kind == StandardWatchEventKinds.OVERFLOW) {
-                    continue;
-                }
-
-                @SuppressWarnings("unchecked")
-                WatchEvent<Path> pathEvent = (WatchEvent<Path>) event;
-                Path changedPath = directory.resolve(pathEvent.context());
-
-                if (Files.isDirectory(changedPath)) {
-                    continue;
-                }
-
-                FileResource resource = registeredResources.getByValue(changedPath);
-                if (resource == null) {
-                    continue;
-                }
-
-                onChange(kind, resource);
-            }
+            handleWatchEvents(directory, key);
 
             boolean valid = key.reset();
             if (!valid) {
-                watchKeys.removeByKey(key);
+                watchKeys.removeByValue(key);
             }
 
         }
     }
 
-    private void onChange(WatchEvent.Kind<?> kind, FileResource resource) {
+    private void handleWatchEvents(Path directory, WatchKey watchKey) {
 
-        if (kind != StandardWatchEventKinds.ENTRY_MODIFY) return;
+        for (WatchEvent<?> event : watchKey.pollEvents()) {
 
-        ScheduledFuture<?> previous = debounceTasks.get(resource);
+            WatchEvent.Kind<?> kind = event.kind();
+
+            if (kind == StandardWatchEventKinds.OVERFLOW) continue;
+
+            @SuppressWarnings("unchecked")
+            WatchEvent<Path> pathEvent = (WatchEvent<Path>) event;
+            Path changedPath = directory.resolve(pathEvent.context());
+
+            if (Files.isDirectory(changedPath)) continue;
+
+            ResourceWatchSubject watchSubject = watchSubjects.get(changedPath);
+            if (watchSubject == null) continue;
+
+            onChange(watchSubject);
+        }
+
+    }
+
+    private void onChange(ResourceWatchSubject watchSubject) {
+
+
+
+        ScheduledFuture<?> previous = debounceTasks.get(watchSubject);
         if (previous != null) {
             previous.cancel(false);
         }
 
-        ScheduledFuture<?> future = debounceExecutor.schedule(() -> {
-            try {
-                resource.getTempFile().update();
-                logger.info("{} has been changed (debounced)", resource.getName());
-                acceptHooks(resource);
+        ScheduledFuture<?> future = debounceExecutor.schedule(
+                () -> onDebounce(watchSubject),
+                DEBOUNCE_DELAY_MS,
+                TimeUnit.MILLISECONDS
+        );
 
-            } catch (IOException ex) {
-                logger.error("Failed to update temp file {}", ex, resource.getTempFile());
-            }
-        }, DEBOUNCE_DELAY_MS, TimeUnit.MILLISECONDS);
-
-        debounceTasks.put(resource, future);
+        debounceTasks.put(watchSubject, future);
     }
 
+    private void onDebounce(ResourceWatchSubject watchSubject) {
+        updateTempFile(watchSubject);
+        callEvent(watchSubject);
+    }
 
-    private void acceptHooks(FileResource resource) {
-        WatcherHookContainer hookContainer = getHookContainer(resource);
-        if (hookContainer == null) return;
-        hookContainer.acceptAll(resource);
+    private void updateTempFile(ResourceWatchSubject watchSubject) {
+
+        FileResource resource = watchSubject.getResource();
+
+        try {
+
+            resource.getTempFile().update();
+            logger.info("{} has been changed (debounced)", resource.getName());
+
+        } catch (IOException ex) {
+            logger.error("Failed to update temp file {}", ex, resource.getTempFile());
+        }
+
+    }
+
+    private void callEvent(ResourceWatchSubject watchSubject) {
+        ResourceWatchEvent watchEvent = new ResourceWatchEvent(watchSubject);
+        eventBus.call(watchEvent);
     }
 
 }

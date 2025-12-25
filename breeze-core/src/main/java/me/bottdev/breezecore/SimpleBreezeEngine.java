@@ -54,12 +54,11 @@ public class SimpleBreezeEngine implements BreezeEngine {
     private final AutoLoaderRegistry autoLoaderRegistry = new AutoLoaderRegistry(logger);
 
     private final ModuleManager moduleManager = new SimpleModuleManager(this, logger);
+    private final EventBus eventBus = new EventBus(logger);
 
     private final LifecycleManager lifecycleManager = new LifecycleManager(logger);
     private final CacheManager cacheManager = lifecycleManager.create(new CacheManagerBuilder());
-    private final ResourceWatcher resourceWatcher = lifecycleManager.create(new ResourceWatcherBuilder());
-
-    private final EventBus eventBus = new EventBus(logger);
+    private final ResourceWatcher resourceWatcher = lifecycleManager.create(new ResourceWatcherBuilder(eventBus));
 
     private final Path dataFolder;
 
@@ -111,7 +110,7 @@ public class SimpleBreezeEngine implements BreezeEngine {
         ProxyFactoryRegistry proxyFactoryRegistry = new ProxyFactoryRegistry()
                 .register(new CacheProxyHandlerFactory(cacheManager), 0)
                 .register(
-                        new ResourceProxyHandlerFactory(resourceSourceRegistry, resourceWatcher, cacheManager),
+                        new ResourceProxyHandlerFactory(resourceSourceRegistry, resourceWatcher),
                         1
                 );
 
