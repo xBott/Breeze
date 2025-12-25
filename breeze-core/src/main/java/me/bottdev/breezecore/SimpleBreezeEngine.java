@@ -6,7 +6,6 @@ import me.bottdev.breezeapi.autoload.AutoLoaderRegistry;
 import me.bottdev.breezeapi.cache.CacheManager;
 import me.bottdev.breezeapi.cache.CacheManagerBuilder;
 import me.bottdev.breezeapi.cache.proxy.CacheProxyHandlerFactory;
-import me.bottdev.breezeapi.commons.file.temp.TempFile;
 import me.bottdev.breezeapi.commons.file.temp.TempFiles;
 import me.bottdev.breezeapi.components.bootstrap.Bootstrap;
 import me.bottdev.breezeapi.components.bootstrap.BootstrapAutoLoader;
@@ -56,7 +55,7 @@ public class SimpleBreezeEngine implements BreezeEngine {
 
     private final ModuleManager moduleManager = new SimpleModuleManager(this, logger);
 
-    private final LifecycleManager lifecycleManager = new LifecycleManager();
+    private final LifecycleManager lifecycleManager = new LifecycleManager(logger);
     private final CacheManager cacheManager = lifecycleManager.create(new CacheManagerBuilder());
     private final ResourceWatcher resourceWatcher = lifecycleManager.create(new ResourceWatcherBuilder());
 
