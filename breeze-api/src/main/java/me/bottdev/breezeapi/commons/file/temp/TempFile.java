@@ -55,6 +55,7 @@ public class TempFile {
         if (sourceFileOptional.isEmpty()) return;
 
         File sourceFile = sourceFileOptional.get();
+        if (!sourceFile.exists()) return;
 
         BreezeFileWriter.INSTANCE.writeChunks(toFile(), out -> {
 
