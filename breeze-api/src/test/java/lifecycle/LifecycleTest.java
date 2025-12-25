@@ -1,8 +1,10 @@
 package lifecycle;
 
 import me.bottdev.breezeapi.commons.file.temp.TempFiles;
+import me.bottdev.breezeapi.events.EventBus;
 import me.bottdev.breezeapi.lifecycle.LifecycleManager;
 import me.bottdev.breezeapi.log.types.SimpleLogger;
+import me.bottdev.breezeapi.log.types.SimpleTreeLogger;
 import me.bottdev.breezeapi.resource.source.SourceType;
 import me.bottdev.breezeapi.resource.types.FileResource;
 import me.bottdev.breezeapi.resource.types.file.SingleFileResource;
@@ -20,10 +22,13 @@ import java.util.Optional;
 
 public class LifecycleTest {
 
+    static SimpleTreeLogger logger = new SimpleTreeLogger("LifecycleTest");
+    static EventBus eventBus;
     static LifecycleManager lifecycleManager;
 
     @BeforeAll
     static void setUp() {
+        eventBus = new EventBus(logger);
         lifecycleManager = new LifecycleManager(new SimpleLogger("LifecycleManager"));
     }
 
@@ -68,14 +73,11 @@ public class LifecycleTest {
     @Test
     void shouldCreateResourceWatcherLifecycleAndSleep() throws IOException, InterruptedException {
 
-        ResourceWatcher resourceWatcher = lifecycleManager.create(new ResourceWatcherBuilder());
+        ResourceWatcher resourceWatcher = lifecycleManager.create(new ResourceWatcherBuilder(eventBus));
 
-        getFileResource().ifPresent(resource -> {
-            resourceWatcher.registerResource(resource);
-            resourceWatcher.getHookContainer(resource).add(changedResource ->
-                    changedResource.readTrimmed().ifPresent(System.out::println)
-            );
-        });
+        getFileResource().ifPresent(resource ->
+                resourceWatcher.registerResource(resource, "test")
+        );
 
         Thread.sleep(50000);
 

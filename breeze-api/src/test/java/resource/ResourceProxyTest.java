@@ -7,8 +7,8 @@ import me.bottdev.breezeapi.cache.proxy.Cacheable;
 import me.bottdev.breezeapi.cache.proxy.annotations.CachePut;
 import me.bottdev.breezeapi.di.annotations.Proxy;
 import me.bottdev.breezeapi.di.proxy.ProxyFactoryRegistry;
+import me.bottdev.breezeapi.events.EventBus;
 import me.bottdev.breezeapi.lifecycle.LifecycleManager;
-import me.bottdev.breezeapi.log.types.SimpleLogger;
 import me.bottdev.breezeapi.log.types.SimpleTreeLogger;
 import me.bottdev.breezeapi.resource.ResourceTree;
 import me.bottdev.breezeapi.resource.annotations.HotReload;
@@ -70,7 +70,7 @@ public class ResourceProxyTest {
 
 
         @ProvideResource
-        @HotReload(evictCache = true, cacheGroup = "drive")
+        @HotReload(eventId = "test")
         @DriveSource(
                 path = "/Users/romanplakhotniuk/java/Breeze/breeze-api/build/classes/java/test/drive_resource.txt",
                 absolute = true,
@@ -90,18 +90,22 @@ public class ResourceProxyTest {
 
     static final SimpleTreeLogger logger = new SimpleTreeLogger("ResourceProxyTest");
 
-    static LifecycleManager lifecycleManager;
     static ProxyFactoryRegistry proxyFactory;
+    static EventBus eventBus;
+
+    static LifecycleManager lifecycleManager;
     static CacheManager cacheManager;
     static ResourceWatcher resourceWatcher;
+
     SomeResourceProvider provider;
 
     @BeforeAll
     static void createProxyFactory() {
 
-        lifecycleManager = new LifecycleManager(new SimpleLogger("LifecycleManager"));
+        eventBus = new EventBus(logger);
+        lifecycleManager = new LifecycleManager(logger);
         cacheManager = lifecycleManager.create(new CacheManagerBuilder());
-        resourceWatcher = lifecycleManager.create(new ResourceWatcherBuilder());
+        resourceWatcher = lifecycleManager.create(new ResourceWatcherBuilder(eventBus));
 
         ResourceSourceRegistry resourceSourceRegistry = new ResourceSourceRegistry()
                 .register(SourceType.DRIVE, new DriveResourceSource(Path.of("/")))
@@ -111,7 +115,7 @@ public class ResourceProxyTest {
         proxyFactory = new ProxyFactoryRegistry()
                 .register(new CacheProxyHandlerFactory(cacheManager), 0)
                 .register(
-                        new ResourceProxyHandlerFactory(resourceSourceRegistry, resourceWatcher, cacheManager),
+                        new ResourceProxyHandlerFactory(resourceSourceRegistry, resourceWatcher),
                         1
                 );
     }
