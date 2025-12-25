@@ -2,6 +2,7 @@ package lifecycle;
 
 import me.bottdev.breezeapi.commons.file.temp.TempFiles;
 import me.bottdev.breezeapi.lifecycle.LifecycleManager;
+import me.bottdev.breezeapi.log.types.SimpleLogger;
 import me.bottdev.breezeapi.resource.source.SourceType;
 import me.bottdev.breezeapi.resource.types.FileResource;
 import me.bottdev.breezeapi.resource.types.file.SingleFileResource;
@@ -23,7 +24,7 @@ public class LifecycleTest {
 
     @BeforeAll
     static void setUp() {
-        lifecycleManager = new LifecycleManager();
+        lifecycleManager = new LifecycleManager(new SimpleLogger("LifecycleManager"));
     }
 
     @AfterAll
