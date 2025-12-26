@@ -1,7 +1,10 @@
 package me.bottdev.breezeadmin;
 
 import lombok.RequiredArgsConstructor;
+import me.bottdev.breezeadmin.providers.SettingsProvider;
+import me.bottdev.breezeapi.di.annotations.Inject;
 import me.bottdev.breezeapi.log.BreezeLogger;
+import me.bottdev.breezeapi.log.types.SimpleLogger;
 import me.bottdev.breezeapi.modules.Module;
 import me.bottdev.breezeapi.modules.ModuleStatus;
 import me.bottdev.breezeapi.modules.annotations.ModuleInfo;
@@ -13,9 +16,13 @@ import java.io.File;
 @RequiredArgsConstructor
 public class AdminModule extends Module {
 
+    private final BreezeLogger logger = new SimpleLogger("BreezeAdmin");
+
     private final File dataFolder;
     private ModuleStatus moduleStatus = ModuleStatus.DISABLED;
-    private final BreezeLogger logger = new SimpleTreeLogger("BreezeAdmin");
+
+    @Inject
+    private SettingsProvider settingsProvider;
 
     @Override
     public ModuleStatus getStatus() {
@@ -29,7 +36,9 @@ public class AdminModule extends Module {
 
     @Override
     public void onEnable() {
-        logger.info("\n\n\nHELLOO VIETNAM!\n\n\n");
+        settingsProvider.loadSettingsConfiguration().ifPresent(configuration -> {
+            logger.info("Module version is {}", configuration.getVersion());
+        });
     }
 
     @Override

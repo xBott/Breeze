@@ -28,7 +28,7 @@ public class SettingsListener implements Listener {
         String eventId = subject.getEventId();
 
         if (eventId.equalsIgnoreCase("settings_reload")) {
-            settingsProvider.getSettingsConfiguration().ifPresent(configuration ->
+            settingsProvider.loadSettingsConfiguration().ifPresent(configuration ->
                     logger.info("Configuration is updated. New version is {}", configuration.getVersion())
             );
         }

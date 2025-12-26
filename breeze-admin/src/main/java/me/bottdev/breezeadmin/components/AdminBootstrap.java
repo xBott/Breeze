@@ -20,13 +20,7 @@ public class AdminBootstrap implements Bootstrap {
 
     @Override
     public void bootstrap() {
-        settingsProvider.getSettingsResource()
-                .map(resource -> resource.read().orElse(""))
-                .ifPresent(logger::info);
 
-        settingsProvider.getSettingsConfiguration().ifPresent(configuration -> {
-            logger.info("Module version is {}", configuration.getVersion());
-        });
     }
 
 }

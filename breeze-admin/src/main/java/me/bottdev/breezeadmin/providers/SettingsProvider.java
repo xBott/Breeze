@@ -3,6 +3,10 @@ package me.bottdev.breezeadmin.providers;
 import me.bottdev.breezeadmin.config.SettingsConfiguration;
 import me.bottdev.breezeapi.cache.proxy.Cacheable;
 import me.bottdev.breezeapi.cache.proxy.annotations.CachePut;
+import me.bottdev.breezeapi.config.validation.patterns.PathEndsPattern;
+import me.bottdev.breezeapi.config.validation.rules.RangeRule;
+import me.bottdev.breezeapi.config.validation.rules.StructureRule;
+import me.bottdev.breezeapi.config.validation.types.RuleConfigValidator;
 import me.bottdev.breezeapi.di.annotations.Proxy;
 import me.bottdev.breezeapi.resource.annotations.HotReload;
 import me.bottdev.breezeapi.resource.proxy.ResourceProvider;
@@ -23,9 +27,15 @@ public interface SettingsProvider extends ResourceProvider, Cacheable {
     @HotReload(eventId = "settings_reload")
     Optional<SingleFileResource> getSettingsResource();
 
-    default Optional<SettingsConfiguration> getSettingsConfiguration() {
+    @CachePut(group = "admin_settings", key = "config", size = 2, ttl = 5_000)
+    default Optional<SettingsConfiguration> loadSettingsConfiguration() {
 
-        ConfigLoader loader = new ConfigLoader(new JsonMapper(), new AnnotationConfigValidator());
+        RuleConfigValidator validator = new RuleConfigValidator();
+        validator.getRuleRegistry()
+                .addRootRule(new StructureRule(SettingsConfiguration.class))
+                .addRule(new PathEndsPattern("version"), new RangeRule(0.0, 1.0));
+
+        ConfigLoader loader = new ConfigLoader(new JsonMapper(), validator);
 
         return getSettingsResource().flatMap(resource ->
             loader.loadConfig(resource, SettingsConfiguration.class)
