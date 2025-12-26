@@ -3,10 +3,10 @@ package me.bottdev.breezeapi.config.validation.rules;
 import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.config.Configuration;
 import me.bottdev.breezeapi.config.validation.*;
+import me.bottdev.breezeapi.config.validation.annotations.StructureIgnore;
 import me.bottdev.breezeapi.serialization.ObjectNode;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -23,8 +23,8 @@ public class StructureRule implements ValidationRule {
         for (Field field : clazz.getDeclaredFields()) {
 
             String fieldName = field.getName();
-            boolean isFinal = Modifier.isFinal(field.getModifiers());
-            if (!isFinal) {
+
+            if (field.isAnnotationPresent(StructureIgnore.class)) {
                 continue;
             }
 
