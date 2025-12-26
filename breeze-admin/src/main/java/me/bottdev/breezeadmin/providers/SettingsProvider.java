@@ -7,7 +7,6 @@ import me.bottdev.breezeapi.di.annotations.Proxy;
 import me.bottdev.breezeapi.resource.annotations.HotReload;
 import me.bottdev.breezeapi.resource.proxy.ResourceProvider;
 import me.bottdev.breezeapi.config.ConfigLoader;
-import me.bottdev.breezeapi.config.validation.ConfigValidator;
 import me.bottdev.breezeapi.resource.annotations.sources.DriveSource;
 import me.bottdev.breezeapi.resource.annotations.ProvideResource;
 import me.bottdev.breezeapi.resource.types.file.SingleFileResource;
@@ -26,7 +25,7 @@ public interface SettingsProvider extends ResourceProvider, Cacheable {
 
     default Optional<SettingsConfiguration> getSettingsConfiguration() {
 
-        ConfigLoader loader = new ConfigLoader(new JsonMapper(), new ConfigValidator());
+        ConfigLoader loader = new ConfigLoader(new JsonMapper(), new AnnotationConfigValidator());
 
         return getSettingsResource().flatMap(resource ->
             loader.loadConfig(resource, SettingsConfiguration.class)

@@ -13,14 +13,13 @@ import me.bottdev.breezeapi.resource.watcher.ResourceWatchSubject;
 @Component
 public class SettingsListener implements Listener {
 
+    private final BreezeLogger logger = new SimpleLogger("SettingsListener");
     private final SettingsProvider settingsProvider;
 
     @Inject
     public SettingsListener(SettingsProvider settingsProvider) {
         this.settingsProvider = settingsProvider;
     }
-
-    private final BreezeLogger logger = new SimpleLogger("SettingsListener");
 
     @Listen(priority = 100)
     public void onSettingsChanged(ResourceWatchEvent event) {

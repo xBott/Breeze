@@ -65,7 +65,16 @@ public class ObjectNode {
     @Singular
     private List<ObjectNode> children = new ArrayList<>();
 
+    public boolean hasChildren() {
+        return !children.isEmpty();
+    }
+
+    public boolean hasChild(String name) {
+        return children.stream().anyMatch(child -> child.name.equals(name));
+    }
+
     public Optional<ObjectNode> getChild(String name) {
         return children.stream().filter(child -> child.name.equals(name)).findFirst();
     }
+
 }

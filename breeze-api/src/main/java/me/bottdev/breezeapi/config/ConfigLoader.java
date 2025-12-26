@@ -1,10 +1,11 @@
 package me.bottdev.breezeapi.config;
 
 import lombok.RequiredArgsConstructor;
-import me.bottdev.breezeapi.config.validation.ConfigStatus;
 import me.bottdev.breezeapi.config.validation.ConfigValidator;
+import me.bottdev.breezeapi.config.validation.ValidationResult;
+import me.bottdev.breezeapi.config.validation.ValidationStatus;
 import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.types.SimpleTreeLogger;
+import me.bottdev.breezeapi.log.types.SimpleLogger;
 import me.bottdev.breezeapi.resource.types.FileResource;
 import me.bottdev.breezeapi.serialization.Mapper;
 import me.bottdev.breezeapi.serialization.ObjectNode;
@@ -15,66 +16,33 @@ import java.util.function.Supplier;
 @RequiredArgsConstructor
 public class ConfigLoader {
 
-    private final BreezeLogger logger = new SimpleTreeLogger("ConfigLoader");
+    private final BreezeLogger logger = new SimpleLogger("ConfigLoader");
     private final Mapper serializationStrategy;
     private final ConfigValidator configValidator;
 
-//    private String readFile(File file) {
+//    public <T extends Configuration> boolean canLoad(FileResource resource, Class<T> clazz) {
 //
-//        StringBuilder builder = new StringBuilder();
+//        Optional<String> serializedOptional = resource.read();
+//        if (serializedOptional.isEmpty()) return false;
 //
-//        createFileIfNotExists(file);
-//        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+//        String serialized = serializedOptional.get();
 //
-//            String line;
-//            while ((line = reader.readLine()) != null) {
-//                builder.append(line);
-//                builder.append(System.lineSeparator());
-//            }
-//
-//        } catch (Exception ex) {
-//            logger.error("Could not read config file.", ex);
+//        if (serialized.isBlank()) {
+//            return false;
 //        }
 //
-//        return builder.toString();
-//
-//    }
-//    private void writeFile(File file, String content) {
-//
-//        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-//
-//            writer.write(content);
-//
-//        } catch (Exception ex) {
-//            logger.error("Could not write config file.", ex);
+//        Optional<ObjectNode> objectNodeOptional = serializationStrategy.deserializeTree(serialized);
+//        if (objectNodeOptional.isEmpty()) {
+//            return false;
 //        }
+//        ObjectNode objectNode = objectNodeOptional.get();
+//
+//        ValidationResult configStatus = configValidator.validate(objectNode);
+//        ValidationStatus status = configStatus.getStatus();
+//
+//        return status == ValidationStatus.SUCCESS;
 //
 //    }
-
-    public <T extends Configuration> boolean canLoad(FileResource resource, Class<T> clazz) {
-
-        Optional<String> serializedOptional = resource.read();
-        if (serializedOptional.isEmpty()) return false;
-
-        String serialized = serializedOptional.get();
-
-        if (serialized.isBlank()) {
-            return false;
-        }
-
-        Optional<ObjectNode> objectNodeOptional = serializationStrategy.deserializeTree(serialized);
-        if (objectNodeOptional.isEmpty()) {
-            return false;
-        }
-        ObjectNode objectNode = objectNodeOptional.get();
-
-        ConfigStatus configStatus = configValidator.validateTree(objectNode, clazz);
-        if (configStatus != ConfigStatus.SUCCESS) {
-            return false;
-        }
-
-        return true;
-    }
 
 
     public <T extends Configuration> Optional<T> loadConfig(FileResource resource, Class<T> clazz) {
@@ -91,6 +59,18 @@ public class ConfigLoader {
             return Optional.empty();
         }
 
+        Optional<T> configOptional = loadConfig(serialized, clazz);
+        if (configOptional.isPresent()) {
+            logger.info("Loaded config {} from file {}", clazz.getSimpleName(), resource.getName());
+            return configOptional;
+        }
+
+        return Optional.empty();
+
+    }
+
+    public <T extends Configuration> Optional<T> loadConfig(String serialized, Class<T> clazz) {
+
         Optional<ObjectNode> objectNodeOptional = serializationStrategy.deserializeTree(serialized);
         if (objectNodeOptional.isEmpty()) {
             logger.warn("Could not load config file, because deserialized tree is empty.");
@@ -98,13 +78,14 @@ public class ConfigLoader {
         }
         ObjectNode objectNode = objectNodeOptional.get();
 
-        ConfigStatus configStatus = configValidator.validateTree(objectNode, clazz);
-        if (configStatus != ConfigStatus.SUCCESS) {
+        ValidationResult validationResult = configValidator.validate(objectNode);
+        validationResult.logValidationResult(logger);
+
+        ValidationStatus status = validationResult.getStatus();
+        if (status != ValidationStatus.SUCCESS) {
             logger.warn("Could not load config file, because config validation failed.");
             return Optional.empty();
         }
-
-        logger.info("Loaded config {} from file {}", clazz.getSimpleName(), resource.getName());
 
         return serializationStrategy.deserialize(clazz, serialized);
 
@@ -112,7 +93,7 @@ public class ConfigLoader {
 
     public void saveConfig(FileResource resource, Configuration configuration) {
         String serialized = serializationStrategy.serialize(configuration);
-        //resource save logic
+        resource.writeAndSave(serialized);
         logger.info("Saved config {} into file {}", configuration.getClass().getSimpleName(), resource.getName());
     }
 
