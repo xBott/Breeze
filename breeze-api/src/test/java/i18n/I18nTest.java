@@ -22,8 +22,7 @@ public class I18nTest {
     static void setup() {
         translationModuleManager = new TranslationModuleManager();
 
-        TranslationModule module = new TranslationModule("test");
-        module
+        TranslationModule module = new TranslationModule("test")
                 .addTranslation(
                         Locale.ENGLISH,
                         new SimpleTranslation()
