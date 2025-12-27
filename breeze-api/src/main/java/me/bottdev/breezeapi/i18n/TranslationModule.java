@@ -17,13 +17,17 @@ public class TranslationModule {
     @Getter
     private final String name;
 
+    public int getSize() {
+        return translations.size();
+    }
+
     public TranslationModule addTranslation(Locale locale, Translation translation) {
         translations.put(locale, translation);
         return this;
     }
 
     public Optional<Translation> getTranslation(Locale locale) {
-        return Optional.of(translations.get(locale));
+        return Optional.ofNullable(translations.get(locale));
     }
 
     public boolean has(Locale locale, String key) {
