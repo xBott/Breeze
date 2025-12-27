@@ -33,7 +33,7 @@ public class ValidationResult {
         String path = node.getPath();
         ValidationStatus status = node.getStatus();
 
-        logger.info("field: {} - {}", path.isEmpty() ? "<root>" : path, status.getColored());
+        logger.info("{} - {}", path.isEmpty() ? "<root>" : path, status.getColored());
 
         if (status == ValidationStatus.ERROR) {
             Set<ValidationError> errors = node.getErrors();
