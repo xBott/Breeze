@@ -3,10 +3,8 @@ package config;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import me.bottdev.breezeapi.config.ConfigLoader;
+import me.bottdev.breezeapi.config.SimpleConfigLoader;
 import me.bottdev.breezeapi.config.Configuration;
-import me.bottdev.breezeapi.config.validation.ValidationError;
-import me.bottdev.breezeapi.config.validation.ValidationNode;
 import me.bottdev.breezeapi.config.validation.ValidationResult;
 import me.bottdev.breezeapi.config.validation.ValidationStatus;
 import me.bottdev.breezeapi.config.validation.patterns.PathEndsPattern;
@@ -20,7 +18,6 @@ import me.bottdev.breezeapi.serialization.mappers.JsonMapper;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -98,8 +95,12 @@ public class ConfigValidationTest {
                 .addRule(new PathEndsPattern("number"), new MoreRule(0))
                 .addRule(new PathEndsPattern("anotherSection.doubleValue"), new RangeRule(0.0, 1.0));
 
-        ConfigLoader configLoader = new ConfigLoader(jsonMapper, validator);
-        Optional<TestConfiguration> configOptional = configLoader.loadConfig(json, TestConfiguration.class);
+        SimpleConfigLoader<TestConfiguration> configLoader = new SimpleConfigLoader<>(
+                TestConfiguration.class,
+                jsonMapper,
+                validator
+        );
+        Optional<TestConfiguration> configOptional = configLoader.load(json);
 
         assertTrue(configOptional.isPresent());
         TestConfiguration config = configOptional.get();
