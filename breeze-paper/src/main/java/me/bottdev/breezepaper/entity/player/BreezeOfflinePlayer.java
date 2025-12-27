@@ -10,24 +10,24 @@ import java.util.UUID;
 public class BreezeOfflinePlayer implements BreezePlayer {
 
     @Getter
-    private final OfflinePlayer player;
+    private final OfflinePlayer offlinePlayer;
 
     public BreezeOfflinePlayer(OfflinePlayer player) {
-        this.player = player;
+        this.offlinePlayer = player;
     }
 
     @Override
     public UUID getUUID() {
-        return player.getUniqueId();
+        return offlinePlayer.getUniqueId();
     }
 
     @Override
     public String getName() {
-        return player.getName();
+        return offlinePlayer.getName();
     }
 
     public Optional<BreezeOnlinePlayer> getOnlinePlayer() {
-        Player onlinePlayer = player.getPlayer();
+        Player onlinePlayer = offlinePlayer.getPlayer();
         if (onlinePlayer == null) return Optional.empty();
         return Optional.of(new BreezeOnlinePlayer(onlinePlayer));
     }
