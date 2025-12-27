@@ -10,7 +10,7 @@ import me.bottdev.breezeapi.config.validation.types.RuleConfigValidator;
 import me.bottdev.breezeapi.di.annotations.Proxy;
 import me.bottdev.breezeapi.resource.annotations.HotReload;
 import me.bottdev.breezeapi.resource.proxy.ResourceProvider;
-import me.bottdev.breezeapi.config.ConfigLoader;
+import me.bottdev.breezeapi.config.SimpleConfigLoader;
 import me.bottdev.breezeapi.resource.annotations.sources.DriveSource;
 import me.bottdev.breezeapi.resource.annotations.ProvideResource;
 import me.bottdev.breezeapi.resource.types.file.SingleFileResource;
@@ -35,11 +35,13 @@ public interface SettingsProvider extends ResourceProvider, Cacheable {
                 .addRootRule(new StructureRule(SettingsConfiguration.class))
                 .addRule(new PathEndsPattern("version"), new RangeRule(0.0, 1.0));
 
-        ConfigLoader loader = new ConfigLoader(new JsonMapper(), validator);
-
-        return getSettingsResource().flatMap(resource ->
-            loader.loadConfig(resource, SettingsConfiguration.class)
+        SimpleConfigLoader<SettingsConfiguration> loader = new SimpleConfigLoader<>(
+                SettingsConfiguration.class,
+                new JsonMapper(),
+                validator
         );
+
+        return getSettingsResource().flatMap(loader::load);
 
     }
 
