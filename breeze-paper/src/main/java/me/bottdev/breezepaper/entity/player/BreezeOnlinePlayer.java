@@ -11,6 +11,7 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
+import java.util.Locale;
 import java.util.UUID;
 
 public class BreezeOnlinePlayer implements BreezeEntity, BreezeLivingEntity, BreezePlayer, MessageReceiver {
@@ -38,6 +39,10 @@ public class BreezeOnlinePlayer implements BreezeEntity, BreezeLivingEntity, Bre
     @Override
     public String getName() {
         return bukkitPlayer.getName();
+    }
+
+    public Locale getLocale() {
+        return bukkitPlayer.locale();
     }
 
     @Override
