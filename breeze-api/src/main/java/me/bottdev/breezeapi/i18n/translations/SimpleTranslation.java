@@ -1,6 +1,7 @@
-package me.bottdev.breezeapi.i18n;
+package me.bottdev.breezeapi.i18n.translations;
 
 import lombok.Getter;
+import me.bottdev.breezeapi.i18n.Translation;
 
 import java.util.HashMap;
 import java.util.Map;
