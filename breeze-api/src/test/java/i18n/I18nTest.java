@@ -1,9 +1,7 @@
 package i18n;
 
-import me.bottdev.breezeapi.i18n.I18n;
-import me.bottdev.breezeapi.i18n.SimpleTranslation;
-import me.bottdev.breezeapi.i18n.TranslationModule;
-import me.bottdev.breezeapi.i18n.TranslationModuleManager;
+import me.bottdev.breezeapi.i18n.*;
+import me.bottdev.breezeapi.i18n.translations.SimpleTranslation;
 import me.bottdev.breezeapi.i18n.types.SimpleI18n;
 import me.bottdev.breezeapi.log.types.SimpleLogger;
 import org.junit.jupiter.api.BeforeAll;
