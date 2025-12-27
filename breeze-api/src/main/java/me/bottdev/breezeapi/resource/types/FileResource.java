@@ -24,6 +24,10 @@ public interface FileResource extends Resource {
         return getTempFile().getAbsolutePath().getFileName().toString();
     }
 
+    default String getExtension() {
+        return FileCommons.getExtension(getName());
+    }
+
     default Optional<String> read() {
         try {
             String content = BreezeFileReader.INSTANCE.readString(getTempFile().toFile());
