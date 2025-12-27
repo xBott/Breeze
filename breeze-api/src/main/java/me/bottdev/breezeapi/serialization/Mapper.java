@@ -8,6 +8,8 @@ public interface Mapper {
 
     BreezeLogger getLogger();
 
+    String getExtension();
+
     String serialize(Object object);
 
     <T> Optional<T> deserialize(Class<T> clazz, String serialized);

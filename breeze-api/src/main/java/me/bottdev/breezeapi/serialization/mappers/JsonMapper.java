@@ -15,6 +15,10 @@ public class JsonMapper implements JacksonMapper {
     private final BreezeLogger logger = new SimpleTreeLogger("JsonMapper");
     private final PolymorphicRegistry registry = new PolymorphicRegistry();
 
+    @Override
+    public String getExtension() {
+        return "json";
+    }
 
     @Override
     public ObjectMapper getObjectMapper() {
