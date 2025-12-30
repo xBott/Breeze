@@ -61,6 +61,7 @@ public class DriveResourceSource implements ResourceSource {
         }
 
         if (Files.isRegularFile(path)) {
+            resourceTree.setRoot(path.getParent());
             createSingleFileResource(path).ifPresent(resource ->
                     resourceTree.add("",  resource)
             );
@@ -68,6 +69,7 @@ public class DriveResourceSource implements ResourceSource {
         } else {
 
             Map<String, FileResource> resources = createTreeFileResources(path);
+            resourceTree.setRoot(path);
             resourceTree.addAll(resources);
 
         }
