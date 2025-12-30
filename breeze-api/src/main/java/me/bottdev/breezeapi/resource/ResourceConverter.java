@@ -41,6 +41,7 @@ public class ResourceConverter {
     ) {
 
         ResourceTree<T> newResourceTree = new ResourceTree<>();
+        resourceTree.getRoot().ifPresent(newResourceTree::setRoot);
 
         resourceTree.getData().forEach((key, value) -> {
 
