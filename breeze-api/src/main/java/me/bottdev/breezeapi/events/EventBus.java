@@ -10,7 +10,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class EventBus {
 
-    private static final String loggerPrefix = "[EventBus]";
+    private static final String loggerPrefix = "";
 
     private final TreeLogger logger;
     private final Map<Class<? extends Event>, ListenerContainer> containers = new HashMap<>();
