@@ -80,6 +80,8 @@ public class DriveResourceSource implements ResourceSource {
     private void createFile(Path path, String defaultValue) throws IOException {
         logger.info("Creating file {}", path);
         File created = FileCommons.createFileOrDirectory(path);
+
+        if (Files.isDirectory(path)) return;
         BreezeFileWriter.INSTANCE.writeString(created, bufferedWriter ->
                 bufferedWriter.write(defaultValue)
         );
