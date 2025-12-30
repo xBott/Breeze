@@ -127,6 +127,8 @@ public class DriveResourceSource implements ResourceSource {
                 @Override @NotNull
                 public FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) {
 
+                    if (file.getFileName().toString().contains(".swp")) return FileVisitResult.CONTINUE;
+
                     createSingleFileResource(file).ifPresent(resource -> {
 
                         Path relativePath = enginePath.relativize(file);
