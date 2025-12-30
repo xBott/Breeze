@@ -1,15 +1,24 @@
 package me.bottdev.breezeapi.resource;
 
-import lombok.Getter;
+import lombok.*;
 
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+@NoArgsConstructor
+@AllArgsConstructor
 public class ResourceTree<T extends Resource> {
 
     @Getter
     private final HashMap<String, T> data = new HashMap<>();
+    @Setter
+    public Path root = null;
+
+    public Optional<Path> getRoot() {
+        return Optional.ofNullable(root);
+    }
 
     public int getSize() {
         return data.size();
@@ -17,6 +26,10 @@ public class ResourceTree<T extends Resource> {
 
     public boolean isEmpty() {
         return data.isEmpty();
+    }
+
+    public boolean contains(String key) {
+        return data.containsKey(key);
     }
 
     public ResourceTree<T> add(String key, T resource) {
@@ -37,8 +50,8 @@ public class ResourceTree<T extends Resource> {
         return data.size() == 1;
     }
 
-    public Optional<T> getSingle() {
-        if (!isSingle()) return Optional.empty();
+    public Optional<T> getFirst() {
+        if (isEmpty()) return Optional.empty();
         T resource = data.values().stream().toList().getFirst();
         return Optional.ofNullable(resource);
     }
