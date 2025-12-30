@@ -76,17 +76,11 @@ public class I18nResourceTest {
 
         logger.info("Test load translations from resource tree:");
         ResourceTree<SingleFileResource> translationsTree = translationProvider.getTranslationsTree();
-
-        logger.info("Loaded {}x resources:", translationsTree.getSize());
-        translationsTree.getData().forEach((path, resource) -> {
-            logger.info("- {}", path);
-        });
-
         TranslationModule translationModule = translationLoader.loadModule("Test", translationsTree);
 
         logger.info("Loaded translation module with {}x translations:", translationModule.getSize());
 
-        assertEquals(2, translationModule.getSize());
+        assertEquals(3, translationModule.getSize());
 
         translationModuleManager.register(translationModule);
 
@@ -113,6 +107,18 @@ public class I18nResourceTest {
 
         assertEquals("Привет мир!", ruRu.get("greeting"));
         assertEquals("Пока!", ruRu.get("farewell"));
+
+        I18n deDe = new SimpleI18n(
+                Locale.forLanguageTag("de-DE"),
+                Locale.forLanguageTag("en-US"),
+                translationModuleManager
+        );
+
+        logger.info("Greeting de-DE: {}", deDe.get("greeting"));
+        logger.info("Farewell de-DE: {}", deDe.get("farewell"));
+
+        assertEquals("Hallo Welt!", deDe.get("greeting"));
+        assertEquals("Bis jetzt!", deDe.get("farewell"));
 
     }
 
