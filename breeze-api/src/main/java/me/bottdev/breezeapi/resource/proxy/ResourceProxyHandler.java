@@ -64,7 +64,7 @@ public interface ResourceProxyHandler extends ProxyHandler {
 
             ResourceSource source = sourceOptional.get();
             ResourceTree<FileResource> resourceTree = source.provide(method);
-            if (resourceTree.isEmpty()) continue;
+            if (resourceTree.isEmpty() && sourceType != SourceType.DRIVE) continue;
 
             if (isTree) {
                 return handleTree(resourceTree, requiredType);
