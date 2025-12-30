@@ -50,7 +50,7 @@ public class SimpleTreeLogger implements TreeLogger {
     @Override
     public void info(String message, Object... args) {
         if (!isEnabled(LogLevel.INFO)) return;
-        logger.info(formatTree(SPACE_4, "└─", replaceArguments(message, args)));
+        logger.info(formatTree(SPACE_4, "└─", message), args);
     }
 
     @Override
@@ -62,7 +62,7 @@ public class SimpleTreeLogger implements TreeLogger {
     @Override
     public void warn(String message, Object... args) {
         if (!isEnabled(LogLevel.WARN)) return;
-        logger.warn(formatTree(SPACE_4, "└─<yellow>[!]", replaceArguments(message, args)));
+        logger.warn(formatTree(SPACE_4, "└─<yellow>[!]", message), args);
     }
 
     @Override
@@ -86,7 +86,7 @@ public class SimpleTreeLogger implements TreeLogger {
     @Override
     public void debug(String message, Object... args) {
         if (!isEnabled(LogLevel.DEBUG)) return;
-        logger.debug(formatTree(SPACE_3, "└─[~]", replaceArguments(message, args)));
+        logger.debug(formatTree(SPACE_3, "└─[~]", message), args);
     }
 
 }
