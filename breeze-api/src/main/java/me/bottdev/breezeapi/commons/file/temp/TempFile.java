@@ -19,16 +19,13 @@ public class TempFile {
     public static TempFile asStandalone(Path relativePath, Path absolutePath) {
         return new TempFile(relativePath, absolutePath, null);
     }
-    public static TempFile asCopy(Path relativePath, Path absolutePath, Path sourcePath) {
-        return new TempFile(relativePath, absolutePath, sourcePath);
-    }
 
     private final Path relativePath;
     private final Path absolutePath;
     @Setter
     private Path sourcePath;
 
-    public boolean isCopy() {
+    public boolean hasSource() {
         return sourcePath != null;
     }
 
@@ -44,6 +41,10 @@ public class TempFile {
         return absolutePath.toFile();
     }
 
+    public Optional<Path> getSourcePath() {
+        return Optional.ofNullable(sourcePath);
+    }
+
     public Optional<File> getSourceFile() {
         if (sourcePath == null) return Optional.empty();
         return Optional.of(sourcePath.toFile());
@@ -57,13 +58,11 @@ public class TempFile {
         File sourceFile = sourceFileOptional.get();
         if (!sourceFile.exists()) return;
 
-        BreezeFileWriter.INSTANCE.writeChunks(toFile(), out -> {
-
-            BreezeFileReader.INSTANCE.readChunks(sourceFile, (data, length) -> {
-                out.write(data, 0, length);
-            });
-
-        });
+        BreezeFileWriter.INSTANCE.writeChunks(toFile(), out ->
+                BreezeFileReader.INSTANCE.readChunks(sourceFile, (data, length) ->
+                        out.write(data, 0, length)
+                )
+        );
 
     }
 
