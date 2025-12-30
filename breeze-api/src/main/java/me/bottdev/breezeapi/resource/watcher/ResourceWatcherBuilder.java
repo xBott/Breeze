@@ -1,22 +1,46 @@
 package me.bottdev.breezeapi.resource.watcher;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.events.EventBus;
 import me.bottdev.breezeapi.lifecycle.LifecycleBuilder;
+import me.bottdev.breezeapi.resource.watcher.types.SingleResourceWatcher;
+import me.bottdev.breezeapi.resource.watcher.types.TreeResourceWatcher;
 
-@RequiredArgsConstructor
-public class ResourceWatcherBuilder implements LifecycleBuilder<ResourceWatcher> {
+import java.io.IOException;
 
-    private final EventBus eventBus;
+public interface ResourceWatcherBuilder<T extends AbstractResourceWatcher<?>> extends LifecycleBuilder<T> {
 
-    @Override
-    public ResourceWatcher build() {
-        try {
-            return new ResourceWatcher(eventBus);
-        } catch (Exception ex) {
-            ex.printStackTrace();
+    @Getter
+    @RequiredArgsConstructor
+    class Single implements ResourceWatcherBuilder<SingleResourceWatcher> {
+
+        private final EventBus eventBus;
+
+        @Override
+        public SingleResourceWatcher build() {
+            try {
+                return new SingleResourceWatcher(eventBus);
+            } catch (IOException ex) {
+                return null;
+            }
         }
-        return null;
+    }
+
+    @Getter
+    @RequiredArgsConstructor
+    class Tree implements ResourceWatcherBuilder<TreeResourceWatcher> {
+
+        private final EventBus eventBus;
+
+        @Override
+        public TreeResourceWatcher build() {
+            try {
+                return new TreeResourceWatcher(eventBus);
+            } catch (IOException ex) {
+                return null;
+            }
+        }
     }
 
 }

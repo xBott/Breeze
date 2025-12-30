@@ -5,26 +5,31 @@ import me.bottdev.breezeapi.di.proxy.ProxyHandlerFactory;
 import me.bottdev.breezeapi.resource.proxy.types.HotReloadResourceProxyHandler;
 import me.bottdev.breezeapi.resource.proxy.types.SimpleResourceProxyHandler;
 import me.bottdev.breezeapi.resource.source.ResourceSourceRegistry;
-import me.bottdev.breezeapi.resource.watcher.ResourceWatcher;
+import me.bottdev.breezeapi.resource.watcher.types.SingleResourceWatcher;
+import me.bottdev.breezeapi.resource.watcher.types.TreeResourceWatcher;
 
 public class ResourceProxyHandlerFactory implements ProxyHandlerFactory {
 
     private final ResourceSourceRegistry resourceSourceRegistry;
-    private final ResourceWatcher resourceWatcher;
+    private final SingleResourceWatcher singleResourceWatcher;
+    private final TreeResourceWatcher treeResourceWatcher;
 
     public ResourceProxyHandlerFactory(
             ResourceSourceRegistry resourceSourceRegistry
     ) {
         this.resourceSourceRegistry = resourceSourceRegistry;
-        this.resourceWatcher = null;
+        this.singleResourceWatcher = null;
+        this.treeResourceWatcher = null;
     }
 
     public ResourceProxyHandlerFactory(
             ResourceSourceRegistry resourceSourceRegistry,
-            ResourceWatcher resourceWatcher
+            SingleResourceWatcher singleResourceWatcher,
+            TreeResourceWatcher treeResourceWatcher
     ) {
         this.resourceSourceRegistry = resourceSourceRegistry;
-        this.resourceWatcher = resourceWatcher;
+        this.singleResourceWatcher = singleResourceWatcher;
+        this.treeResourceWatcher = treeResourceWatcher;
     }
 
     @Override
@@ -34,7 +39,7 @@ public class ResourceProxyHandlerFactory implements ProxyHandlerFactory {
 
     @Override
     public ProxyHandler create(Class<?> targetClass) {
-        boolean hotReload = resourceWatcher != null;
+        boolean hotReload = singleResourceWatcher != null && treeResourceWatcher != null;
         return hotReload ? createHotReload() : createSimple();
 
     }
@@ -44,7 +49,7 @@ public class ResourceProxyHandlerFactory implements ProxyHandlerFactory {
     }
 
     private ProxyHandler createHotReload() {
-        return new HotReloadResourceProxyHandler(resourceSourceRegistry, resourceWatcher);
+        return new HotReloadResourceProxyHandler(resourceSourceRegistry, singleResourceWatcher, treeResourceWatcher);
     }
 
 }

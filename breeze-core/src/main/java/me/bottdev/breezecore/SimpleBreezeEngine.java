@@ -28,8 +28,9 @@ import me.bottdev.breezeapi.resource.source.SourceType;
 import me.bottdev.breezeapi.resource.source.types.DriveResourceSource;
 import me.bottdev.breezeapi.resource.source.types.DummyResourceSource;
 import me.bottdev.breezeapi.resource.source.types.JarResourceSource;
-import me.bottdev.breezeapi.resource.watcher.ResourceWatcher;
+import me.bottdev.breezeapi.resource.watcher.types.SingleResourceWatcher;
 import me.bottdev.breezeapi.resource.watcher.ResourceWatcherBuilder;
+import me.bottdev.breezeapi.resource.watcher.types.TreeResourceWatcher;
 import me.bottdev.breezeapi.serialization.MapperRegistry;
 import me.bottdev.breezeapi.serialization.MapperType;
 import me.bottdev.breezeapi.serialization.mappers.JsonMapper;
@@ -58,7 +59,8 @@ public class SimpleBreezeEngine implements BreezeEngine {
 
     private final LifecycleManager lifecycleManager = new LifecycleManager(logger);
     private final CacheManager cacheManager = lifecycleManager.create(new CacheManagerBuilder());
-    private final ResourceWatcher resourceWatcher = lifecycleManager.create(new ResourceWatcherBuilder(eventBus));
+    private final SingleResourceWatcher singleResourceWatcher = lifecycleManager.create(new ResourceWatcherBuilder.Single(eventBus));
+    private final TreeResourceWatcher treeResourceWatcher = lifecycleManager.create(new ResourceWatcherBuilder.Tree(eventBus));
 
     private final Path dataFolder;
 
@@ -110,7 +112,7 @@ public class SimpleBreezeEngine implements BreezeEngine {
         ProxyFactoryRegistry proxyFactoryRegistry = new ProxyFactoryRegistry()
                 .register(new CacheProxyHandlerFactory(cacheManager), 0)
                 .register(
-                        new ResourceProxyHandlerFactory(resourceSourceRegistry, resourceWatcher),
+                        new ResourceProxyHandlerFactory(resourceSourceRegistry, singleResourceWatcher, treeResourceWatcher),
                         1
                 );
 

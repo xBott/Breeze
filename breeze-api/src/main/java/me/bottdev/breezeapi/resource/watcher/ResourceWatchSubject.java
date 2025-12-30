@@ -1,14 +1,29 @@
 package me.bottdev.breezeapi.resource.watcher;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import me.bottdev.breezeapi.resource.types.FileResource;
+import java.nio.file.Path;
+import java.util.Optional;
 
-@Getter
-@RequiredArgsConstructor
-public class ResourceWatchSubject {
+public interface ResourceWatchSubject<T> {
 
-    private final FileResource resource;
-    private final String eventId;
+    @FunctionalInterface
+    interface Registration {
+        void accept(Path path, String key);
+    }
+
+    T getTarget();
+
+    String getEventId();
+
+    Optional<Path> getPath();
+
+    Optional<String> getRegistrationKey();
+
+    default void ifPresent(Registration registration) {
+        getPath().ifPresent(path ->
+                getRegistrationKey().ifPresent(registrationKey ->
+                        registration.accept(path, registrationKey)
+                )
+        );
+    }
 
 }
