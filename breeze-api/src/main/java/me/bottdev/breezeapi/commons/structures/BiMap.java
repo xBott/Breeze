@@ -1,7 +1,9 @@
 package me.bottdev.breezeapi.commons.structures;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class BiMap<K, V> {
 
@@ -13,6 +15,14 @@ public class BiMap<K, V> {
         removeByValue(v);
         forward.put(k, v);
         backward.put(v, k);
+    }
+
+    public Set<K> keySet() {
+        return new HashSet<>(forward.keySet());
+    }
+
+    public Set<V> values() {
+        return new HashSet<>(forward.values());
     }
 
     public boolean containsKey(K k) {
@@ -31,14 +41,16 @@ public class BiMap<K, V> {
         return backward.get(v);
     }
 
-    public void removeByKey(K k) {
+    public V removeByKey(K k) {
         V v = forward.remove(k);
         if (v != null) backward.remove(v);
+        return v;
     }
 
-    public void removeByValue(V v) {
+    public K removeByValue(V v) {
         K k = backward.remove(v);
         if (k != null) forward.remove(k);
+        return k;
     }
 
     public void clear() {
