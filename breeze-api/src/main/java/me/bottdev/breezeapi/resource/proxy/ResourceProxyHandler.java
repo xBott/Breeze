@@ -83,7 +83,7 @@ public interface ResourceProxyHandler extends ProxyHandler {
     }
 
     private Object handleSingle(ResourceTree<FileResource> resourceTree, Class<? extends Resource> requiredType) {
-        return resourceTree.getSingle()
+        return resourceTree.getFirst()
                 .flatMap(resource ->
                         ResourceConverter.convertSingle(requiredType, resource)
                 ).orElse(null);
