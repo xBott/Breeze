@@ -32,6 +32,7 @@ public class TreeResourceWatcher extends AbstractResourceWatcher<ResourceTree<? 
 
     @Override
     protected Optional<ResourceWatchSubject<ResourceTree<? extends FileResource>>> getSubjectByPath(Path path) {
+        if (path.toString().contains(".swp")) return Optional.empty();
         return watchSubjects.values().stream()
                 .filter(subject -> {
 
@@ -76,7 +77,8 @@ public class TreeResourceWatcher extends AbstractResourceWatcher<ResourceTree<? 
         resourceTree.getRoot().ifPresent(root -> {
 
             Path relativePath = root.relativize(path);
-            resourceTree.get(relativePath.toString()).ifPresent(resource -> {
+
+            resourceTree.getEndingWith(relativePath.toString()).ifPresent(resource -> {
 
                 try {
                     resource.getTempFile().update();
