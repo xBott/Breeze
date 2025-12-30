@@ -119,12 +119,23 @@ public class TranslationLoader implements ConfigLoader<ConfigTranslation> {
         return supplier.get();
     }
 
-    private Locale localeFromFilename(String filename) {
+    private Optional<Locale> localeFromFilename(String filename) {
 
-        String base = filename.substring(0, filename.lastIndexOf('.'));
+        int dot = filename.lastIndexOf('.');
+        if (dot <= 0) {
+            return Optional.empty();
+        }
+
+        String base = filename.substring(0, dot);
         String tag = base.replace('_', '-');
 
-        return Locale.forLanguageTag(tag);
+        Locale locale = Locale.forLanguageTag(tag);
+
+        if (locale == Locale.ROOT) {
+            return Optional.empty();
+        }
+
+        return Optional.of(locale);
     }
 
     public TranslationModule loadModule(String name, ResourceTree<? extends FileResource> resourceTree) {
@@ -133,10 +144,13 @@ public class TranslationLoader implements ConfigLoader<ConfigTranslation> {
 
         resourceTree.getData().forEach((key, resource) -> {
             String fileName = resource.getName();
-            Locale locale = localeFromFilename(fileName);
-            load(resource).ifPresent(config -> {
-                translationModule.addTranslation(locale, config);
-            });
+
+            localeFromFilename(fileName).ifPresent(locale ->
+                    load(resource).ifPresent(config ->
+                            translationModule.addTranslation(locale, config)
+                    )
+            );
+
         });
 
         return translationModule;
