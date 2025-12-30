@@ -46,6 +46,13 @@ public class ResourceTree<T extends Resource> {
         return Optional.ofNullable(data.get(key));
     }
 
+    public Optional<T> getEndingWith(String ending) {
+        return data.keySet().stream()
+                .filter(key -> key.endsWith(ending))
+                .findFirst()
+                .map(data::get);
+    }
+
     public boolean isSingle() {
         return data.size() == 1;
     }
