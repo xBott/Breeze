@@ -1,14 +1,15 @@
 package me.bottdev.breezeadmin;
 
 import lombok.RequiredArgsConstructor;
-import me.bottdev.breezeadmin.providers.SettingsProvider;
+import me.bottdev.breezeadmin.config.AdminConfigLoader;
+import me.bottdev.breezeadmin.translation.AdminTranslationLoader;
 import me.bottdev.breezeapi.di.annotations.Inject;
+import me.bottdev.breezeapi.i18n.TranslationModule;
 import me.bottdev.breezeapi.log.BreezeLogger;
 import me.bottdev.breezeapi.log.types.SimpleLogger;
 import me.bottdev.breezeapi.modules.Module;
 import me.bottdev.breezeapi.modules.ModuleStatus;
 import me.bottdev.breezeapi.modules.annotations.ModuleInfo;
-import me.bottdev.breezeapi.log.types.SimpleTreeLogger;
 
 import java.io.File;
 
@@ -22,7 +23,9 @@ public class AdminModule extends Module {
     private ModuleStatus moduleStatus = ModuleStatus.DISABLED;
 
     @Inject
-    private SettingsProvider settingsProvider;
+    private AdminConfigLoader adminConfigLoader;
+    @Inject
+    private AdminTranslationLoader adminTranslationLoader;
 
     @Override
     public ModuleStatus getStatus() {
@@ -36,9 +39,13 @@ public class AdminModule extends Module {
 
     @Override
     public void onEnable() {
-        settingsProvider.loadSettingsConfiguration().ifPresent(configuration -> {
+        adminConfigLoader.getSettings().ifPresent(configuration -> {
             logger.info("Module version is {}", configuration.getVersion());
         });
+
+        TranslationModule translationModule = adminTranslationLoader.getTranslationModule();
+        String moduleName = translationModule.getName();
+        logger.info("Loaded translation module \"{}\"", moduleName);
     }
 
     @Override

@@ -1,0 +1,54 @@
+package me.bottdev.breezeadmin.listeners;
+
+import me.bottdev.breezeadmin.config.AdminConfigLoader;
+import me.bottdev.breezeadmin.translation.AdminTranslationLoader;
+import me.bottdev.breezeapi.di.annotations.Component;
+import me.bottdev.breezeapi.di.annotations.Inject;
+import me.bottdev.breezeapi.events.Listener;
+import me.bottdev.breezeapi.events.annotations.Listen;
+import me.bottdev.breezeapi.log.BreezeLogger;
+import me.bottdev.breezeapi.log.types.SimpleLogger;
+import me.bottdev.breezeapi.resource.watcher.events.ResourceModifyEvent;
+import me.bottdev.breezeapi.resource.watcher.ResourceWatchSubject;
+
+@Component
+public class ResourceListener implements Listener {
+
+    private final BreezeLogger logger = new SimpleLogger("SettingsListener");
+    private final AdminConfigLoader adminConfigLoader;
+    private final AdminTranslationLoader adminTranslationLoader;
+
+    @Inject
+    public ResourceListener(
+            AdminConfigLoader adminConfigLoader,
+            AdminTranslationLoader adminTranslationLoader
+    ) {
+        this.adminConfigLoader = adminConfigLoader;
+        this.adminTranslationLoader = adminTranslationLoader;
+    }
+
+    @Listen(priority = 100)
+    public void onResourceChanged(ResourceModifyEvent event) {
+
+        ResourceWatchSubject subject = event.getWatchSubject();
+        String eventId = subject.getEventId();
+
+        if (eventId.equalsIgnoreCase("admin_settings_reload")) {
+
+        }
+
+        switch (eventId) {
+            case "admin_settings_reload":
+                adminConfigLoader.getSettings().ifPresent(configuration ->
+                        logger.info("Configuration is updated. New version is {}", configuration.getVersion())
+                );
+                break;
+            case "admin_translations_reload":
+                adminTranslationLoader.getTranslationModule();
+                logger.info("Translation module is updated.");
+                break;
+        }
+
+    }
+
+}
