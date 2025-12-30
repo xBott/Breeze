@@ -43,7 +43,7 @@ public class SimpleLogger implements BreezeLogger, ColoredLogger {
     @Override
     public void info(String message, Object... args) {
         if (!isEnabled(LogLevel.INFO)) return;
-        logger.info(format(message), args);
+        logger.info(format(replaceArguments(message, args)));
     }
 
     @Override
@@ -55,7 +55,7 @@ public class SimpleLogger implements BreezeLogger, ColoredLogger {
     @Override
     public void warn(String message, Object... args) {
         if (!isEnabled(LogLevel.WARN)) return;
-        logger.warn(format("<yellow>[!] " + message), args);
+        logger.warn(format("<yellow>[!] " + replaceArguments(message, args)));
     }
 
     @Override
@@ -79,7 +79,7 @@ public class SimpleLogger implements BreezeLogger, ColoredLogger {
     @Override
     public void debug(String message, Object... args) {
         if (!isEnabled(LogLevel.DEBUG)) return;
-        logger.debug(format("[~] " + message), args);
+        logger.debug(format("[~] " + replaceArguments(message, args)));
     }
 
 }
