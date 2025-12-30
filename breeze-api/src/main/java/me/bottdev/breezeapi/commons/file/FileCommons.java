@@ -6,6 +6,7 @@ import me.bottdev.breezeapi.log.BreezeLogger;
 import me.bottdev.breezeapi.log.types.SimpleTreeLogger;
 
 import java.io.*;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Consumer;
@@ -71,16 +72,18 @@ public class FileCommons {
 
     public static File createFileOrDirectory(Path path) throws IOException {
         if (Files.exists(path)) return path.toFile();
-        if (Files.isDirectory(path)) {
-            Files.createDirectories(path);
 
-        } else {
+        try {
+            Files.createDirectories(path);
+            return path.toFile();
+
+        } catch (FileAlreadyExistsException e) {
             Files.createDirectories(path.getParent());
             Files.createFile(path);
+            return path.toFile();
         }
-
-        return path.toFile();
     }
+
 
     public static void copyFile(File source, File target) throws IOException {
 
