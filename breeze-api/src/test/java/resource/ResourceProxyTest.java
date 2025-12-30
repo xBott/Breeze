@@ -11,7 +11,6 @@ import me.bottdev.breezeapi.events.EventBus;
 import me.bottdev.breezeapi.lifecycle.LifecycleManager;
 import me.bottdev.breezeapi.log.types.SimpleTreeLogger;
 import me.bottdev.breezeapi.resource.ResourceTree;
-import me.bottdev.breezeapi.resource.annotations.HotReload;
 import me.bottdev.breezeapi.resource.annotations.sources.DriveSource;
 import me.bottdev.breezeapi.resource.annotations.sources.DummySource;
 import me.bottdev.breezeapi.resource.annotations.ProvideResource;
@@ -25,8 +24,6 @@ import me.bottdev.breezeapi.resource.source.types.DummyResourceSource;
 import me.bottdev.breezeapi.resource.source.types.JarResourceSource;
 import me.bottdev.breezeapi.resource.types.FileResource;
 import me.bottdev.breezeapi.resource.types.file.SingleFileResource;
-import me.bottdev.breezeapi.resource.watcher.ResourceWatcher;
-import me.bottdev.breezeapi.resource.watcher.ResourceWatcherBuilder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -70,7 +67,6 @@ public class ResourceProxyTest {
 
 
         @ProvideResource
-        @HotReload(eventId = "test")
         @DriveSource(
                 path = "/Users/romanplakhotniuk/java/Breeze/breeze-api/build/classes/java/test/drive_resource.txt",
                 absolute = true,
@@ -95,7 +91,6 @@ public class ResourceProxyTest {
 
     static LifecycleManager lifecycleManager;
     static CacheManager cacheManager;
-    static ResourceWatcher resourceWatcher;
 
     SomeResourceProvider provider;
 
@@ -105,7 +100,6 @@ public class ResourceProxyTest {
         eventBus = new EventBus(logger);
         lifecycleManager = new LifecycleManager(logger);
         cacheManager = lifecycleManager.create(new CacheManagerBuilder());
-        resourceWatcher = lifecycleManager.create(new ResourceWatcherBuilder(eventBus));
 
         ResourceSourceRegistry resourceSourceRegistry = new ResourceSourceRegistry()
                 .register(SourceType.DRIVE, new DriveResourceSource(Path.of("/")))
@@ -115,7 +109,7 @@ public class ResourceProxyTest {
         proxyFactory = new ProxyFactoryRegistry()
                 .register(new CacheProxyHandlerFactory(cacheManager), 0)
                 .register(
-                        new ResourceProxyHandlerFactory(resourceSourceRegistry, resourceWatcher),
+                        new ResourceProxyHandlerFactory(resourceSourceRegistry),
                         1
                 );
     }
