@@ -223,9 +223,9 @@ public class SimpleBreezeContext implements BreezeContext {
             if (valueOptional.isEmpty()) continue;
 
             Object value = valueOptional.get();
-            field.setAccessible(true);
 
             try {
+                field.setAccessible(true);
                 field.set(object, value);
             } catch (Exception ex) {
                 throw new RuntimeException("Failed to inject dependency into field " + key + " of " + object, ex);
