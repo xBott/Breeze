@@ -13,7 +13,6 @@ public class SimpleI18n implements I18n {
     private final Locale fallbackLocale;
     private final TranslationModuleManager translationModuleManager;
 
-
     @Override
     public String get(String key) {
         return translationModuleManager.getMessage(locale, key).orElse(
