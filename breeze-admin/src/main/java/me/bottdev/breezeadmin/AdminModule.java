@@ -1,5 +1,6 @@
 package me.bottdev.breezeadmin;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeadmin.config.AdminConfigLoader;
 import me.bottdev.breezeadmin.translation.AdminTranslationLoader;
@@ -17,6 +18,7 @@ import java.io.File;
 @RequiredArgsConstructor
 public class AdminModule extends Module {
 
+    @Getter
     private final BreezeLogger logger = new SimpleLogger("BreezeAdmin");
 
     private final File dataFolder;
