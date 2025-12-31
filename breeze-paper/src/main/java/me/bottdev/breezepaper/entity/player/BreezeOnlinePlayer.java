@@ -1,7 +1,9 @@
 package me.bottdev.breezepaper.entity.player;
 
 import lombok.Getter;
-import me.bottdev.breezepaper.MessageReceiver;
+import lombok.RequiredArgsConstructor;
+import me.bottdev.breezeapi.i18n.I18n;
+import me.bottdev.breezepaper.chat.TranslatableMessageReceiver;
 import me.bottdev.breezepaper.dialog.BreezeDialog;
 import me.bottdev.breezepaper.entity.BreezeEntity;
 import me.bottdev.breezepaper.entity.BreezeLivingEntity;
@@ -11,24 +13,34 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
-import java.util.Locale;
 import java.util.UUID;
 
-public class BreezeOnlinePlayer implements BreezeEntity, BreezeLivingEntity, BreezePlayer, MessageReceiver {
+@RequiredArgsConstructor
+public class BreezeOnlinePlayer implements
+        BreezeEntity,
+        BreezeLivingEntity,
+        BreezePlayer,
+        TranslatableMessageReceiver
+{
 
     @Getter
     private final Player bukkitPlayer;
     @Getter
-    private final BreezeLocation location;
-
-    public BreezeOnlinePlayer(Player player) {
-        this.bukkitPlayer = player;
-        this.location = BreezeLocation.fromBukkit(player.getLocation());
-    }
+    private final I18n i18n;
 
     @Override
     public Entity getBukkitEntity() {
         return bukkitPlayer;
+    }
+
+    @Override
+    public BreezeLocation getLocation() {
+        return BreezeLocation.fromBukkit(bukkitPlayer.getLocation());
+    }
+
+    @Override
+    public double getHealth() {
+        return bukkitPlayer.getHealth();
     }
 
     @Override
@@ -39,15 +51,6 @@ public class BreezeOnlinePlayer implements BreezeEntity, BreezeLivingEntity, Bre
     @Override
     public String getName() {
         return bukkitPlayer.getName();
-    }
-
-    public Locale getLocale() {
-        return bukkitPlayer.locale();
-    }
-
-    @Override
-    public double getHealth() {
-        return bukkitPlayer.getHealth();
     }
 
     @Override
