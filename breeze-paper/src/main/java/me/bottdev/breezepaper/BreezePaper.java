@@ -2,22 +2,16 @@ package me.bottdev.breezepaper;
 
 import lombok.Getter;
 import me.bottdev.breezeapi.BreezeEngine;
+import me.bottdev.breezeapi.command.Command;
+import me.bottdev.breezeapi.di.annotations.Inject;
 import me.bottdev.breezeapi.modules.ModuleManager;
 import me.bottdev.breezecore.modules.loaders.DependencyModuleLoader;
 import me.bottdev.breezecore.SimpleBreezeEngine;
-import me.bottdev.breezepaper.entity.player.BreezeOfflinePlayer;
-import me.bottdev.breezepaper.entity.player.BreezeOnlinePlayer;
-import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
+import me.bottdev.breezepaper.autoloaders.PaperCommandAutoloader;
+import me.bottdev.breezepaper.entity.player.BreezePlayerManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class BreezePaper extends JavaPlugin {
 
@@ -26,17 +20,23 @@ public class BreezePaper extends JavaPlugin {
     @Getter
     private BreezeEngine engine;
 
+    @Inject
+    private BreezePlayerManager playerManager;
+
     @Override
     public void onEnable() {
         instance = this;
         engine = new SimpleBreezeEngine(getDataPath().toAbsolutePath());
+
         addDependencyModuleLoader();
+        addCommandAutoloader();
+
         engine.start();
+        //engine.getContext().createComponent("breezeCommand", SupplyType.SINGLETON, new BreezeCommand());
 
-
-        getOnlinePlayers().forEach(player -> {
-            player.sendMessage("Location of player {} is {}", player.getName(), player.getLocation());
-        });
+        playerManager.getPlayers().forEach(player ->
+                player.sendMessage("Location of player {} is {}", player.getName(), player.getLocation())
+        );
 
     }
 
@@ -53,38 +53,8 @@ public class BreezePaper extends JavaPlugin {
         moduleManager.addModuleLoader(loader);
     }
 
-    public static List<BreezeOnlinePlayer> getOnlinePlayers() {
-        return Bukkit.getOnlinePlayers().stream().map(BreezeOnlinePlayer::new).collect(Collectors.toList());
-    }
-
-    public static Optional<BreezeOnlinePlayer> getPlayerByUUID(UUID uuid) {
-        Player player = Bukkit.getPlayer(uuid);
-        if (player == null) {
-            return Optional.empty();
-        }
-        return Optional.of(new BreezeOnlinePlayer(player));
-    }
-
-    public static Optional<BreezeOnlinePlayer> getPlayerByName(String name) {
-        Player player = Bukkit.getPlayer(name);
-        if (player == null) {
-            return Optional.empty();
-        }
-        return Optional.of(new BreezeOnlinePlayer(player));
-    }
-
-    public static List<BreezeOfflinePlayer> getOfflinePlayers() {
-        return Arrays.stream(Bukkit.getOfflinePlayers()).map(BreezeOfflinePlayer::new).toList();
-    }
-
-    public static Optional<BreezeOfflinePlayer> getOfflinePlayerByUUID(UUID uuid) {
-        OfflinePlayer player = Bukkit.getOfflinePlayer(uuid);
-        return Optional.of(new BreezeOfflinePlayer(player));
-    }
-
-    public static Optional<BreezeOfflinePlayer> getOfflinePlayerByName(String name) {
-        OfflinePlayer player = Bukkit.getOfflinePlayer(name);
-        return Optional.of(new BreezeOfflinePlayer(player));
+    private void addCommandAutoloader() {
+        engine.getAutoLoaderRegistry().register(Command.class, new PaperCommandAutoloader(this));
     }
 
 }
