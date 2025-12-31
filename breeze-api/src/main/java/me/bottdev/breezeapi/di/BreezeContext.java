@@ -33,4 +33,19 @@ public interface BreezeContext {
 
     void injectFields(Object object);
 
+    default <T> boolean createComponent(String name, SupplyType type, Class<T> clazz) {
+
+        Optional<?> optionalInjectedObject = injectConstructor(clazz);
+        if (optionalInjectedObject.isEmpty()) return false;
+
+        ObjectSupplier supplier = SupplierFactory.create(
+                type,
+                () -> injectConstructorAndApplyHooks(clazz).orElseThrow()
+        );
+
+        addObjectSupplier(name, supplier);
+
+        return true;
+    }
+
 }
