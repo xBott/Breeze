@@ -30,17 +30,10 @@ public class ComponentReader implements ContextIndexReader<BreezeComponentIndex>
                 SupplyType supplyType = dependency.getSupplyType();
                 Class<?> clazz = classLoader.loadClass(path);
 
-                Optional<?> optionalInjectedObject = context.injectConstructor(clazz);
-                if (optionalInjectedObject.isEmpty()) continue;
-
-                ObjectSupplier supplier = SupplierFactory.create(
-                        supplyType,
-                        () -> context.injectConstructorAndApplyHooks(clazz).orElseThrow()
-                );
-
                 String name = clazz.getSimpleName();
                 name = name.substring(0, 1).toLowerCase() + name.substring(1);
-                context.addObjectSupplier(name, supplier);
+
+                context.createComponent(name, supplyType, clazz);
 
             } catch (Exception ex) {
                 logger.error("Could not find component class " + dependency, ex);
