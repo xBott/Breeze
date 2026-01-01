@@ -4,12 +4,12 @@ import lombok.Getter;
 import me.bottdev.breezeapi.BreezeEngine;
 import me.bottdev.breezeapi.index.BreezeIndexBucket;
 import me.bottdev.breezeapi.index.BreezeIndexBucketContainer;
-import me.bottdev.breezeapi.index.BreezeIndexSerializer;
 import me.bottdev.breezeapi.index.types.BreezeModuleIndex;
 import me.bottdev.breezeapi.log.TreeLogger;
 import me.bottdev.breezeapi.modules.*;
 import me.bottdev.breezeapi.modules.Module;
 import me.bottdev.breezecore.di.resolver.IndexBucketDependencyResolver;
+import me.bottdev.breezecore.modules.ChildFirstClassLoader;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
@@ -25,7 +25,6 @@ public class DependencyModuleLoader implements ModuleLoader {
 
     private final TreeLogger logger;
     private final IndexBucketDependencyResolver bucketDependencyResolver;
-    private final BreezeIndexSerializer serializer = new BreezeIndexSerializer();
 
     @Getter
     private final ClassLoader parentClassLoader;
@@ -103,7 +102,8 @@ public class DependencyModuleLoader implements ModuleLoader {
             try {
 
                 URL jarUrl = jarPath.toUri().toURL();
-                URLClassLoader loader = new ModuleClassLoader(new URL[]{jarUrl}, parentClassLoader);
+
+                URLClassLoader loader = new ChildFirstClassLoader(new URL[]{jarUrl}, parentClassLoader);
 
                 BreezeIndexBucket bucket = getEngine().getIndexLoader().loadFromClassloader(loader);
 
