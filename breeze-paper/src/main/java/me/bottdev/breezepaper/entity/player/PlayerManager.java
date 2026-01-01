@@ -1,5 +1,6 @@
 package me.bottdev.breezepaper.entity.player;
 
+import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.di.annotations.Component;
 import me.bottdev.breezeapi.di.annotations.Inject;
 import me.bottdev.breezeapi.i18n.I18n;
@@ -11,15 +12,10 @@ import org.bukkit.entity.Player;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Component
-public class BreezePlayerManager {
+@RequiredArgsConstructor
+public class PlayerManager {
 
     private final TranslationModuleManager translationModuleManager;
-
-    @Inject
-    public BreezePlayerManager(TranslationModuleManager translationModuleManager) {
-        this.translationModuleManager = translationModuleManager;
-    }
 
     private Locale getPlayerLocale(Player player) {
         return player.locale();
