@@ -3,6 +3,7 @@ package me.bottdev.breezeapi.modules;
 import java.net.URL;
 import java.net.URLClassLoader;
 
+@Deprecated
 public class ModuleClassLoader extends URLClassLoader {
 
     public ModuleClassLoader(URL[] urls, ClassLoader parent) {
@@ -11,28 +12,26 @@ public class ModuleClassLoader extends URLClassLoader {
 
     @Override
     public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-        Class<?> clazz = findLoadedClass(name);
-        if (clazz != null) return clazz;
+        synchronized (getClassLoadingLock(name)) {
 
-        if (name.startsWith("me.bottdev.")) {
-            try {
-                clazz = findClass(name);
-            } catch (ClassNotFoundException ignored) {}
-        }
+            Class<?> clazz = findLoadedClass(name);
+            if (clazz != null) return clazz;
 
-        if (clazz == null) {
-            try {
+            if (name.startsWith("java.")
+                    || name.startsWith("me.bottdev.api.")) {
+
                 clazz = getParent().loadClass(name);
-            } catch (ClassNotFoundException ignored) {}
+            } else {
+                try {
+                    clazz = findClass(name);
+                } catch (ClassNotFoundException e) {
+                    clazz = getParent().loadClass(name);
+                }
+            }
+
+            if (resolve) resolveClass(clazz);
+            return clazz;
         }
-
-        if (clazz == null) {
-            clazz = findClass(name);
-        }
-
-        if (resolve) resolveClass(clazz);
-        return clazz;
-
     }
 
 }
