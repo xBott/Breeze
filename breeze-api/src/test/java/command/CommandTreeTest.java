@@ -4,6 +4,7 @@ import me.bottdev.breezeapi.command.Command;
 import me.bottdev.breezeapi.command.CommandTreeParser;
 import me.bottdev.breezeapi.command.annotations.Argument;
 import me.bottdev.breezeapi.command.annotations.SubCommand;
+import me.bottdev.breezeapi.command.argument.CommandArgumentFactory;
 import me.bottdev.breezeapi.command.nodes.CommandRootNode;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -56,11 +57,11 @@ public class CommandTreeTest {
             System.out.println("this is kick exact root");
         }
 
-        @SubCommand(path = "ban <name> <period> <ip>")
+        @SubCommand(path = "ban <name> <period> <by_ip>")
         private void banExact(
                 @Argument(name = "name") String playerName,
                 @Argument(name = "period") int period,
-                @Argument(name = "ip") boolean byIp
+                @Argument(name = "by_ip") boolean byIp
         ) {
             System.out.println("this is ban exact root");
         }
@@ -71,7 +72,7 @@ public class CommandTreeTest {
 
     @BeforeAll
     static void setup() {
-        parser = new CommandTreeParser();
+        parser = new CommandTreeParser(CommandArgumentFactory.defaultFactory());
     }
 
     @Test
