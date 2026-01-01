@@ -1,31 +1,26 @@
 package me.bottdev.breezeapi.command;
 
+import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.command.annotations.SubCommand;
 import me.bottdev.breezeapi.command.argument.CommandArgument;
 import me.bottdev.breezeapi.command.argument.CommandArgumentFactory;
-import me.bottdev.breezeapi.command.argument.types.BooleanArgument;
-import me.bottdev.breezeapi.command.argument.types.FloatArgument;
-import me.bottdev.breezeapi.command.argument.types.IntegerArgument;
-import me.bottdev.breezeapi.command.argument.types.StringArgument;
 import me.bottdev.breezeapi.command.nodes.CommandArgumentNode;
 import me.bottdev.breezeapi.command.nodes.CommandExecuteNode;
 import me.bottdev.breezeapi.command.nodes.CommandLiteralNode;
 import me.bottdev.breezeapi.command.nodes.CommandRootNode;
+import me.bottdev.breezeapi.log.BreezeLogger;
+import me.bottdev.breezeapi.log.types.SimpleLogger;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Optional;
 
+@RequiredArgsConstructor
 public class CommandTreeParser {
 
-    private final CommandArgumentFactory argumentFactory = new CommandArgumentFactory()
-            .register(String.class, StringArgument::new)
-            .register(int.class, IntegerArgument::new)
-            .register(Integer.class, IntegerArgument::new)
-            .register(float.class, FloatArgument::new)
-            .register(Float.class, FloatArgument::new)
-            .register(boolean.class, BooleanArgument::new)
-            .register(Boolean.class, BooleanArgument::new);
+    private final BreezeLogger logger = new SimpleLogger("CommandTreeParser");
+
+    private final CommandArgumentFactory argumentFactory;
 
     public CommandRootNode parse(Command command) throws IllegalArgumentException {
 
@@ -35,8 +30,6 @@ public class CommandTreeParser {
         Arrays.stream(command.getClass().getDeclaredMethods())
                 .filter(method -> method.isAnnotationPresent(SubCommand.class))
                 .forEach(method -> parseSubCommand(command, rootNode, method));
-
-        printTree(0, rootNode);
 
         return rootNode;
     }
@@ -50,8 +43,6 @@ public class CommandTreeParser {
         SubCommand subCommand = method.getAnnotation(SubCommand.class);
         String path = subCommand.path();
         String trimmedPath = path.trim();
-
-        System.out.println("Parsing sub-command " + path);
 
         String[] parts = trimmedPath.isEmpty() ? new String[]{} : trimmedPath.split(" ");
         int partCount = parts.length;
@@ -76,18 +67,9 @@ public class CommandTreeParser {
             CommandNode newNode;
 
             if (part.startsWith("<") && part.endsWith(">")) {
-
-                String argumentName = part.substring(1, part.length() - 1);
-                Optional<CommandArgument<?>> argumentOptional = argumentFactory.create(argumentName, method);
-                if (argumentOptional.isEmpty()) {
-                    throw new IllegalArgumentException("Failed to parse sub-command \"" + path + "\". Could not find argument " + argumentName);
-                }
-                CommandArgument<?> argument = argumentOptional.get();
-
-                newNode = new CommandArgumentNode(argument);
-
+                newNode = parseArgumentNode(part, method);
             } else {
-                newNode = new CommandLiteralNode(part);
+                newNode = parseLiteralNode(part);
             }
 
             current.addChild(newNode);
@@ -100,19 +82,45 @@ public class CommandTreeParser {
             return;
         }
 
-        CommandExecuteNode executeNode = new CommandExecuteNode(command, method);
-        current.addChild(executeNode);
+        current.addChild(parseExecuteNode(command, method));
 
+    }
+
+    private CommandNode parseArgumentNode(
+            String part,
+            Method method
+    ) {
+        String argumentName = part.substring(1, part.length() - 1);
+        Optional<CommandArgument<?>> argumentOptional = argumentFactory.create(argumentName, method);
+        if (argumentOptional.isEmpty()) {
+            throw new IllegalArgumentException("Failed to parse sub-command. Could not find argument " + argumentName);
+        }
+        CommandArgument<?> argument = argumentOptional.get();
+
+        return new CommandArgumentNode(argument);
+    }
+
+    private CommandNode parseLiteralNode(
+            String part
+    ) {
+        return new CommandLiteralNode(part);
+    }
+
+    private CommandNode parseExecuteNode(
+            Command command,
+            Method method
+    ) {
+        return new CommandExecuteNode(command, method);
     }
 
     public void printTree(int indent, CommandNode node) {
 
-        System.out.println(
-                new StringBuilder()
-                    .append("    ".repeat(indent))
-                    .append("- ")
-                    .append(node.getDisplayName())
-        );
+        String message =
+                "    ".repeat(indent) +
+                "- " +
+                node.getDisplayName();
+
+        logger.info(message);
 
         for (CommandNode child : node.getChildren().values()) {
             printTree(indent + 1, child);
