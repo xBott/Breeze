@@ -1,6 +1,10 @@
 package me.bottdev.breezeapi.command.argument;
 
 import me.bottdev.breezeapi.command.annotations.Argument;
+import me.bottdev.breezeapi.command.argument.types.BooleanArgument;
+import me.bottdev.breezeapi.command.argument.types.FloatArgument;
+import me.bottdev.breezeapi.command.argument.types.IntegerArgument;
+import me.bottdev.breezeapi.command.argument.types.StringArgument;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -10,6 +14,17 @@ import java.util.Optional;
 import java.util.function.Function;
 
 public class CommandArgumentFactory {
+
+    public static CommandArgumentFactory defaultFactory() {
+        return new CommandArgumentFactory()
+                .register(String.class, StringArgument::new)
+                .register(int.class, IntegerArgument::new)
+                .register(Integer.class, IntegerArgument::new)
+                .register(float.class, FloatArgument::new)
+                .register(Float.class, FloatArgument::new)
+                .register(boolean.class, BooleanArgument::new)
+                .register(Boolean.class, BooleanArgument::new);
+    }
 
     private final Map<Class<?>, Function<String, CommandArgument<?>>> factories = new HashMap<>();
 
