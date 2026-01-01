@@ -15,6 +15,7 @@ import me.bottdev.breezeapi.di.suppliers.SingletonSupplier;
 import me.bottdev.breezeapi.events.EventBus;
 import me.bottdev.breezeapi.events.Listener;
 import me.bottdev.breezeapi.events.ListenerAutoLoader;
+import me.bottdev.breezeapi.i18n.TranslationModuleManager;
 import me.bottdev.breezeapi.index.BreezeIndexBucket;
 import me.bottdev.breezeapi.index.BreezeIndexLoader;
 import me.bottdev.breezeapi.di.BreezeContext;
@@ -56,6 +57,7 @@ public class SimpleBreezeEngine implements BreezeEngine {
 
     private final ModuleManager moduleManager = new SimpleModuleManager(this, logger);
     private final EventBus eventBus = new EventBus(logger);
+    private final TranslationModuleManager translationModuleManager = new TranslationModuleManager();
 
     private final LifecycleManager lifecycleManager = new LifecycleManager(logger);
     private final CacheManager cacheManager = lifecycleManager.create(new CacheManagerBuilder());
@@ -84,6 +86,11 @@ public class SimpleBreezeEngine implements BreezeEngine {
         });
 
         logger.info("Successfully started engine.");
+    }
+
+    @Override
+    public void registerComponents() {
+
     }
 
     private void registerMappers() {

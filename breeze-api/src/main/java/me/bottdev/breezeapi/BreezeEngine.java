@@ -6,6 +6,7 @@ import me.bottdev.breezeapi.commons.file.temp.TempFiles;
 import me.bottdev.breezeapi.di.BreezeContext;
 import me.bottdev.breezeapi.di.ContextBootstrapper;
 import me.bottdev.breezeapi.events.EventBus;
+import me.bottdev.breezeapi.i18n.TranslationModuleManager;
 import me.bottdev.breezeapi.index.BreezeIndexLoader;
 import me.bottdev.breezeapi.lifecycle.LifecycleManager;
 import me.bottdev.breezeapi.log.TreeLogger;
@@ -36,6 +37,8 @@ public interface BreezeEngine {
 
     EventBus getEventBus();
 
+    TranslationModuleManager getTranslationModuleManager();
+
     Path getDataFolder();
 
     void start();
@@ -43,6 +46,8 @@ public interface BreezeEngine {
     void restart();
 
     void stop();
+
+    void registerComponents();
 
     default void addShutdownHook() {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
