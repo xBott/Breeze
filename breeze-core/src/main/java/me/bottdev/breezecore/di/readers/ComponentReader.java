@@ -1,6 +1,7 @@
 package me.bottdev.breezecore.di.readers;
 
 import lombok.RequiredArgsConstructor;
+import me.bottdev.breezeapi.commons.reflection.ReflectionCommons;
 import me.bottdev.breezeapi.di.*;
 import me.bottdev.breezeapi.index.types.BreezeComponentIndex;
 import me.bottdev.breezeapi.log.BreezeLogger;
@@ -29,9 +30,7 @@ public class ComponentReader implements ContextIndexReader<BreezeComponentIndex>
                 String path = dependency.getClassPath();
                 SupplyType supplyType = dependency.getSupplyType();
                 Class<?> clazz = classLoader.loadClass(path);
-
-                String name = clazz.getSimpleName();
-                name = name.substring(0, 1).toLowerCase() + name.substring(1);
+                String name = ReflectionCommons.asFieldName(clazz);
 
                 context.createComponent(name, supplyType, clazz);
 

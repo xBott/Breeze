@@ -1,39 +1,51 @@
 package me.bottdev.breezeapi.modules;
 
+import me.bottdev.breezeapi.lifecycle.Lifecycle;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-public interface ModuleManager {
+public abstract class ModuleManager extends Lifecycle {
 
-    Set<ModuleLoader> getModuleLoaders();
+    @Override
+    protected void onStart() {
+        loadAll();
+    }
 
-    void addModuleLoader(ModuleLoader moduleLoader);
+    @Override
+    protected void onShutdown() {
+        unloadAll();
+    }
 
-    List<Module> getModules();
+    public abstract Set<ModuleLoader> getModuleLoaders();
 
-    <T extends Module> Optional<T> getModule(Class<T> moduleClass);
+    public abstract void addModuleLoader(ModuleLoader moduleLoader);
 
-    boolean isModuleLoaded(Class<? extends Module> moduleClass);
+    public abstract List<Module> getModules();
 
-    void unload(Class<? extends Module> moduleClass);
+    public abstract <T extends Module> Optional<T> getModule(Class<T> moduleClass);
 
-    void unloadAll();
+    public abstract boolean isModuleLoaded(Class<? extends Module> moduleClass);
 
-    void load(ModulePreLoad modulePreLoad);
+    public abstract void unload(Class<? extends Module> moduleClass);
 
-    void loadAll();
+    public abstract void unloadAll();
 
-    void enable(Module module);
+    public abstract void load(ModulePreLoad modulePreLoad);
 
-    void enableAll();
+    public abstract void loadAll();
 
-    void disable(Module module);
+    public abstract void enable(Module module);
 
-    void disableAll();
+    public abstract void enableAll();
 
-    void restart(Module module);
+    public abstract void disable(Module module);
 
-    void restartAll();
+    public abstract void disableAll();
+
+    public abstract void restart(Module module);
+
+    public abstract void restartAll();
 
 }

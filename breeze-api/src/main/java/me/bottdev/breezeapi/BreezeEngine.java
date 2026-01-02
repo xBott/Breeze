@@ -1,17 +1,11 @@
 package me.bottdev.breezeapi;
 
 import me.bottdev.breezeapi.autoload.AutoLoaderRegistry;
-import me.bottdev.breezeapi.cache.CacheManager;
-import me.bottdev.breezeapi.commons.file.temp.TempFiles;
 import me.bottdev.breezeapi.di.BreezeContext;
 import me.bottdev.breezeapi.di.ContextBootstrapper;
-import me.bottdev.breezeapi.events.EventBus;
-import me.bottdev.breezeapi.i18n.TranslationModuleManager;
 import me.bottdev.breezeapi.index.BreezeIndexLoader;
-import me.bottdev.breezeapi.lifecycle.LifecycleManager;
+import me.bottdev.breezeapi.lifecycle.SimpleLifecycleManager;
 import me.bottdev.breezeapi.log.TreeLogger;
-import me.bottdev.breezeapi.modules.ModuleManager;
-import me.bottdev.breezeapi.serialization.MapperRegistry;
 
 import java.nio.file.Path;
 
@@ -19,25 +13,15 @@ public interface BreezeEngine {
 
     TreeLogger getLogger();
 
-    BreezeIndexLoader getIndexLoader();
+    SimpleLifecycleManager getLifecycleManager();
 
-    MapperRegistry getMapperRegistry();
+    BreezeIndexLoader getIndexLoader();
 
     ContextBootstrapper getContextBootstrapper();
 
     BreezeContext getContext();
 
     AutoLoaderRegistry getAutoLoaderRegistry();
-
-    ModuleManager getModuleManager();
-
-    LifecycleManager getLifecycleManager();
-
-    CacheManager getCacheManager();
-
-    EventBus getEventBus();
-
-    TranslationModuleManager getTranslationModuleManager();
 
     Path getDataFolder();
 
@@ -47,13 +31,8 @@ public interface BreezeEngine {
 
     void stop();
 
-    void registerComponents();
-
     default void addShutdownHook() {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            TempFiles.cleanup();
-            getLifecycleManager().shutdownAll();
-        }));
+        Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
     }
 
 }

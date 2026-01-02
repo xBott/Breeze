@@ -1,5 +1,6 @@
 package me.bottdev.breezeapi.di;
 
+import me.bottdev.breezeapi.commons.reflection.ReflectionCommons;
 import me.bottdev.breezeapi.log.BreezeLogger;
 
 import java.util.List;
@@ -16,6 +17,11 @@ public interface BreezeContext {
     void addObjectSupplier(String key, ObjectSupplier supplier);
 
     <T> Optional<T> get(Class<T> clazz, String key);
+
+    default <T> Optional<T> get(Class<T> clazz) {
+        String key = ReflectionCommons.asFieldName(clazz);
+        return get(clazz, key);
+    }
 
     <T> Optional<T> injectConstructor(Class<T> clazz);
 

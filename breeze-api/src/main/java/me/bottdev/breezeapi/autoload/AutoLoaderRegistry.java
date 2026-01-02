@@ -6,12 +6,9 @@ import me.bottdev.breezeapi.log.BreezeLogger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 public class AutoLoaderRegistry {
-
-    private static final String loggerPrefix = "[AutoLoaderRegistry]";
 
     private final BreezeLogger logger;
     private final HashMap<Class<?>, AutoLoader> loaders = new HashMap<>();
@@ -23,8 +20,7 @@ public class AutoLoaderRegistry {
     public AutoLoaderRegistry register(Class<?> clazz, AutoLoader autoLoader) {
         if (isRegistered(clazz)) return this;
         loaders.put(clazz, autoLoader);
-        logger.info("{} Registered AutoLoader \"{}\" for class \"{}\"",
-                loggerPrefix,
+        logger.info("Registered AutoLoader \"{}\" for class \"{}\"",
                 autoLoader.getClass().getSimpleName(),
                 clazz.getSimpleName()
         );

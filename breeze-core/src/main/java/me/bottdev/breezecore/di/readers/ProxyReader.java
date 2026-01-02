@@ -1,6 +1,7 @@
 package me.bottdev.breezecore.di.readers;
 
 import lombok.RequiredArgsConstructor;
+import me.bottdev.breezeapi.commons.reflection.ReflectionCommons;
 import me.bottdev.breezeapi.di.*;
 import me.bottdev.breezeapi.di.proxy.ProxyFactoryRegistry;
 import me.bottdev.breezeapi.di.suppliers.SingletonSupplier;
@@ -37,8 +38,7 @@ public class ProxyReader implements ContextIndexReader<BreezeProxyIndex> {
 
                 context.applyConstructHooks(proxy);
 
-                String name = clazz.getSimpleName();
-                name = name.substring(0, 1).toLowerCase() + name.substring(1);
+                String name = ReflectionCommons.asFieldName(clazz);
 
                 context.addObjectSupplier(name, new SingletonSupplier(proxy));
                 logger.info("Proxy class {} has been created.", name);

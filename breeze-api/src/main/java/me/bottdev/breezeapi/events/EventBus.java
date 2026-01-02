@@ -1,19 +1,28 @@
 package me.bottdev.breezeapi.events;
 
-import lombok.RequiredArgsConstructor;
+import me.bottdev.breezeapi.di.annotations.Inject;
 import me.bottdev.breezeapi.events.annotations.Listen;
+import me.bottdev.breezeapi.lifecycle.Lifecycle;
 import me.bottdev.breezeapi.log.TreeLogger;
 
 import java.lang.reflect.Method;
 import java.util.*;
 
-@RequiredArgsConstructor
-public class EventBus {
+public abstract class EventBus extends Lifecycle {
 
-    private static final String loggerPrefix = "";
-
-    private final TreeLogger logger;
     private final Map<Class<? extends Event>, ListenerContainer> containers = new HashMap<>();
+
+    private final TreeLogger mainLogger;
+
+    @Inject
+    public EventBus(TreeLogger mainLogger) {
+        this.mainLogger = mainLogger;
+    }
+
+    @Override
+    protected void onShutdown() {
+        unregisterAllListeners();
+    }
 
     private ListenerContainer getContainer(Class<? extends Event> event) {
         return containers.getOrDefault(event, new ListenerContainer());
@@ -34,7 +43,7 @@ public class EventBus {
         if (container.isRegistered(listener)) return;
         container.register(listener);
         putContainerIfAbsent(event, container);
-        logger.info("{} Registered listener \"{}\" for event \"{}\"!", loggerPrefix, listener.getSignature(), event.getSimpleName());
+        mainLogger.info("Registered listener \"{}\" for event \"{}\"!", listener.getSignature(), event.getSimpleName());
     }
 
     public void unregisterListener(Class<? extends Event> event, ListenerWrapper listener) {
@@ -42,14 +51,14 @@ public class EventBus {
         if (!container.isRegistered(listener)) return;
         container.unregister(listener);
         removeContainerIfEmpty(event);
-        logger.info("{} Unregistered listener \"{}\" for event \"{}\"!", loggerPrefix, listener.getSignature(), event.getSimpleName());
+        mainLogger.info("Unregistered listener \"{}\" for event \"{}\"!", listener.getSignature(), event.getSimpleName());
     }
 
     @SuppressWarnings("unchecked")
     public void registerListeners(Listener listener) {
 
         String className = listener.getClass().getSimpleName();
-        logger.withSection("Registering listeners from object " + className, loggerPrefix, () -> {
+        mainLogger.withSection("Registering listeners from object " + className, "Event Registration", () -> {
 
             for (Method method : listener.getClass().getDeclaredMethods()) {
                 if (!method.isAnnotationPresent(Listen.class)) continue;
@@ -58,7 +67,7 @@ public class EventBus {
 
                 Class<?>[] params = method.getParameterTypes();
                 if (params.length != 1 || !Event.class.isAssignableFrom(params[0])) {
-                    logger.warn("Could not register listener \"{}\". Listener method must have only one Event parameter!", name);
+                    mainLogger.warn("Could not register listener \"{}\". Listener method must have only one Event parameter!", name);
                 }
 
                 Class<? extends Event> eventType = (Class<? extends Event>) params[0];
@@ -72,7 +81,7 @@ public class EventBus {
 
         });
 
-        logger.info("Registered listeners from object \"{}\"!", className);
+        mainLogger.info("Registered listeners from object \"{}\"!", className);
 
     }
 
@@ -98,13 +107,13 @@ public class EventBus {
 
         }
 
-        logger.info("{} Unregistered listeners from object \"{}\"!", loggerPrefix, className);
+        mainLogger.info("Unregistered listeners from object \"{}\"!", className);
 
     }
 
     public void unregisterAllListeners() {
         containers.clear();
-        logger.info("{} Unregistered all listeners!", loggerPrefix);
+        mainLogger.info("Unregistered all listeners!");
     }
 
     public void call(Event event) {

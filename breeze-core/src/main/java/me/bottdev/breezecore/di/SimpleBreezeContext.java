@@ -25,9 +25,9 @@ public class SimpleBreezeContext implements BreezeContext {
     );
 
     @Getter
-    private final BreezeLogger logger;
+    protected final BreezeLogger logger;
     @Getter
-    private final Map<String, ObjectSupplier> suppliers = new HashMap<>();
+    protected final Map<String, ObjectSupplier> suppliers = new HashMap<>();
     @Getter
     private final List<ConstructHook> constructHooks = new ArrayList<>();
 
@@ -145,7 +145,7 @@ public class SimpleBreezeContext implements BreezeContext {
                 .toList();
 
         if (noArgConstructors.isEmpty()) {
-            logger.warn("No @Inject empty constructors found in " + clazz.getName());
+            logger.warn("No empty constructors found in " + clazz.getName());
             return Optional.empty();
         }
 

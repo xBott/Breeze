@@ -1,68 +1,86 @@
 package me.bottdev.breezeapi.lifecycle;
 
-import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.log.BreezeLogger;
 
-import java.util.*;
+import java.util.Map;
+import java.util.Optional;
 
-@RequiredArgsConstructor
-public class LifecycleManager {
+public interface LifecycleManager {
 
-    private final BreezeLogger logger;
+    BreezeLogger getLogger();
+    Map<Class<? extends Lifecycle>, Lifecycle> getLifecycles();
 
-    private final Map<Class<? extends Lifecycle>, Lifecycle> lifecycles = new HashMap<>();
-
-    public boolean exists(Class<? extends Lifecycle> clazz) {
-        return lifecycles.containsKey(clazz);
+    default boolean exists(Class<? extends Lifecycle> clazz) {
+        return getLifecycles().containsKey(clazz);
     }
 
-    public <T extends Lifecycle> T create(LifecycleBuilder<T> builder) {
+    default <T extends Lifecycle> T create(LifecycleBuilder<T> builder) {
 
         T lifecycle = builder.build();
 
         Class<? extends Lifecycle> clazz = lifecycle.getClass();
         stop(clazz);
 
-        lifecycles.put(clazz, lifecycle);
+        getLifecycles().put(clazz, lifecycle);
         lifecycle.start();
 
-        logger.info("Created lifecycle {}", clazz.getSimpleName());
+        getLogger().info("Created lifecycle {}", clazz.getSimpleName());
 
         return lifecycle;
     }
 
+    default void add(Lifecycle lifecycle) {
+        getLifecycles().put(lifecycle.getClass(), lifecycle);
+    }
+
+    default void remove(Class<? extends Lifecycle> clazz) {
+        getLifecycles().remove(clazz);
+    }
+
     @SuppressWarnings("unchecked")
-    public <T extends Lifecycle> Optional<T> get(Class<T> clazz) {
+    default  <T extends Lifecycle> Optional<T> get(Class<T> clazz) {
 
         if (!exists(clazz)) return Optional.empty();
 
-        Lifecycle lifecycle = lifecycles.get(clazz);
+        Lifecycle lifecycle = getLifecycles().get(clazz);
         return Optional.of((T) lifecycle);
     }
 
-    public boolean stop(Class<? extends Lifecycle> clazz) {
+    default boolean start(Class<? extends Lifecycle> clazz) {
 
-        if (!exists(clazz)) return false;
+        Optional<? extends Lifecycle> lifecycleOptional = get(clazz);
+        if (lifecycleOptional.isEmpty()) return false;
 
-        Lifecycle lifecycle = lifecycles.remove(clazz);
-        lifecycle.shutdown();
-
-        logger.info("Stopped lifecycle {}", clazz.getSimpleName());
+        Lifecycle lifecycle = lifecycleOptional.get();
+        lifecycle.start();
+        getLogger().info("Started lifecycle {}", clazz.getSimpleName());
 
         return true;
     }
 
-    public void startAll() {
-        logger.info("Starting all lifecycles");
-        lifecycles.values().forEach(Lifecycle::start);
-        logger.info("All lifecycles started");
+    default boolean stop(Class<? extends Lifecycle> clazz) {
+
+        if (!exists(clazz)) return false;
+
+        Lifecycle lifecycle = getLifecycles().remove(clazz);
+        lifecycle.shutdown();
+
+        getLogger().info("Stopped lifecycle {}", clazz.getSimpleName());
+
+        return true;
     }
 
-    public void shutdownAll() {
-        logger.info("Shutting down all lifecycles");
-        lifecycles.values().forEach(Lifecycle::shutdown);
-        lifecycles.clear();
-        logger.info("All lifecycles stopped");
+    default void startAll() {
+        getLogger().info("Starting all lifecycles");
+        getLifecycles().values().forEach(Lifecycle::start);
+        getLogger().info("All lifecycles started");
+    }
+
+    default void shutdownAll() {
+        getLogger().info("Shutting down all lifecycles");
+        getLifecycles().values().forEach(Lifecycle::shutdown);
+        getLifecycles().clear();
+        getLogger().info("All lifecycles stopped");
     }
 
 }

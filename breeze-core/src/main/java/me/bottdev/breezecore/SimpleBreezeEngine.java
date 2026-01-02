@@ -1,6 +1,7 @@
 package me.bottdev.breezecore;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.BreezeEngine;
 import me.bottdev.breezeapi.autoload.AutoLoaderRegistry;
 import me.bottdev.breezeapi.cache.CacheManager;
@@ -19,7 +20,7 @@ import me.bottdev.breezeapi.i18n.TranslationModuleManager;
 import me.bottdev.breezeapi.index.BreezeIndexBucket;
 import me.bottdev.breezeapi.index.BreezeIndexLoader;
 import me.bottdev.breezeapi.di.BreezeContext;
-import me.bottdev.breezeapi.lifecycle.LifecycleManager;
+import me.bottdev.breezeapi.lifecycle.SimpleLifecycleManager;
 import me.bottdev.breezeapi.log.types.SimpleTreeLogger;
 import me.bottdev.breezeapi.log.TreeLogger;
 import me.bottdev.breezeapi.modules.ModuleManager;
@@ -35,40 +36,29 @@ import me.bottdev.breezeapi.resource.watcher.types.TreeResourceWatcher;
 import me.bottdev.breezeapi.serialization.MapperRegistry;
 import me.bottdev.breezeapi.serialization.MapperType;
 import me.bottdev.breezeapi.serialization.mappers.JsonMapper;
-import me.bottdev.breezecore.di.SimpleBreezeContext;
+import me.bottdev.breezecore.di.LifecycleBreezeContext;
 import me.bottdev.breezecore.di.readers.ComponentReader;
 import me.bottdev.breezecore.di.readers.ProxyReader;
 import me.bottdev.breezecore.di.readers.SupplierReader;
 import me.bottdev.breezecore.di.resolver.ComponentDependencyResolver;
+import me.bottdev.breezecore.events.SimpleEventBus;
 import me.bottdev.breezecore.modules.SimpleModuleManager;
 
 import java.nio.file.Path;
 
 @Getter
+@RequiredArgsConstructor
 public class SimpleBreezeEngine implements BreezeEngine {
 
     private final TreeLogger logger = new SimpleTreeLogger("SimpleBreezeEngine");
-    private final MapperRegistry mapperRegistry = new MapperRegistry();
-
+    private final SimpleLifecycleManager lifecycleManager = new SimpleLifecycleManager(logger);
     private final BreezeIndexLoader indexLoader = new BreezeIndexLoader(logger);
     private final ContextBootstrapper contextBootstrapper = new ContextBootstrapper();
-    private final BreezeContext context = new SimpleBreezeContext(logger);
+    private final BreezeContext context = new LifecycleBreezeContext(logger, lifecycleManager);
     private final AutoLoaderRegistry autoLoaderRegistry = new AutoLoaderRegistry(logger);
 
-    private final ModuleManager moduleManager = new SimpleModuleManager(this, logger);
-    private final EventBus eventBus = new EventBus(logger);
-    private final TranslationModuleManager translationModuleManager = new TranslationModuleManager();
-
-    private final LifecycleManager lifecycleManager = new LifecycleManager(logger);
-    private final CacheManager cacheManager = lifecycleManager.create(new CacheManagerBuilder());
-    private final SingleResourceWatcher singleResourceWatcher = lifecycleManager.create(new ResourceWatcherBuilder.Single(eventBus));
-    private final TreeResourceWatcher treeResourceWatcher = lifecycleManager.create(new ResourceWatcherBuilder.Tree(eventBus));
-
     private final Path dataFolder;
-
-    public SimpleBreezeEngine(Path dataFolder) {
-        this.dataFolder = dataFolder;
-    }
+    private final Runnable setupRunnable;
 
     @Override
     public void start() {
@@ -76,32 +66,87 @@ public class SimpleBreezeEngine implements BreezeEngine {
 
         logger.withSection("BreezeEngine Startup", "", () -> {
             addShutdownHook();
-            registerMappers();
-            registerAutoLoaders();
-            registerConstructHooks();
-            registerContextBootstrapperReaders();
-            addSuppliersToContext();
-            loadContext();
-            startModuleManager();
+            registerSuppliers();
+            setup();
+            startAllLifecycles();
         });
 
         logger.info("Successfully started engine.");
     }
 
-    @Override
-    public void registerComponents() {
+    private void registerSuppliers() {
 
+        context.addObjectSupplier("mainLogger", new SingletonSupplier(logger));
+        context.addObjectSupplier("breezeEngine", new SingletonSupplier(this));
+
+        MapperRegistry mapperRegistry = new MapperRegistry();
+        context.addObjectSupplier("mapperRegistry", new SingletonSupplier(mapperRegistry));
+
+        context.injectConstructor(SimpleModuleManager.class).ifPresent(moduleManager ->
+                context.addObjectSupplier(
+                        "moduleManager",
+                        new SingletonSupplier(moduleManager)
+                )
+        );
+
+        context.injectConstructor(SimpleEventBus.class).ifPresent(eventBus -> {
+            context.addObjectSupplier(
+                    "eventBus",
+                    new SingletonSupplier(eventBus)
+            );
+
+            CacheManager cacheManager = lifecycleManager.create(new CacheManagerBuilder());
+            context.addObjectSupplier(
+                    "cacheManager",
+                    new SingletonSupplier(cacheManager)
+            );
+
+            SingleResourceWatcher singleResourceWatcher = lifecycleManager.create(new ResourceWatcherBuilder.Single(eventBus));
+            context.addObjectSupplier("singleResourceWatcher",
+                    new SingletonSupplier(singleResourceWatcher)
+            );
+
+            TreeResourceWatcher treeResourceWatcher = lifecycleManager.create(new ResourceWatcherBuilder.Tree(eventBus));
+            context.addObjectSupplier(
+                    "treeResourceWatcher",
+                    new SingletonSupplier(treeResourceWatcher)
+            );
+
+        });
+
+        context.injectConstructor(TranslationModuleManager.class).ifPresent(translationModuleManager ->
+                context.addObjectSupplier(
+                        "translationModuleManager",
+                        new SingletonSupplier(translationModuleManager)
+                )
+        );
+
+        logger.info("Successfully added suppliers to context.");
+
+    }
+
+    private void setup() {
+        registerMappers();
+        registerAutoLoaders();
+        registerConstructHooks();
+        registerContextBootstrapperReaders();
+        setupRunnable.run();
+        loadContext();
     }
 
     private void registerMappers() {
-        mapperRegistry.registerMapper(new MapperType(JsonMapper.class, "json"), new JsonMapper());
+        context.get(MapperRegistry.class, "mapperRegistry").ifPresent(mapperRegistry ->
+                mapperRegistry.registerMapper(new MapperType(JsonMapper.class, "json"), new JsonMapper())
+        );
     }
 
     private void registerAutoLoaders() {
-        autoLoaderRegistry
-                .register(Listener.class, new ListenerAutoLoader(eventBus))
-                .register(Bootstrap.class, new BootstrapAutoLoader());
-        logger.info("Successfully registered loaders in auto loader registry.");
+        context.get(EventBus.class, "eventBus").ifPresent(eventBus -> {
+            autoLoaderRegistry
+                    .register(Listener.class, new ListenerAutoLoader(eventBus))
+                    .register(Bootstrap.class, new BootstrapAutoLoader());
+            logger.info("Successfully registered loaders in auto loader registry.");
+        });
     }
 
     private void registerConstructHooks() {
@@ -110,6 +155,12 @@ public class SimpleBreezeEngine implements BreezeEngine {
     }
 
     private void registerContextBootstrapperReaders() {
+
+        CacheManager cacheManager = context.get(CacheManager.class, "cacheManager").orElse(null);
+        SingleResourceWatcher singleResourceWatcher = context.get(SingleResourceWatcher.class, "singleResourceWatcher").orElse(null);
+        TreeResourceWatcher treeResourceWatcher = context.get(TreeResourceWatcher.class, "treeResourceWatcher").orElse(null);
+
+        if (cacheManager == null || singleResourceWatcher == null || treeResourceWatcher == null) return;
 
         ResourceSourceRegistry resourceSourceRegistry = new ResourceSourceRegistry()
                 .register(SourceType.DRIVE, new DriveResourceSource(getDataFolder()))
@@ -129,19 +180,14 @@ public class SimpleBreezeEngine implements BreezeEngine {
                 .addReader(new ComponentReader(logger, new ComponentDependencyResolver(logger)), 10);
     }
 
-    private void addSuppliersToContext() {
-        context.addObjectSupplier("breezeEngine", new SingletonSupplier(this));
-        logger.info("Successfully added breezeEngine supplier.");
-    }
-
     private void loadContext() {
         ClassLoader classLoader = getClass().getClassLoader();
         BreezeIndexBucket bucket = indexLoader.loadFromClassloader(classLoader);
         contextBootstrapper.bootstrap(context, classLoader, bucket);
     }
 
-    private void startModuleManager() {
-        logger.withSection("Loading Module System", "", moduleManager::loadAll);
+    private void startAllLifecycles() {
+        getLifecycleManager().startAll();
     }
 
     @Override
@@ -152,7 +198,7 @@ public class SimpleBreezeEngine implements BreezeEngine {
     }
 
     private void restartModuleManager() {
-        moduleManager.restartAll();
+        context.get(ModuleManager.class, "moduleManager").ifPresent(ModuleManager::restartAll);
     }
 
     @Override
@@ -160,19 +206,9 @@ public class SimpleBreezeEngine implements BreezeEngine {
         logger.info("Stopping engine....");
         logger.withSection("Breeze Engine Stop", "", () -> {
             shutdownLifecycleManager();
-            unregisterListeners();
-            stopModuleManager();
             deleteTempFiles();
         });
         logger.info("Successfully stopped engine.");
-    }
-
-    private void stopModuleManager() {
-        moduleManager.unloadAll();
-    }
-
-    private void unregisterListeners() {
-        eventBus.unregisterAllListeners();
     }
 
     private void shutdownLifecycleManager() {
