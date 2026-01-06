@@ -16,4 +16,9 @@ public class PlayerCommandSender implements CommandSender {
         player.sendMessage(message);
     }
 
+    @Override
+    public void send(String message, Object... args) {
+        player.sendMessage(message, args);
+    }
+
 }
