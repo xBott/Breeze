@@ -4,4 +4,6 @@ public interface CommandSender {
 
     void send(String message);
 
+    void send(String message, Object... args);
+
 }
