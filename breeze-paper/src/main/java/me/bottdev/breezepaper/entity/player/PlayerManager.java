@@ -1,8 +1,6 @@
 package me.bottdev.breezepaper.entity.player;
 
 import lombok.RequiredArgsConstructor;
-import me.bottdev.breezeapi.di.annotations.Component;
-import me.bottdev.breezeapi.di.annotations.Inject;
 import me.bottdev.breezeapi.i18n.I18n;
 import me.bottdev.breezeapi.i18n.TranslationModuleManager;
 import org.bukkit.Bukkit;
