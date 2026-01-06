@@ -1,6 +1,7 @@
 package me.bottdev.breezeapi.command.argument;
 
 import me.bottdev.breezeapi.command.annotations.Argument;
+import me.bottdev.breezeapi.command.annotations.Ranged;
 import me.bottdev.breezeapi.command.argument.types.BooleanArgument;
 import me.bottdev.breezeapi.command.argument.types.FloatArgument;
 import me.bottdev.breezeapi.command.argument.types.IntegerArgument;
@@ -9,27 +10,53 @@ import me.bottdev.breezeapi.command.argument.types.StringArgument;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 
 public class CommandArgumentFactory {
 
-    public static CommandArgumentFactory defaultFactory() {
-        return new CommandArgumentFactory()
-                .register(String.class, StringArgument::new)
-                .register(int.class, IntegerArgument::new)
-                .register(Integer.class, IntegerArgument::new)
-                .register(float.class, FloatArgument::new)
-                .register(Float.class, FloatArgument::new)
-                .register(boolean.class, BooleanArgument::new)
-                .register(Boolean.class, BooleanArgument::new);
+    @FunctionalInterface
+    public interface Factory {
+        CommandArgument<?> create(String name, Parameter parameter);
     }
 
-    private final Map<Class<?>, Function<String, CommandArgument<?>>> factories = new HashMap<>();
+    public static CommandArgumentFactory defaultFactory() {
+        return new CommandArgumentFactory()
+                .register(String.class, (name, parameter) ->
+                        new StringArgument(name)
+                )
 
-    public CommandArgumentFactory register(Class<?> type, Function<String, CommandArgument<?>> factory) {
+                .register(List.of(Integer.class, int.class), (name, parameter) -> {
+                    if (parameter.isAnnotationPresent(Ranged.class)) {
+                        Ranged ranged = parameter.getAnnotation(Ranged.class);
+                        return new IntegerArgument(name, (int)ranged.min(), (int)ranged.max());
+                    }
+                    return new IntegerArgument(name);
+                })
+
+                .register(List.of(Float.class, float.class), (name, parameter) -> {
+                    if (parameter.isAnnotationPresent(Ranged.class)) {
+                        Ranged ranged = parameter.getAnnotation(Ranged.class);
+                        return new FloatArgument(name, (float)ranged.min(), (float)ranged.max());
+                    }
+                    return new FloatArgument(name);
+                })
+
+                .register(List.of(Boolean.class, boolean.class), (name, parameter) ->
+                        new BooleanArgument(name)
+                );
+    }
+
+    private final Map<Class<?>, Factory> factories = new HashMap<>();
+
+    public CommandArgumentFactory register(Class<?> type, Factory factory) {
         factories.put(type, factory);
+        return this;
+    }
+
+    public CommandArgumentFactory register(List<Class<?>> types, Factory factory) {
+        types.forEach(type -> register(type, factory));
         return this;
     }
 
@@ -46,10 +73,10 @@ public class CommandArgumentFactory {
 
             Class<?> type = parameter.getType();
 
-            Function<String, CommandArgument<?>> factory = factories.get(type);
+            Factory factory = factories.get(type);
             if (factory == null) continue;
 
-            CommandArgument<?> argument = factory.apply(argumentName);
+            CommandArgument<?> argument = factory.create(argumentName, parameter);
             return Optional.of(argument);
 
         }
