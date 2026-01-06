@@ -5,6 +5,7 @@ import me.bottdev.breezeapi.BreezeEngine;
 import me.bottdev.breezeapi.command.Command;
 import me.bottdev.breezeapi.command.CommandTreeParser;
 import me.bottdev.breezeapi.command.argument.CommandArgumentFactory;
+import me.bottdev.breezeapi.command.nodes.CommandArgumentNode;
 import me.bottdev.breezeapi.command.nodes.CommandExecuteNode;
 import me.bottdev.breezeapi.command.nodes.CommandLiteralNode;
 import me.bottdev.breezeapi.i18n.TranslationModuleManager;
@@ -15,6 +16,7 @@ import me.bottdev.breezecore.SimpleBreezeEngine;
 import me.bottdev.breezepaper.autoloaders.PaperCommandAutoLoader;
 import me.bottdev.breezepaper.command.PaperCommandContextFactory;
 import me.bottdev.breezepaper.command.PaperCommandRegistrar;
+import me.bottdev.breezepaper.command.nodes.PaperArgumentNodeFactory;
 import me.bottdev.breezepaper.command.nodes.PaperExecuteNodeFactory;
 import me.bottdev.breezepaper.command.nodes.PaperLiteralNodeFactory;
 import me.bottdev.breezepaper.entity.player.PlayerManager;
@@ -47,7 +49,6 @@ public class BreezePaper extends JavaPlugin {
         });
 
         engine.start();
-        createBreezeCommand();
 
         playerManager.getPlayers().forEach(player ->
                 player.sendMessage("Location of player {} is {}", player.getName(), player.getLocation())
@@ -75,17 +76,13 @@ public class BreezePaper extends JavaPlugin {
 
         PaperCommandRegistrar registrar = new PaperCommandRegistrar(this);
         registrar.addFactory(CommandLiteralNode.class, new PaperLiteralNodeFactory());
+        registrar.addFactory(CommandArgumentNode.class, new PaperArgumentNodeFactory());
         registrar.addFactory(CommandExecuteNode.class, new PaperExecuteNodeFactory(contextFactory));
 
         CommandArgumentFactory argumentFactory = CommandArgumentFactory.defaultFactory();
         CommandTreeParser parser = new CommandTreeParser(argumentFactory);
 
         engine.getAutoLoaderRegistry().register(Command.class, new PaperCommandAutoLoader(parser, registrar));
-
-    }
-
-    private void createBreezeCommand() {
-        //engine.getContext().createComponent("breezeCommand", SupplyType.SINGLETON, BreezeCommand.class);
 
     }
 
