@@ -8,6 +8,7 @@ import me.bottdev.breezeapi.index.types.BreezeModuleIndex;
 import me.bottdev.breezeapi.log.TreeLogger;
 import me.bottdev.breezeapi.modules.*;
 import me.bottdev.breezeapi.modules.Module;
+import me.bottdev.breezeapi.modules.annotations.ModuleInfo;
 import me.bottdev.breezecore.di.resolver.IndexBucketDependencyResolver;
 import me.bottdev.breezecore.modules.ChildFirstClassLoader;
 
@@ -144,7 +145,12 @@ public class DependencyModuleLoader implements ModuleLoader {
             }
 
             File dataFolder = createDataFolder(moduleIndex.getModuleName());
-            Supplier<Optional<Module>> moduleSupplier = createClassInstanceSupplier(moduleClazz, dataFolder);
+
+            ModuleInfo info = moduleClazz.getAnnotation(ModuleInfo.class);
+            if (info == null) return Optional.empty();
+            ModuleDescriptor descriptor = new ModuleDescriptor(info.name(), info.version());
+
+            Supplier<Optional<Module>> moduleSupplier = createClassInstanceSupplier(moduleClazz, dataFolder, descriptor);
 
             ModulePreLoad modulePreLoad = new ModulePreLoad(
                     classLoader,
@@ -169,14 +175,17 @@ public class DependencyModuleLoader implements ModuleLoader {
         return dataFolder;
     }
 
-    private Supplier<Optional<Module>> createClassInstanceSupplier(Class<? extends Module> clazz, File dataFolder) {
+    private Supplier<Optional<Module>> createClassInstanceSupplier(
+            Class<? extends Module> clazz,
+            File dataFolder,
+            ModuleDescriptor descriptor
+    ) {
 
         try {
-            Constructor<?> constructor = clazz.getDeclaredConstructor(File.class);
+            Constructor<?> constructor = clazz.getDeclaredConstructor(File.class, ModuleDescriptor.class);
             return () -> {
                 try {
-                    Module instance = (Module) constructor.newInstance(dataFolder);
-                    instance.setStatus(ModuleStatus.DISABLED);
+                    Module instance = (Module) constructor.newInstance(dataFolder, descriptor);
                     return Optional.of(instance);
                 } catch (Exception ex) {
                     logger.error("Failed to create module of class " + clazz.getName(), ex);

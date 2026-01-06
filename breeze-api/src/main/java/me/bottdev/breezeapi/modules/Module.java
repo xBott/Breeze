@@ -9,8 +9,14 @@ import java.io.File;
 @Setter
 public abstract class Module {
 
-    private ModuleStatus status;
+    private ModuleStatus status = ModuleStatus.DISABLED;
     private File dataFolder;
+    private ModuleDescriptor descriptor;
+
+    public Module(File dataFolder, ModuleDescriptor descriptor) {
+        this.dataFolder = dataFolder;
+        this.descriptor = descriptor;
+    }
 
     public abstract void onEnable();
 
