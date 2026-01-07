@@ -51,8 +51,7 @@ public class ProxyFactoryRegistry {
     @SuppressWarnings("unchecked")
     public <T> Optional<T> createObject(Class<T> iface) {
 
-        if (!iface.isAnnotationPresent(Proxy.class))
-            throw new IllegalArgumentException("Missing @Proxy");
+        if (!iface.isAnnotationPresent(Proxy.class)) return Optional.empty();
 
         CompositeProxyHandler compositeHandler = getComposite(iface);
         if (compositeHandler.isEmpty()) return Optional.empty();
