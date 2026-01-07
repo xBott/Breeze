@@ -21,6 +21,7 @@ dependencies {
     annotationProcessor(project(":breeze-processor"))
     implementation(project(":breeze-core"))
     implementation(project(":breeze-api"))
+    implementation(project(":breeze-mc"))
 
 }
 
@@ -38,6 +39,7 @@ tasks.shadowJar {
     dependencies {
         include(project(":breeze-core"))
         include(project(":breeze-api"))
+        include(project(":breeze-mc"))
     }
 }
 
