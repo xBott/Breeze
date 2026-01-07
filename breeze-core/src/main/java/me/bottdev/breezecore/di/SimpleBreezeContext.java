@@ -49,7 +49,7 @@ public class SimpleBreezeContext implements BreezeContext {
 
             Supply supply = method.getAnnotation(Supply.class);
             SupplyType type = supply.type();
-            String key = method.getName().toLowerCase();
+            String key = method.getName();
 
             method.setAccessible(true);
 
@@ -74,10 +74,13 @@ public class SimpleBreezeContext implements BreezeContext {
 
     @Override
     public <T> Optional<T> get(Class<T> clazz, String key) {
+
         ObjectSupplier supplier = suppliers.get(key);
         if (supplier == null) return Optional.empty();
+
         Object supplied = supplier.supply();
         if (!clazz.isInstance(supplied)) return Optional.empty();
+
         return Optional.of(clazz.cast(supplied));
     }
 
@@ -181,6 +184,8 @@ public class SimpleBreezeContext implements BreezeContext {
             for (int i = 0; i < parameters.length; i++) {
                 Parameter parameter = parameters[i];
                 Class<?> type = parameter.getType();
+                type = primitiveWrappers.getOrDefault(type, type);
+
                 String name = parameter.isAnnotationPresent(Named.class) ?
                         parameter.getAnnotation(Named.class).value() : parameter.getName();
 
@@ -217,6 +222,7 @@ public class SimpleBreezeContext implements BreezeContext {
 
             String key = field.getName();
             Class<?> type = field.getType();
+            type = primitiveWrappers.getOrDefault(type, type);
 
             Optional<?> valueOptional = get(type, key);
 
