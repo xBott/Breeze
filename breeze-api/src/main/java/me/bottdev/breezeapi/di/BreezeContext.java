@@ -4,11 +4,14 @@ import me.bottdev.breezeapi.commons.reflection.ReflectionCommons;
 import me.bottdev.breezeapi.log.BreezeLogger;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface BreezeContext {
 
     BreezeLogger getLogger();
+
+    Map<String, ObjectSupplier> getSuppliers();
 
     List<ConstructHook> getConstructHooks();
 
