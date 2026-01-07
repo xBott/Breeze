@@ -26,7 +26,7 @@ public class CommandScheme {
             if (parameter.isAnnotationPresent(Argument.class)) {
                 Argument argumentAnnotation = parameter.getAnnotation(Argument.class);
                 String name = argumentAnnotation.name();
-                scheme.addResolver(context -> context.getArgument(name));
+                scheme.addResolver(new ArgumentSchemeResolver(name));
                 continue;
             }
 
