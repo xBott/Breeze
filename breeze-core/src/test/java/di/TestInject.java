@@ -8,7 +8,7 @@ public class TestInject {
     private final int age;
 
     @Inject
-    public TestInject(@Named("age") int age) {
+    public TestInject(int age) {
         this.age = age;
     }
 
