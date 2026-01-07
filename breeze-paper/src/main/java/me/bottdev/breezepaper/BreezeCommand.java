@@ -6,7 +6,6 @@ import me.bottdev.breezeapi.command.CommandSender;
 import me.bottdev.breezeapi.command.annotations.Argument;
 import me.bottdev.breezeapi.command.annotations.Sender;
 import me.bottdev.breezeapi.command.annotations.SubCommand;
-import me.bottdev.breezeapi.command.annotations.Suggest;
 import me.bottdev.breezeapi.di.annotations.Component;
 import me.bottdev.breezeapi.di.annotations.Inject;
 import me.bottdev.breezeapi.modules.ModuleDescriptor;
@@ -77,7 +76,7 @@ public class BreezeCommand implements Command {
     @SubCommand(path = "modules info <name>")
     public void moduleInfo(
             @Sender CommandSender sender,
-            @Argument(name = "name") @Suggest() String moduleName
+            @Argument(name = "name") String moduleName
     ) {
 
         moduleManager.getModules().stream()
