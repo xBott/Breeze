@@ -1,4 +1,4 @@
-package me.bottdev.breezepaper.chat;
+package me.bottdev.breezemc.chat;
 
 import me.bottdev.breezeapi.i18n.I18n;
 

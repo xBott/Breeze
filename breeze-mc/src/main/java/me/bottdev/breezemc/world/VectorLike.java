@@ -1,4 +1,4 @@
-package me.bottdev.breezepaper.location;
+package me.bottdev.breezemc.world;
 
 public interface VectorLike {
 

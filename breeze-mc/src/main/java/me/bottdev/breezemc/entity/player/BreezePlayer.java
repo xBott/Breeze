@@ -1,4 +1,4 @@
-package me.bottdev.breezepaper.entity.player;
+package me.bottdev.breezemc.entity.player;
 
 import java.util.UUID;
 
