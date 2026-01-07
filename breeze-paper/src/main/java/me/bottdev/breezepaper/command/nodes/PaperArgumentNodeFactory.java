@@ -5,73 +5,118 @@ import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import me.bottdev.breezeapi.command.CommandNode;
 import me.bottdev.breezeapi.command.argument.CommandArgument;
-import me.bottdev.breezeapi.command.argument.types.BooleanArgument;
+import me.bottdev.breezeapi.command.argument.Suggestable;
 import me.bottdev.breezeapi.command.argument.types.FloatArgument;
 import me.bottdev.breezeapi.command.argument.types.IntegerArgument;
 import me.bottdev.breezeapi.command.nodes.CommandArgumentNode;
+import me.bottdev.breezeapi.command.argument.suggestion.SuggestionProvider;
 import me.bottdev.breezepaper.command.PaperCommandNodeFactory;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 public class PaperArgumentNodeFactory implements PaperCommandNodeFactory {
 
     @FunctionalInterface
     public interface Factory {
-        ArgumentBuilder<CommandSourceStack, ?> create(CommandArgument<?> argument);
+
+        class Str implements Factory {
+
+            @Override
+            public RequiredArgumentBuilder<CommandSourceStack, ?> create(CommandArgument<?> argument) {
+                String name = argument.getName();
+                return Commands.argument(name, StringArgumentType.word());
+            }
+
+        }
+
+        class Bool implements Factory {
+
+            @Override
+            public RequiredArgumentBuilder<CommandSourceStack, ?> create(CommandArgument<?> argument) {
+                String name = argument.getName();
+                return Commands.argument(name, BoolArgumentType.bool());
+            }
+
+        }
+
+        class Int implements Factory {
+
+            @Override
+            public RequiredArgumentBuilder<CommandSourceStack, ?> create(CommandArgument<?> argument) {
+                IntegerArgument integerArgument = (IntegerArgument) argument;
+                String name = argument.getName();
+                int min = integerArgument.getMin();
+                int max = integerArgument.getMax();
+                return Commands.argument(name, IntegerArgumentType.integer(min, max));
+            }
+
+        }
+
+        class Float implements Factory {
+
+            @Override
+            public RequiredArgumentBuilder<CommandSourceStack, ?> create(CommandArgument<?> argument) {
+                FloatArgument integerArgument = (FloatArgument) argument;
+                String name = argument.getName();
+                float min = integerArgument.getMin();
+                float max = integerArgument.getMax();
+                return Commands.argument(name, FloatArgumentType.floatArg(min, max));
+            }
+
+        }
+
+        RequiredArgumentBuilder<CommandSourceStack, ?> create(CommandArgument<?> argument);
+    }
+
+    private final Map<Class<?>, Factory> factories = new HashMap<>();
+
+    public PaperArgumentNodeFactory addFactory(Class<?> type, Factory factory) {
+        factories.put(type, factory);
+        return this;
+    }
+
+    private Optional<Factory> getFactory(Class<?> type) {
+        return Optional.ofNullable(factories.get(type));
     }
 
     @Override
-    public ArgumentBuilder<CommandSourceStack, ?> create(ArgumentBuilder<CommandSourceStack, ?> parent, CommandNode node) {
+    public Optional<ArgumentBuilder<CommandSourceStack, ?>> create(ArgumentBuilder<CommandSourceStack, ?> parent, CommandNode node) {
 
         CommandArgumentNode argumentNode = (CommandArgumentNode) node;
 
         CommandArgument<?> argument = argumentNode.getArgument();
         Class<?> type = argument.getType();
 
-        ArgumentBuilder<CommandSourceStack, ?> paperNode;
+        return getFactory(type).map(factory -> {
 
-        if (Integer.class.isAssignableFrom(type)) {
-            paperNode = createIntegerArgument((IntegerArgument) argument);
+            RequiredArgumentBuilder<CommandSourceStack, ?> paperNode = factory.create(argument);
 
-        } else {
-            paperNode = Commands.literal(argument.getName());
+            if (argument instanceof Suggestable suggestable) {
+                suggestable.getSuggestionProvider().ifPresent(provider ->
+                        addSuggestions(paperNode, provider)
+                );
+            }
 
-        }
+            return paperNode;
 
-        return paperNode;
+        });
 
     }
 
-    private ArgumentBuilder<CommandSourceStack, ?> createIntegerArgument(IntegerArgument argument) {
-        String name = argument.getName();
-        int min = argument.getMin();
-        int max = argument.getMax();
-        return Commands.argument(name, IntegerArgumentType.integer(min, max));
-    }
+    private void addSuggestions(RequiredArgumentBuilder<CommandSourceStack, ?> argumentBuilder, SuggestionProvider provider) {
 
-    private ArgumentBuilder<CommandSourceStack, ?> createFloatArgument(FloatArgument argument) {
-        String name = argument.getName();
-        float min = argument.getMin();
-        float max = argument.getMax();
-        return Commands.argument(name, FloatArgumentType.floatArg(min, max));
-    }
+        argumentBuilder.suggests((ctx, builder) -> {
+            provider.provide().forEach(builder::suggest);
+            return builder.buildFuture();
+        });
 
-    private ArgumentBuilder<CommandSourceStack, ?> createBooleanArgument(BooleanArgument argument) {
-        String name = argument.getName();
-        return Commands.argument(name, BoolArgumentType.bool());
-    }
-
-    private ArgumentBuilder<CommandSourceStack, ?> createStringArgument(IntegerArgument argument) {
-        String name = argument.getName();
-        return Commands
-                .argument(name, StringArgumentType.string()
-                ).suggests((ctx, builder) -> {
-                    builder.suggest("word");
-                    return builder.buildFuture();
-                }
-        );
     }
 
 }

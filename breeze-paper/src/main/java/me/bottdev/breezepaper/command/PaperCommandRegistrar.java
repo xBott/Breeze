@@ -72,7 +72,11 @@ public class PaperCommandRegistrar {
         }
 
         PaperCommandNodeFactory factory = factoryOptional.get();
-        ArgumentBuilder<CommandSourceStack, ?> paperNode = factory.create(parent, node);
+
+        Optional<ArgumentBuilder<CommandSourceStack, ?> > paperNodeOptional = factory.create(parent, node);
+        if (paperNodeOptional.isEmpty()) return;
+
+        ArgumentBuilder<CommandSourceStack, ?> paperNode = paperNodeOptional.get();
 
         if (!node.hasChildren()) return;
         node.getChildren().values().forEach(child ->

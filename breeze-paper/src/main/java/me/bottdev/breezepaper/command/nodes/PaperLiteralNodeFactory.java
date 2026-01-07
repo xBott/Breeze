@@ -7,13 +7,15 @@ import me.bottdev.breezeapi.command.CommandNode;
 import me.bottdev.breezeapi.command.nodes.CommandLiteralNode;
 import me.bottdev.breezepaper.command.PaperCommandNodeFactory;
 
+import java.util.Optional;
+
 public class PaperLiteralNodeFactory implements PaperCommandNodeFactory {
 
     @Override
-    public ArgumentBuilder<CommandSourceStack, ?> create(ArgumentBuilder<CommandSourceStack, ?> parent, CommandNode node) {
+    public Optional<ArgumentBuilder<CommandSourceStack, ?>> create(ArgumentBuilder<CommandSourceStack, ?> parent, CommandNode node) {
         CommandLiteralNode literalNode = (CommandLiteralNode) node;
         String value = literalNode.getValue();
-        return Commands.literal(value);
+        return Optional.of(Commands.literal(value));
     }
 
 }
