@@ -6,7 +6,7 @@ import me.bottdev.breezeapi.command.Command;
 import me.bottdev.breezeapi.command.CommandTreeParser;
 import me.bottdev.breezeapi.command.argument.CommandArgumentFactory;
 import me.bottdev.breezeapi.command.nodes.CommandArgumentNode;
-import me.bottdev.breezeapi.command.nodes.CommandExecuteNode;
+import me.bottdev.breezeapi.command.nodes.execute.MethodExecuteNode;
 import me.bottdev.breezeapi.command.nodes.CommandLiteralNode;
 import me.bottdev.breezeapi.i18n.TranslationModuleManager;
 import me.bottdev.breezeapi.log.TreeLogger;
@@ -76,8 +76,13 @@ public class BreezePaper extends JavaPlugin {
 
         PaperCommandRegistrar registrar = new PaperCommandRegistrar(this);
         registrar.addFactory(CommandLiteralNode.class, new PaperLiteralNodeFactory());
-        registrar.addFactory(CommandArgumentNode.class, new PaperArgumentNodeFactory());
-        registrar.addFactory(CommandExecuteNode.class, new PaperExecuteNodeFactory(contextFactory));
+        registrar.addFactory(CommandArgumentNode.class, new PaperArgumentNodeFactory()
+                .addFactory(String.class, new PaperArgumentNodeFactory.Factory.Str())
+                .addFactory(Boolean.class, new PaperArgumentNodeFactory.Factory.Bool())
+                .addFactory(Integer.class, new PaperArgumentNodeFactory.Factory.Int())
+                .addFactory(Float.class, new PaperArgumentNodeFactory.Factory.Float())
+        );
+        registrar.addFactory(MethodExecuteNode.class, new PaperExecuteNodeFactory(contextFactory));
 
         CommandArgumentFactory argumentFactory = CommandArgumentFactory.defaultFactory();
         CommandTreeParser parser = new CommandTreeParser(argumentFactory);
