@@ -24,6 +24,19 @@ public class CompositeProxyHandler implements InvocationHandler {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 
+        if (method.getDeclaringClass() == Object.class) {
+            return switch (method.getName()) {
+                case "toString" ->
+                        "Proxy[" + proxy.getClass().getInterfaces()[0].getName() + "]";
+                case "hashCode" ->
+                        System.identityHashCode(proxy);
+                case "equals" ->
+                        proxy == args[0];
+                default ->
+                        null;
+            };
+        }
+
         ProxyResult result = invokeHandlers(proxy, method, args);
         invokePostHandlers(proxy, method, args, result);
 
