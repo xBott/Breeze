@@ -46,6 +46,7 @@ import me.bottdev.breezecore.modules.SimpleModuleManager;
 
 import java.nio.file.Path;
 
+@Deprecated
 @Getter
 @RequiredArgsConstructor
 public class SimpleBreezeEngine implements BreezeEngine {
@@ -65,29 +66,15 @@ public class SimpleBreezeEngine implements BreezeEngine {
         logger.info("Starting engine....");
 
         logger.withSection("BreezeEngine Startup", "", () -> {
-            addShutdownHook();
-            registerSuppliers();
-            setup();
-            startAllLifecycles();
+            registerSuppliers();  //Регистрация зависимостей
+            setup();              //Создание дополнительных обьектов
+            startAllLifecycles(); //Запуск
         });
 
         logger.info("Successfully started engine.");
     }
 
     private void registerSuppliers() {
-
-        context.addObjectSupplier("mainLogger", new SingletonSupplier(logger));
-        context.addObjectSupplier("breezeEngine", new SingletonSupplier(this));
-
-        MapperRegistry mapperRegistry = new MapperRegistry();
-        context.addObjectSupplier("mapperRegistry", new SingletonSupplier(mapperRegistry));
-
-        context.injectConstructor(SimpleModuleManager.class).ifPresent(moduleManager ->
-                context.addObjectSupplier(
-                        "moduleManager",
-                        new SingletonSupplier(moduleManager)
-                )
-        );
 
         context.injectConstructor(SimpleEventBus.class).ifPresent(eventBus -> {
             context.addObjectSupplier(
@@ -114,19 +101,13 @@ public class SimpleBreezeEngine implements BreezeEngine {
 
         });
 
-        context.injectConstructor(TranslationModuleManager.class).ifPresent(translationModuleManager ->
-                context.addObjectSupplier(
-                        "translationModuleManager",
-                        new SingletonSupplier(translationModuleManager)
-                )
-        );
-
         logger.info("Successfully added suppliers to context.");
 
     }
 
+
+
     private void setup() {
-        registerMappers();
         registerAutoLoaders();
         registerConstructHooks();
         registerContextBootstrapperReaders();
@@ -134,19 +115,14 @@ public class SimpleBreezeEngine implements BreezeEngine {
         loadContext();
     }
 
-    private void registerMappers() {
-        context.get(MapperRegistry.class, "mapperRegistry").ifPresent(mapperRegistry ->
-                mapperRegistry.registerMapper(new MapperType(JsonMapper.class, "json"), new JsonMapper())
-        );
-    }
-
     private void registerAutoLoaders() {
-        context.get(EventBus.class, "eventBus").ifPresent(eventBus -> {
-            autoLoaderRegistry
-                    .register(Listener.class, new ListenerAutoLoader(eventBus))
-                    .register(Bootstrap.class, new BootstrapAutoLoader());
-            logger.info("Successfully registered loaders in auto loader registry.");
-        });
+        autoLoaderRegistry.register(Bootstrap.class, new BootstrapAutoLoader());
+
+        context.get(EventBus.class).ifPresent(eventBus ->
+                autoLoaderRegistry.register(Listener.class, new ListenerAutoLoader(eventBus))
+        );
+
+        logger.info("Successfully registered loaders in auto loader registry.");
     }
 
     private void registerConstructHooks() {
@@ -156,9 +132,9 @@ public class SimpleBreezeEngine implements BreezeEngine {
 
     private void registerContextBootstrapperReaders() {
 
-        CacheManager cacheManager = context.get(CacheManager.class, "cacheManager").orElse(null);
-        SingleResourceWatcher singleResourceWatcher = context.get(SingleResourceWatcher.class, "singleResourceWatcher").orElse(null);
-        TreeResourceWatcher treeResourceWatcher = context.get(TreeResourceWatcher.class, "treeResourceWatcher").orElse(null);
+        CacheManager cacheManager = context.get(CacheManager.class).orElse(null);
+        SingleResourceWatcher singleResourceWatcher = context.get(SingleResourceWatcher.class).orElse(null);
+        TreeResourceWatcher treeResourceWatcher = context.get(TreeResourceWatcher.class).orElse(null);
 
         if (cacheManager == null || singleResourceWatcher == null || treeResourceWatcher == null) return;
 
@@ -198,11 +174,11 @@ public class SimpleBreezeEngine implements BreezeEngine {
     }
 
     private void restartModuleManager() {
-        context.get(ModuleManager.class, "moduleManager").ifPresent(ModuleManager::restartAll);
+        context.get(ModuleManager.class).ifPresent(ModuleManager::restartAll);
     }
 
     @Override
-    public void stop() {
+    public void shutdown() {
         logger.info("Stopping engine....");
         logger.withSection("Breeze Engine Stop", "", () -> {
             shutdownLifecycleManager();
