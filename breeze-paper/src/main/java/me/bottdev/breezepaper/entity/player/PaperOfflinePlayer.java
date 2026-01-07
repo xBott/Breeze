@@ -1,16 +1,17 @@
 package me.bottdev.breezepaper.entity.player;
 
 import lombok.Getter;
+import me.bottdev.breezemc.entity.player.BreezeOfflinePlayer;
 import org.bukkit.OfflinePlayer;
 
 import java.util.UUID;
 
-public class BreezeOfflinePlayer implements BreezePlayer {
+public class PaperOfflinePlayer implements BreezeOfflinePlayer {
 
     @Getter
     private final OfflinePlayer offlinePlayer;
 
-    public BreezeOfflinePlayer(OfflinePlayer player) {
+    public PaperOfflinePlayer(OfflinePlayer player) {
         this.offlinePlayer = player;
     }
 
