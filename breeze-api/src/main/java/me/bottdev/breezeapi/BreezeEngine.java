@@ -29,10 +29,6 @@ public interface BreezeEngine {
 
     void restart();
 
-    void stop();
-
-    default void addShutdownHook() {
-        Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
-    }
+    void shutdown();
 
 }
