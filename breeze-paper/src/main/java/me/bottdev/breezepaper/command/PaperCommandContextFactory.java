@@ -8,8 +8,8 @@ import me.bottdev.breezeapi.command.CommandSender;
 import me.bottdev.breezeapi.command.nodes.execute.MethodExecuteNode;
 import me.bottdev.breezeapi.command.scheme.ArgumentSchemeResolver;
 import me.bottdev.breezepaper.command.senders.PlayerCommandSender;
-import me.bottdev.breezepaper.entity.player.BreezeOnlinePlayer;
-import me.bottdev.breezepaper.entity.player.PlayerManager;
+import me.bottdev.breezepaper.entity.player.PaperOnlinePlayer;
+import me.bottdev.breezepaper.components.PaperPlayerManager;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
@@ -18,7 +18,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class PaperCommandContextFactory {
 
-    private final PlayerManager playerManager;
+    private final PaperPlayerManager playerManager;
 
     public Optional<CommandExecutionContext> create(
             MethodExecuteNode node,
@@ -51,7 +51,7 @@ public class PaperCommandContextFactory {
         Entity executor = paperContext.getSource().getExecutor();
 
         if (executor instanceof Player bukkitPlayer) {
-            BreezeOnlinePlayer player = playerManager.getPlayerByBukkit(bukkitPlayer);
+            PaperOnlinePlayer player = playerManager.getPlayerByBukkit(bukkitPlayer);
             CommandSender sender = new PlayerCommandSender(player);
             return Optional.of(sender);
         }
