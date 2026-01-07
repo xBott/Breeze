@@ -3,8 +3,9 @@ package resource;
 import me.bottdev.breezeapi.events.EventBus;
 import me.bottdev.breezeapi.events.Listener;
 import me.bottdev.breezeapi.events.annotations.Listen;
-import me.bottdev.breezeapi.lifecycle.LifecycleManager;
+import me.bottdev.breezeapi.lifecycle.SimpleLifecycleManager;
 import me.bottdev.breezeapi.log.BreezeLogger;
+import me.bottdev.breezeapi.log.TreeLogger;
 import me.bottdev.breezeapi.log.types.SimpleLogger;
 import me.bottdev.breezeapi.log.types.SimpleTreeLogger;
 import me.bottdev.breezeapi.resource.ResourceTree;
@@ -22,6 +23,17 @@ import org.junit.jupiter.api.Test;
 import java.nio.file.Path;
 
 public class TreeResourceWatchTest {
+
+    public static class TestEventBus extends EventBus {
+
+        public TestEventBus(TreeLogger mainLogger) {
+            super(mainLogger);
+        }
+
+        @Override
+        protected void onStart() {}
+
+    }
 
     public static class TestListener implements Listener {
 
@@ -41,15 +53,15 @@ public class TreeResourceWatchTest {
     static final BreezeLogger logger = new SimpleLogger("ResourceWatchTest");
 
     static EventBus eventBus;
-    static LifecycleManager lifecycleManager;
+    static SimpleLifecycleManager lifecycleManager;
     static TreeResourceWatcher treeResourceWatcher;
 
     @BeforeAll
     static void setUp() {
-        eventBus = new EventBus(new SimpleTreeLogger("EventBus"));
+        eventBus = new TestEventBus(new SimpleTreeLogger("EventBus"));
         eventBus.registerListeners(new TestListener());
 
-        lifecycleManager = new LifecycleManager(new SimpleLogger("LifecycleManager"));
+        lifecycleManager = new SimpleLifecycleManager(new SimpleLogger("LifecycleManager"));
         treeResourceWatcher = lifecycleManager.create(new ResourceWatcherBuilder.Tree(eventBus));
     }
 

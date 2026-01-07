@@ -5,11 +5,22 @@ import me.bottdev.breezeapi.events.Event;
 import me.bottdev.breezeapi.events.EventBus;
 import me.bottdev.breezeapi.events.Listener;
 import me.bottdev.breezeapi.events.annotations.Listen;
+import me.bottdev.breezeapi.log.TreeLogger;
 import me.bottdev.breezeapi.log.types.SimpleTreeLogger;
 import org.junit.jupiter.api.Test;
 
 public class EventTest {
 
+    public static class TestEventBus extends EventBus {
+
+        public TestEventBus(TreeLogger mainLogger) {
+            super(mainLogger);
+        }
+
+        @Override
+        protected void onStart() {}
+
+    }
 
     @Getter
     @RequiredArgsConstructor
@@ -49,7 +60,7 @@ public class EventTest {
     @Test
     public void testEventBus() {
 
-        EventBus eventBus = new EventBus(new SimpleTreeLogger("EventBus"));
+        EventBus eventBus = new TestEventBus(new SimpleTreeLogger("EventBus"));
 
         JoinListener listener = new JoinListener();
         eventBus.registerListeners(listener);

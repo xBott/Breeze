@@ -7,7 +7,6 @@ import me.bottdev.breezeapi.cache.proxy.Cacheable;
 import me.bottdev.breezeapi.cache.proxy.annotations.CachePut;
 import me.bottdev.breezeapi.di.annotations.Proxy;
 import me.bottdev.breezeapi.di.proxy.ProxyFactoryRegistry;
-import me.bottdev.breezeapi.events.EventBus;
 import me.bottdev.breezeapi.lifecycle.SimpleLifecycleManager;
 import me.bottdev.breezeapi.log.types.SimpleTreeLogger;
 import me.bottdev.breezeapi.resource.ResourceTree;
@@ -87,8 +86,6 @@ public class ResourceProxyTest {
     static final SimpleTreeLogger logger = new SimpleTreeLogger("ResourceProxyTest");
 
     static ProxyFactoryRegistry proxyFactory;
-    static EventBus eventBus;
-
     static SimpleLifecycleManager lifecycleManager;
     static CacheManager cacheManager;
 
@@ -97,7 +94,6 @@ public class ResourceProxyTest {
     @BeforeAll
     static void createProxyFactory() {
 
-        eventBus = new EventBus(logger);
         lifecycleManager = new SimpleLifecycleManager(logger);
         cacheManager = lifecycleManager.create(new CacheManagerBuilder());
 
