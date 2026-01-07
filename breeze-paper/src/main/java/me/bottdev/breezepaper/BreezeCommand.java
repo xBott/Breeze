@@ -6,6 +6,7 @@ import me.bottdev.breezeapi.command.CommandSender;
 import me.bottdev.breezeapi.command.annotations.Argument;
 import me.bottdev.breezeapi.command.annotations.Sender;
 import me.bottdev.breezeapi.command.annotations.SubCommand;
+import me.bottdev.breezeapi.di.SupplyType;
 import me.bottdev.breezeapi.di.annotations.Component;
 import me.bottdev.breezeapi.di.annotations.Inject;
 import me.bottdev.breezeapi.modules.ModuleDescriptor;
@@ -96,6 +97,20 @@ public class BreezeCommand implements Command {
                     sender.send("  <gray>Data Folder: <yellow>{}>",  dataFolder.getAbsolutePath());
 
                 });
+
+    }
+
+    @SubCommand(path = "di info")
+    public void diInfo(
+            @Sender CommandSender sender
+    ) {
+
+        sender.send("<white>List of all suppliers:");
+        breezeEngine.getContext().getSuppliers().forEach((key, supplier) -> {
+            Object object = supplier.supply();
+            SupplyType supplyType = supplier.getType();
+            sender.send("  <yellow>{} <gray>{}: <light_purple>{}", supplyType, key, object.getClass().getSimpleName());
+        });
 
     }
 
