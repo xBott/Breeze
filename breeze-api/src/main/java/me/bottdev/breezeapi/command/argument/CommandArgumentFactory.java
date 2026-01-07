@@ -2,10 +2,13 @@ package me.bottdev.breezeapi.command.argument;
 
 import me.bottdev.breezeapi.command.annotations.Argument;
 import me.bottdev.breezeapi.command.annotations.Ranged;
+import me.bottdev.breezeapi.command.argument.suggestion.SuggestionProvider;
+import me.bottdev.breezeapi.command.argument.suggestion.types.EmptySuggestionFactory;
 import me.bottdev.breezeapi.command.argument.types.BooleanArgument;
 import me.bottdev.breezeapi.command.argument.types.FloatArgument;
 import me.bottdev.breezeapi.command.argument.types.IntegerArgument;
 import me.bottdev.breezeapi.command.argument.types.StringArgument;
+import me.bottdev.breezeapi.command.argument.suggestion.SuggestionFactory;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -23,11 +26,11 @@ public class CommandArgumentFactory {
 
     public static CommandArgumentFactory defaultFactory() {
         return new CommandArgumentFactory()
-                .register(String.class, (name, parameter) ->
+                .registerArgumentFactory(String.class, (name, parameter) ->
                         new StringArgument(name)
                 )
 
-                .register(List.of(Integer.class, int.class), (name, parameter) -> {
+                .registerArgumentFactory(List.of(Integer.class, int.class), (name, parameter) -> {
                     if (parameter.isAnnotationPresent(Ranged.class)) {
                         Ranged ranged = parameter.getAnnotation(Ranged.class);
                         return new IntegerArgument(name, (int)ranged.min(), (int)ranged.max());
@@ -35,7 +38,7 @@ public class CommandArgumentFactory {
                     return new IntegerArgument(name);
                 })
 
-                .register(List.of(Float.class, float.class), (name, parameter) -> {
+                .registerArgumentFactory(List.of(Float.class, float.class), (name, parameter) -> {
                     if (parameter.isAnnotationPresent(Ranged.class)) {
                         Ranged ranged = parameter.getAnnotation(Ranged.class);
                         return new FloatArgument(name, (float)ranged.min(), (float)ranged.max());
@@ -43,21 +46,38 @@ public class CommandArgumentFactory {
                     return new FloatArgument(name);
                 })
 
-                .register(List.of(Boolean.class, boolean.class), (name, parameter) ->
+                .registerArgumentFactory(List.of(Boolean.class, boolean.class), (name, parameter) ->
                         new BooleanArgument(name)
-                );
+                )
+                .registerSuggestionFactory(new EmptySuggestionFactory());
     }
 
-    private final Map<Class<?>, Factory> factories = new HashMap<>();
+    private final Map<Class<?>, Factory> argumentFactories = new HashMap<>();
+    private final Map<Class<? extends SuggestionFactory>, SuggestionFactory> suggestionFactories = new HashMap<>();
 
-    public CommandArgumentFactory register(Class<?> type, Factory factory) {
-        factories.put(type, factory);
+    public CommandArgumentFactory registerArgumentFactory(Class<?> type, Factory factory) {
+        argumentFactories.put(type, factory);
         return this;
     }
 
-    public CommandArgumentFactory register(List<Class<?>> types, Factory factory) {
-        types.forEach(type -> register(type, factory));
+    public CommandArgumentFactory registerArgumentFactory(List<Class<?>> types, Factory factory) {
+        types.forEach(type -> registerArgumentFactory(type, factory));
         return this;
+    }
+
+    private Optional<Factory> getArgumentFactory(Class<?> type) {
+        return Optional.ofNullable(argumentFactories.get(type));
+    }
+
+    public CommandArgumentFactory registerSuggestionFactory(
+            SuggestionFactory factory
+    ) {
+        suggestionFactories.put(factory.getClass(), factory);
+        return this;
+    }
+
+    private Optional<SuggestionFactory> getSuggestionFactory(Class<? extends SuggestionFactory> type) {
+        return Optional.ofNullable(suggestionFactories.get(type));
     }
 
     public Optional<CommandArgument<?>> create(String argumentName, Method method) {
@@ -68,21 +88,34 @@ public class CommandArgumentFactory {
 
             Argument argumentAnnotation = parameter.getAnnotation(Argument.class);
             String name = argumentAnnotation.name();
+            Class<? extends SuggestionFactory> suggestionFactoryClazz = argumentAnnotation.suggest();
 
             if (!name.equalsIgnoreCase(argumentName)) continue;
 
             Class<?> type = parameter.getType();
 
-            Factory factory = factories.get(type);
-            if (factory == null) continue;
+            Optional<Factory> factoryOptional = getArgumentFactory(type);
+            if (factoryOptional.isEmpty()) continue;
+            Factory factory = factoryOptional.get();
 
             CommandArgument<?> argument = factory.create(argumentName, parameter);
+            if (argument instanceof Suggestable suggestable) {
+                addSuggestions(suggestable, suggestionFactoryClazz);
+            }
+
             return Optional.of(argument);
 
         }
 
         return Optional.empty();
 
+    }
+
+    private void addSuggestions(Suggestable suggestable, Class<? extends SuggestionFactory> suggestionFactoryClazz) {
+        getSuggestionFactory(suggestionFactoryClazz).ifPresent(factory -> {
+            SuggestionProvider suggestionProvider = factory.create();
+            suggestable.setSuggestionProvider(suggestionProvider);
+        });
     }
 
 }
