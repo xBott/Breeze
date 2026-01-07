@@ -1,4 +1,4 @@
-package me.bottdev.breezeapi.command.suggestion;
+package me.bottdev.breezeapi.command.argument.suggestion;
 
 import java.util.List;
 
