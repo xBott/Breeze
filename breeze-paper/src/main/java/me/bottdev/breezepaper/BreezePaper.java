@@ -1,99 +1,45 @@
 package me.bottdev.breezepaper;
 
 import lombok.Getter;
-import me.bottdev.breezeapi.BreezeEngine;
-import me.bottdev.breezeapi.command.Command;
-import me.bottdev.breezeapi.command.CommandTreeParser;
-import me.bottdev.breezeapi.command.argument.CommandArgumentFactory;
-import me.bottdev.breezeapi.command.nodes.CommandArgumentNode;
-import me.bottdev.breezeapi.command.nodes.execute.MethodExecuteNode;
-import me.bottdev.breezeapi.command.nodes.CommandLiteralNode;
-import me.bottdev.breezeapi.i18n.TranslationModuleManager;
-import me.bottdev.breezeapi.log.TreeLogger;
-import me.bottdev.breezeapi.modules.ModuleManager;
-import me.bottdev.breezecore.modules.loaders.DependencyModuleLoader;
-import me.bottdev.breezecore.SimpleBreezeEngine;
-import me.bottdev.breezepaper.autoloaders.PaperCommandAutoLoader;
-import me.bottdev.breezepaper.command.PaperCommandContextFactory;
-import me.bottdev.breezepaper.command.PaperCommandRegistrar;
-import me.bottdev.breezepaper.command.nodes.PaperArgumentNodeFactory;
-import me.bottdev.breezepaper.command.nodes.PaperExecuteNodeFactory;
-import me.bottdev.breezepaper.command.nodes.PaperLiteralNodeFactory;
-import me.bottdev.breezepaper.entity.player.PlayerManager;
+import me.bottdev.breezecore.StagedBreezeEngine;
+import me.bottdev.breezecore.staged.StagePriority;
+import me.bottdev.breezepaper.stages.PaperCommandLoaderStage;
+import me.bottdev.breezepaper.stages.PaperModuleLoaderStage;
+import me.bottdev.breezepaper.stages.PaperSupplierRegistrationStage;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.nio.file.Path;
-
+@Getter
 public class BreezePaper extends JavaPlugin {
 
     @Getter
     private static BreezePaper instance;
-    @Getter
-    private BreezeEngine engine;
-    @Getter
-    private PlayerManager playerManager;
+    private StagedBreezeEngine engine;
 
     @Override
     public void onEnable() {
         instance = this;
 
-        engine = new SimpleBreezeEngine(getDataPath().toAbsolutePath(), () -> {
-
-            TranslationModuleManager translationModuleManager =
-                    engine.getContext().get(TranslationModuleManager.class).orElseThrow();
-            playerManager = new PlayerManager(translationModuleManager);
-
-            addDependencyModuleLoader();
-            addCommandAutoloader();
-
-        });
+        engine = new StagedBreezeEngine(getDataPath().toAbsolutePath());
+        engine.getStartupProcess()
+                .addStage(
+                        new PaperSupplierRegistrationStage(),
+                        StagePriority.HIGHEST
+                )
+                .addStage(
+                        new PaperModuleLoaderStage(getClassLoader(), getDataFolder().toPath().resolve("modules")),
+                        StagePriority.HIGH
+                )
+                .addStage(
+                        new PaperCommandLoaderStage(this),
+                        StagePriority.HIGH
+                );
 
         engine.start();
-
-        playerManager.getPlayers().forEach(player ->
-                player.sendMessage("Location of player {} is {}", player.getName(), player.getLocation())
-        );
-
-    }
-
-    private void addDependencyModuleLoader() {
-        engine.getContext().get(ModuleManager.class).ifPresent(moduleManager ->
-                engine.getContext().get(TreeLogger.class, "mainLogger").ifPresent(treeLogger -> {
-
-                    ClassLoader parentClassLoader = getClassLoader();
-                    Path directory = getDataFolder().toPath().resolve("modules");
-                    DependencyModuleLoader loader =
-                            new DependencyModuleLoader(engine.getLogger(), parentClassLoader, engine, directory);
-                    moduleManager.addModuleLoader(loader);
-
-                })
-        );
-    }
-
-    private void addCommandAutoloader() {
-
-        PaperCommandContextFactory contextFactory = new PaperCommandContextFactory(playerManager);
-
-        PaperCommandRegistrar registrar = new PaperCommandRegistrar(this);
-        registrar.addFactory(CommandLiteralNode.class, new PaperLiteralNodeFactory());
-        registrar.addFactory(CommandArgumentNode.class, new PaperArgumentNodeFactory()
-                .addFactory(String.class, new PaperArgumentNodeFactory.Factory.Str())
-                .addFactory(Boolean.class, new PaperArgumentNodeFactory.Factory.Bool())
-                .addFactory(Integer.class, new PaperArgumentNodeFactory.Factory.Int())
-                .addFactory(Float.class, new PaperArgumentNodeFactory.Factory.Float())
-        );
-        registrar.addFactory(MethodExecuteNode.class, new PaperExecuteNodeFactory(contextFactory));
-
-        CommandArgumentFactory argumentFactory = CommandArgumentFactory.defaultFactory();
-        CommandTreeParser parser = new CommandTreeParser(argumentFactory);
-
-        engine.getAutoLoaderRegistry().register(Command.class, new PaperCommandAutoLoader(parser, registrar));
-
     }
 
     @Override
     public void onDisable() {
-        engine.stop();
+        engine.shutdown();
     }
 
 }
