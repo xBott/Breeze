@@ -5,7 +5,8 @@ import io.papermc.paper.command.brigadier.CommandSourceStack;
 import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.command.CommandExecutionContext;
 import me.bottdev.breezeapi.command.CommandSender;
-import me.bottdev.breezeapi.command.nodes.CommandExecuteNode;
+import me.bottdev.breezeapi.command.nodes.execute.MethodExecuteNode;
+import me.bottdev.breezeapi.command.scheme.ArgumentSchemeResolver;
 import me.bottdev.breezepaper.command.senders.PlayerCommandSender;
 import me.bottdev.breezepaper.entity.player.BreezeOnlinePlayer;
 import me.bottdev.breezepaper.entity.player.PlayerManager;
@@ -20,7 +21,7 @@ public class PaperCommandContextFactory {
     private final PlayerManager playerManager;
 
     public Optional<CommandExecutionContext> create(
-            CommandExecuteNode node,
+            MethodExecuteNode node,
             CommandContext<CommandSourceStack> paperContext
     ) {
 
@@ -34,11 +35,11 @@ public class PaperCommandContextFactory {
 
         node.getScheme().getResolvers().forEach(resolver -> {
 
-//            if (resolver instanceof ArgumentSchemeResolver argumentResolver) {
-//                String name = argumentResolver.getName();
-//                Object value = paperContext.getArgument(name, Object.class);
-//                context.setArgument(name, value);
-//            }
+            if (resolver instanceof ArgumentSchemeResolver argumentResolver) {
+                String name = argumentResolver.getName();
+                Object value = paperContext.getArgument(name, Object.class);
+                context.setArgument(name, value);
+            }
 
         });
 
