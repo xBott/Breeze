@@ -3,7 +3,7 @@ package me.bottdev.breezepaper.command.senders;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.command.CommandSender;
-import me.bottdev.breezepaper.entity.player.BreezeOnlinePlayer;
+import me.bottdev.breezemc.entity.player.BreezeOnlinePlayer;
 
 @Getter
 @RequiredArgsConstructor
