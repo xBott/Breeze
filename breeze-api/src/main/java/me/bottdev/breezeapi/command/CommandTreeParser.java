@@ -5,11 +5,9 @@ import me.bottdev.breezeapi.command.annotations.SubCommand;
 import me.bottdev.breezeapi.command.argument.CommandArgument;
 import me.bottdev.breezeapi.command.argument.CommandArgumentFactory;
 import me.bottdev.breezeapi.command.nodes.CommandArgumentNode;
-import me.bottdev.breezeapi.command.nodes.CommandExecuteNode;
+import me.bottdev.breezeapi.command.nodes.execute.MethodExecuteNode;
 import me.bottdev.breezeapi.command.nodes.CommandLiteralNode;
 import me.bottdev.breezeapi.command.nodes.CommandRootNode;
-import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.types.SimpleLogger;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -18,11 +16,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CommandTreeParser {
 
-    private final BreezeLogger logger = new SimpleLogger("CommandTreeParser");
-
     private final CommandArgumentFactory argumentFactory;
 
-    public CommandRootNode parse(Command command) throws IllegalArgumentException {
+    public CommandRootNode parse(Command command) {
 
         String commandName = command.getName();
         CommandRootNode rootNode = new CommandRootNode(commandName);
@@ -78,7 +74,7 @@ public class CommandTreeParser {
 
         }
 
-        if (current instanceof CommandExecuteNode) {
+        if (current instanceof MethodExecuteNode) {
             return;
         }
 
@@ -110,23 +106,7 @@ public class CommandTreeParser {
             Command command,
             Method method
     ) {
-        return new CommandExecuteNode(command, method);
+        return new MethodExecuteNode(command, method);
     }
-
-    public void printTree(int indent, CommandNode node) {
-
-        String message =
-                "    ".repeat(indent) +
-                "- " +
-                node.getDisplayName();
-
-        logger.info(message);
-
-        for (CommandNode child : node.getChildren().values()) {
-            printTree(indent + 1, child);
-        }
-
-    }
-
 
 }
