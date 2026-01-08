@@ -27,7 +27,7 @@ public interface AdminResourceProvider extends ResourceProvider, Cacheable {
     @ProvideResource(isTree = true)
     @DriveSource(path = "modules/Admin/translations")
     @JarSource(path = "translations")
-    @HotReload(eventId = "admin_translations_reload") //Добавить поддержку деревьев
+    @HotReload(eventId = "admin_translations_reload")
     ResourceTree<SingleFileResource> getTranslationTree();
 
 }
