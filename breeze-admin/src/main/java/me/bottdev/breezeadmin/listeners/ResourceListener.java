@@ -30,12 +30,8 @@ public class ResourceListener implements Listener {
     @Listen(priority = 100)
     public void onResourceChanged(ResourceModifyEvent event) {
 
-        ResourceWatchSubject subject = event.getWatchSubject();
+        ResourceWatchSubject<?> subject = event.getWatchSubject();
         String eventId = subject.getEventId();
-
-        if (eventId.equalsIgnoreCase("admin_settings_reload")) {
-
-        }
 
         switch (eventId) {
             case "admin_settings_reload":
