@@ -2,11 +2,11 @@ package me.bottdev.breezepaper.command;
 
 import com.mojang.brigadier.context.CommandContext;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
-import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.command.CommandExecutionContext;
 import me.bottdev.breezeapi.command.CommandSender;
 import me.bottdev.breezeapi.command.nodes.execute.MethodExecuteNode;
 import me.bottdev.breezeapi.command.scheme.ArgumentSchemeResolver;
+import me.bottdev.breezeapi.di.annotations.Inject;
 import me.bottdev.breezepaper.command.senders.PlayerCommandSender;
 import me.bottdev.breezepaper.entity.player.PaperOnlinePlayer;
 import me.bottdev.breezepaper.components.PaperPlayerManager;
@@ -15,10 +15,14 @@ import org.bukkit.entity.Player;
 
 import java.util.Optional;
 
-@RequiredArgsConstructor
 public class PaperCommandContextFactory {
 
     private final PaperPlayerManager playerManager;
+
+    @Inject
+    public PaperCommandContextFactory(PaperPlayerManager paperPlayerManager) {
+        this.playerManager = paperPlayerManager;
+    }
 
     public Optional<CommandExecutionContext> create(
             MethodExecuteNode node,

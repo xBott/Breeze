@@ -1,6 +1,5 @@
 package me.bottdev.breezeapi.command;
 
-import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.command.annotations.SubCommand;
 import me.bottdev.breezeapi.command.argument.CommandArgument;
 import me.bottdev.breezeapi.command.argument.CommandArgumentFactory;
@@ -8,15 +7,20 @@ import me.bottdev.breezeapi.command.nodes.CommandArgumentNode;
 import me.bottdev.breezeapi.command.nodes.execute.MethodExecuteNode;
 import me.bottdev.breezeapi.command.nodes.CommandLiteralNode;
 import me.bottdev.breezeapi.command.nodes.CommandRootNode;
+import me.bottdev.breezeapi.di.annotations.Inject;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Optional;
 
-@RequiredArgsConstructor
 public class CommandTreeParser {
 
-    private final CommandArgumentFactory argumentFactory;
+    private final CommandArgumentFactory commandArgumentFactory;
+
+    @Inject
+    public CommandTreeParser(CommandArgumentFactory commandArgumentFactory) {
+        this.commandArgumentFactory = commandArgumentFactory;
+    }
 
     public CommandRootNode parse(Command command) {
 
@@ -87,7 +91,7 @@ public class CommandTreeParser {
             Method method
     ) {
         String argumentName = part.substring(1, part.length() - 1);
-        Optional<CommandArgument<?>> argumentOptional = argumentFactory.create(argumentName, method);
+        Optional<CommandArgument<?>> argumentOptional = commandArgumentFactory.create(argumentName, method);
         if (argumentOptional.isEmpty()) {
             throw new IllegalArgumentException("Failed to parse sub-command. Could not find argument " + argumentName);
         }

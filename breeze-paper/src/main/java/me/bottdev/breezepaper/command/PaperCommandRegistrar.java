@@ -6,25 +6,32 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
-import lombok.RequiredArgsConstructor;
+import lombok.Getter;
 import me.bottdev.breezeapi.command.CommandNode;
 import me.bottdev.breezeapi.command.nodes.CommandRootNode;
+import me.bottdev.breezeapi.di.annotations.Inject;
 import me.bottdev.breezeapi.log.BreezeLogger;
 import me.bottdev.breezeapi.log.types.SimpleLogger;
-import org.bukkit.plugin.java.JavaPlugin;
+import me.bottdev.breezepaper.BreezePaper;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-@RequiredArgsConstructor
 public class PaperCommandRegistrar {
 
     private final BreezeLogger logger = new SimpleLogger("PaperCommandRegistrar");
     private final Map<Class<? extends CommandNode>, PaperCommandNodeFactory> factories = new HashMap<>();
 
-    private final JavaPlugin plugin;
+    private final BreezePaper breezePaper;
+    @Getter
+    private final PaperCommandContextFactory contextFactory;
 
+    @Inject
+    public PaperCommandRegistrar(BreezePaper breezePaper, PaperCommandContextFactory paperCommandContextFactory) {
+        this.breezePaper = breezePaper;
+        this.contextFactory = paperCommandContextFactory;
+    }
 
     public PaperCommandRegistrar addFactory(
             Class<? extends CommandNode> nodeClass,
@@ -41,7 +48,7 @@ public class PaperCommandRegistrar {
     }
 
     public void register(CommandRootNode rootNode) {
-        plugin.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> {
+        breezePaper.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> {
             LiteralCommandNode<CommandSourceStack> paperRoot = convert(rootNode).build();
             commands.registrar().register(paperRoot);
         });

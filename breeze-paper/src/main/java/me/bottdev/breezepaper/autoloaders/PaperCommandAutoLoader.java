@@ -1,20 +1,28 @@
 package me.bottdev.breezepaper.autoloaders;
 
-import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.autoload.AutoLoader;
 import me.bottdev.breezeapi.command.Command;
 import me.bottdev.breezeapi.command.CommandTreeParser;
 import me.bottdev.breezeapi.command.nodes.CommandRootNode;
+import me.bottdev.breezeapi.di.annotations.Inject;
 import me.bottdev.breezeapi.log.types.SimpleLogger;
 import me.bottdev.breezepaper.command.PaperCommandRegistrar;
 
-@RequiredArgsConstructor
 public class PaperCommandAutoLoader implements AutoLoader {
 
     private final SimpleLogger logger = new SimpleLogger("PaperCommandAutoloader");
 
     private final CommandTreeParser parser;
     private final PaperCommandRegistrar registrar;
+
+    @Inject
+    public PaperCommandAutoLoader(
+            CommandTreeParser commandTreeParser,
+            PaperCommandRegistrar paperCommandRegistrar
+    ) {
+        this.parser = commandTreeParser;
+        this.registrar = paperCommandRegistrar;
+    }
 
     @Override
     public void load(Object object) {
