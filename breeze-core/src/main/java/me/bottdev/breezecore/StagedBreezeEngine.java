@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.BreezeEngine;
 import me.bottdev.breezeapi.autoload.AutoLoaderRegistry;
-import me.bottdev.breezeapi.commons.file.temp.TempFiles;
 import me.bottdev.breezeapi.di.BreezeContext;
 import me.bottdev.breezeapi.di.ContextBootstrapper;
 import me.bottdev.breezeapi.index.BreezeIndexLoader;
