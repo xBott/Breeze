@@ -77,7 +77,7 @@ public class BreezeCommand implements Command {
     @SubCommand(path = "modules info <name>")
     public void moduleInfo(
             @Sender CommandSender sender,
-            @Argument(name = "name") String moduleName
+            @Argument(name = "name", suggest = ModuleSuggestionFactory.class) String moduleName
     ) {
 
         moduleManager.getModules().stream()
