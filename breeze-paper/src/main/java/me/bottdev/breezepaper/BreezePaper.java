@@ -22,7 +22,7 @@ public class BreezePaper extends JavaPlugin {
         engine = new StagedBreezeEngine(getDataPath().toAbsolutePath());
         engine.getStartupProcess()
                 .addStage(
-                        new PaperSupplierRegistrationStage(),
+                        new PaperSupplierRegistrationStage(this),
                         StagePriority.HIGHEST
                 )
                 .addStage(
@@ -30,7 +30,7 @@ public class BreezePaper extends JavaPlugin {
                         StagePriority.HIGH
                 )
                 .addStage(
-                        new PaperCommandLoaderStage(this),
+                        new PaperCommandLoaderStage(),
                         StagePriority.HIGH
                 );
 
