@@ -6,6 +6,8 @@ import me.bottdev.breezeapi.command.annotations.Argument;
 import me.bottdev.breezeapi.command.annotations.Sender;
 import me.bottdev.breezeapi.command.exceptions.SubCommandResolveException;
 import me.bottdev.breezeapi.command.exceptions.UnsupportedParameterException;
+import me.bottdev.breezeapi.command.scheme.resolvers.ArgumentSchemeResolver;
+import me.bottdev.breezeapi.command.scheme.resolvers.SenderSchemeResolver;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -19,14 +21,16 @@ public class CommandScheme {
         for (Parameter parameter : method.getParameters()) {
 
             if (parameter.isAnnotationPresent(Sender.class)) {
-                scheme.addResolver(CommandExecutionContext::getSender);
+                scheme.addResolver(new SenderSchemeResolver());
                 continue;
             }
 
+            Class<?> type = parameter.getType();
             if (parameter.isAnnotationPresent(Argument.class)) {
                 Argument argumentAnnotation = parameter.getAnnotation(Argument.class);
                 String name = argumentAnnotation.name();
-                scheme.addResolver(new ArgumentSchemeResolver(name));
+                boolean required = argumentAnnotation.required();
+                scheme.addResolver(new ArgumentSchemeResolver(name, type, required));
                 continue;
             }
 
@@ -47,9 +51,10 @@ public class CommandScheme {
         Object[] objects = new Object[resolvers.size()];
 
         for (int i = 0; i < resolvers.size(); i++) {
-            Object object = resolvers.get(i).resolve(context);
-            if (object == null) {
-                throw new SubCommandResolveException("Resolver №" + i + " returned null");
+            SchemeResolver resolver = resolvers.get(i);
+            Object object = resolver.resolve(context);
+            if (object == null && resolver.isRequired()) {
+                throw new SubCommandResolveException("Failed to resolve sub-command argument at position " + i);
             }
             objects[i] = object;
         }
