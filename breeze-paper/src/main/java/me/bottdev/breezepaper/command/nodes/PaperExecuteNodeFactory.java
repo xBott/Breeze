@@ -5,7 +5,7 @@ import io.papermc.paper.command.brigadier.CommandSourceStack;
 import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.command.CommandNode;
 import me.bottdev.breezeapi.command.nodes.execute.MethodExecuteNode;
-import me.bottdev.breezepaper.command.PaperCommandContextFactory;
+import me.bottdev.breezepaper.command.context.PaperCommandContextFactory;
 import me.bottdev.breezepaper.command.PaperCommandNodeFactory;
 
 import java.util.Optional;
