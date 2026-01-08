@@ -8,6 +8,7 @@ import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
+import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import me.bottdev.breezeapi.command.CommandNode;
 import me.bottdev.breezeapi.command.argument.CommandArgument;
 import me.bottdev.breezeapi.command.argument.Suggestable;
@@ -68,6 +69,15 @@ public class PaperArgumentNodeFactory implements PaperCommandNodeFactory {
                 float min = integerArgument.getMin();
                 float max = integerArgument.getMax();
                 return Commands.argument(name, FloatArgumentType.floatArg(min, max));
+            }
+
+        }
+
+        class Player implements Factory {
+
+            @Override
+            public RequiredArgumentBuilder<CommandSourceStack, ?> create(CommandArgument<?> argument) {
+                return Commands.argument(argument.getName(), ArgumentTypes.player());
             }
 
         }
