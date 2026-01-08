@@ -22,4 +22,5 @@ public class ModuleSuggestionFactory implements SuggestionFactory {
                 .map(module -> module.getDescriptor().getName())
                 .collect(Collectors.toList());
     }
+
 }
