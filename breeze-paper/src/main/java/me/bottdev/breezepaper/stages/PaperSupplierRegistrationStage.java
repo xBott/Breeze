@@ -10,10 +10,13 @@ import me.bottdev.breezeapi.di.BreezeContext;
 import me.bottdev.breezeapi.di.suppliers.SingletonSupplier;
 import me.bottdev.breezecore.StagedBreezeEngine;
 import me.bottdev.breezecore.staged.ProcessStage;
+import me.bottdev.breezemc.entity.player.BreezeOnlinePlayer;
 import me.bottdev.breezepaper.BreezePaper;
 import me.bottdev.breezepaper.ModuleSuggestionFactory;
-import me.bottdev.breezepaper.command.PaperCommandContextFactory;
+import me.bottdev.breezepaper.command.arguments.PlayerArgument;
+import me.bottdev.breezepaper.command.context.PaperCommandContextFactory;
 import me.bottdev.breezepaper.command.PaperCommandRegistrar;
+import me.bottdev.breezepaper.command.context.resolvers.PaperPlayerArgumentResolver;
 import me.bottdev.breezepaper.command.nodes.PaperArgumentNodeFactory;
 import me.bottdev.breezepaper.command.nodes.PaperExecuteNodeFactory;
 import me.bottdev.breezepaper.command.nodes.PaperLiteralNodeFactory;
@@ -63,9 +66,14 @@ public class PaperSupplierRegistrationStage implements ProcessStage {
     }
 
     private void registerCommandContextFactory(BreezeContext context) {
-        context.injectConstructor(PaperCommandContextFactory.class).ifPresent(contextFactory ->
-                context.addObjectSupplier("paperCommandContextFactory", new SingletonSupplier(contextFactory))
-        );
+        context.injectConstructor(PaperCommandContextFactory.class).ifPresent(contextFactory -> {
+            context.addObjectSupplier("paperCommandContextFactory", new SingletonSupplier(contextFactory));
+
+            context.injectConstructor(PaperPlayerArgumentResolver.class).ifPresent(resolver ->
+                    contextFactory.addArgumentResolver(BreezeOnlinePlayer.class, resolver)
+            );
+
+        });
     }
 
     private void registerCommandRegistrar(BreezeContext context) {
@@ -80,6 +88,7 @@ public class PaperSupplierRegistrationStage implements ProcessStage {
                             .addFactory(Boolean.class, new PaperArgumentNodeFactory.Factory.Bool())
                             .addFactory(Integer.class, new PaperArgumentNodeFactory.Factory.Int())
                             .addFactory(Float.class, new PaperArgumentNodeFactory.Factory.Float())
+                            .addFactory(BreezeOnlinePlayer.class, new PaperArgumentNodeFactory.Factory.Player())
                     )
                     .addFactory(MethodExecuteNode.class, new PaperExecuteNodeFactory(registrar.getContextFactory()));
 
@@ -87,7 +96,10 @@ public class PaperSupplierRegistrationStage implements ProcessStage {
     }
 
     private void registerCommandArgumentFactory(BreezeContext context) {
-        CommandArgumentFactory argumentFactory = CommandArgumentFactory.defaultFactory();
+        CommandArgumentFactory argumentFactory = CommandArgumentFactory.defaultFactory()
+                        .registerArgumentFactory(BreezeOnlinePlayer.class, (name, parameter) ->
+                                new PlayerArgument(name)
+                        );
         context.addObjectSupplier("commandArgumentFactory", new SingletonSupplier(argumentFactory));
         context.injectConstructor(ModuleSuggestionFactory.class).ifPresent(argumentFactory::registerSuggestionFactory);
     }
