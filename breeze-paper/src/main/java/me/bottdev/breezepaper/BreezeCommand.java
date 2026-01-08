@@ -109,7 +109,8 @@ public class BreezeCommand implements Command {
         breezeEngine.getContext().getSuppliers().forEach((key, supplier) -> {
             Object object = supplier.supply();
             SupplyType supplyType = supplier.getType();
-            sender.send("  <yellow>{} <gray>{}: <light_purple>{}", supplyType, key, object.getClass().getSimpleName());
+            String className = object.getClass().getSimpleName();
+            sender.send("  <yellow>{} <gray>{}: <light_purple>{}", supplyType, key, className);
         });
 
     }
