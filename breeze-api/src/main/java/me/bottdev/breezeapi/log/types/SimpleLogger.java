@@ -2,84 +2,103 @@ package me.bottdev.breezeapi.log.types;
 
 import lombok.Getter;
 import lombok.Setter;
+import me.bottdev.breezeapi.log.BreezeLogPlatform;
 import me.bottdev.breezeapi.log.BreezeLogger;
 import me.bottdev.breezeapi.log.LogLevel;
 import me.bottdev.breezeapi.log.colour.ColoredLogger;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+@Getter
 public class SimpleLogger implements BreezeLogger, ColoredLogger {
 
-    @Getter
+    private final BreezeLogPlatform platform;
     @Setter
     private LogLevel logLevel;
-    @Getter
     private final String name;
 
-    private final Logger logger;
-
-    public SimpleLogger(String name, LogLevel logLevel) {
+    public SimpleLogger(BreezeLogPlatform platform, String name, LogLevel logLevel) {
+        this.platform = platform;
         this.name = name;
         this.logLevel = logLevel;
-        this.logger = LoggerFactory.getLogger(name);
-    }
-
-    public SimpleLogger(String name) {
-        this.name = name;
-        this.logLevel = LogLevel.INFO;
-        this.logger = LoggerFactory.getLogger(name);
     }
 
     private String format(String message) {
-        return applyColors(message);
+        return applyColors("[%s] %s".formatted(name, message));
     }
 
     @Override
     public void info(String message) {
         if (!isEnabled(LogLevel.INFO)) return;
-        logger.info(format(message));
+
+        String formatted = format(" " + message);
+
+        platform.log(LogLevel.INFO, formatted, null);
     }
 
     @Override
     public void info(String message, Object... args) {
         if (!isEnabled(LogLevel.INFO)) return;
-        logger.info(format(replaceArguments(message, args)));
+
+        String withArguments = replaceArguments(message, args);
+        String formatted = format(" " + withArguments);
+
+        platform.log(LogLevel.INFO, formatted, null);
     }
 
     @Override
     public void warn(String message) {
         if (!isEnabled(LogLevel.WARN)) return;
-        logger.warn(format("<yellow>[!] " + message));
+
+        String formatted = format("<yellow> " + message);
+
+        platform.log(LogLevel.WARN, formatted, null);
     }
 
     @Override
     public void warn(String message, Object... args) {
         if (!isEnabled(LogLevel.WARN)) return;
-        logger.warn(format("<yellow>[!] " + replaceArguments(message, args)));
+
+        String withArguments = replaceArguments(message, args);
+        String formatted = format("<yellow> " + withArguments);
+
+        platform.log(LogLevel.WARN, formatted, null);
     }
 
     @Override
     public void error(String message, Throwable throwable) {
         if (!isEnabled(LogLevel.ERROR)) return;
-        logger.error(format("<red>[×] " + message), throwable);
+
+        String formatted = format("<red>" + message);
+
+        platform.log(LogLevel.ERROR, formatted, throwable);
     }
 
     @Override
     public void error(String message, Throwable throwable, Object... args) {
         if (!isEnabled(LogLevel.ERROR)) return;
-        logger.error(format("<red>[×] " + replaceArguments(message, args)), throwable);
+
+        String withArguments = replaceArguments(message, args);
+        String formatted = format("<red>" +withArguments);
+
+        platform.log(LogLevel.ERROR, formatted, throwable);
     }
 
     @Override
     public void debug(String message) {
         if (!isEnabled(LogLevel.DEBUG)) return;
-        logger.debug(format("[~] " + message));
+
+        String formatted = format(message);
+
+        platform.log(LogLevel.DEBUG, formatted, null);
     }
 
     @Override
     public void debug(String message, Object... args) {
         if (!isEnabled(LogLevel.DEBUG)) return;
-        logger.debug(format("[~] " + replaceArguments(message, args)));
+
+        String withArguments = replaceArguments(message, args);
+        String formatted = format(withArguments);
+
+        platform.log(LogLevel.DEBUG, formatted, null);
     }
 
 }

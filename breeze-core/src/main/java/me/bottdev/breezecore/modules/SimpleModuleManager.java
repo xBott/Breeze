@@ -4,7 +4,7 @@ import me.bottdev.breezeapi.BreezeEngine;
 import me.bottdev.breezeapi.di.ContextBootstrapper;
 import me.bottdev.breezeapi.di.BreezeContext;
 import me.bottdev.breezeapi.di.annotations.Inject;
-import me.bottdev.breezeapi.log.TreeLogger;
+import me.bottdev.breezeapi.log.BreezeLogger;
 import me.bottdev.breezeapi.modules.*;
 import me.bottdev.breezeapi.modules.Module;
 
@@ -18,10 +18,10 @@ public class SimpleModuleManager extends ModuleManager {
     private final Map<Class<? extends Module>, Module> loadedModules = new HashMap<>();
 
     private final BreezeEngine breezeEngine;
-    private final TreeLogger mainLogger;
+    private final BreezeLogger mainLogger;
 
     @Inject
-    public SimpleModuleManager(BreezeEngine breezeEngine, TreeLogger mainLogger) {
+    public SimpleModuleManager(BreezeEngine breezeEngine, BreezeLogger mainLogger) {
         this.breezeEngine = breezeEngine;
         this.mainLogger = mainLogger;
     }

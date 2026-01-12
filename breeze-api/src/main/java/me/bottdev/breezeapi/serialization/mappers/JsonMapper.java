@@ -5,14 +5,14 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import lombok.Getter;
 import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.types.SimpleTreeLogger;
+import me.bottdev.breezeapi.log.platforms.SL4JLogPlatform;
 import me.bottdev.breezeapi.serialization.JacksonMapper;
 import me.bottdev.breezeapi.serialization.polymorphic.PolymorphicRegistry;
 
 @Getter
 public class JsonMapper implements JacksonMapper {
 
-    private final BreezeLogger logger = new SimpleTreeLogger("JsonMapper");
+    private final BreezeLogger logger = SL4JLogPlatform.getFactory().simple("JsonMapper");
     private final PolymorphicRegistry registry = new PolymorphicRegistry();
 
     @Override

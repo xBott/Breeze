@@ -2,7 +2,6 @@ package me.bottdev.breezepaper;
 
 import lombok.Getter;
 import me.bottdev.breezecore.StagedBreezeEngine;
-import me.bottdev.breezecore.staged.StagePriority;
 import me.bottdev.breezepaper.stages.PaperCommandLoaderStage;
 import me.bottdev.breezepaper.stages.PaperModuleLoaderStage;
 import me.bottdev.breezepaper.stages.PaperSupplierRegistrationStage;
@@ -20,7 +19,7 @@ public class BreezePaper extends JavaPlugin {
         instance = this;
 
         engine = new StagedBreezeEngine(getDataPath().toAbsolutePath());
-        engine.getStartupProcess()
+        engine.getStartupPipeline()
                 .addStage(
                         new PaperSupplierRegistrationStage(this),
                         StagePriority.HIGHEST

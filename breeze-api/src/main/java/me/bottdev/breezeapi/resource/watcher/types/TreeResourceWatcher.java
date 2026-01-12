@@ -2,7 +2,7 @@ package me.bottdev.breezeapi.resource.watcher.types;
 
 import me.bottdev.breezeapi.commons.Debouncer;
 import me.bottdev.breezeapi.events.EventBus;
-import me.bottdev.breezeapi.log.types.SimpleLogger;
+import me.bottdev.breezeapi.log.platforms.SL4JLogPlatform;
 import me.bottdev.breezeapi.resource.ResourceTree;
 import me.bottdev.breezeapi.resource.types.FileResource;
 import me.bottdev.breezeapi.resource.watcher.AbstractResourceWatcher;
@@ -21,7 +21,7 @@ public class TreeResourceWatcher extends AbstractResourceWatcher<ResourceTree<? 
                 new RecursiveWatchService(),
                 new Debouncer<>("tree-resource-watcher-debouncer", 200),
                 eventBus,
-                new SimpleLogger("TreeResourceWatcher")
+                SL4JLogPlatform.getFactory().simple("TreeResourceWatcher")
         );
     }
 

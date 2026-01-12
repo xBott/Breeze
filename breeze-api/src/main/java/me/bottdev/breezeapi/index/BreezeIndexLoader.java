@@ -2,7 +2,7 @@ package me.bottdev.breezeapi.index;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import me.bottdev.breezeapi.log.TreeLogger;
+import me.bottdev.breezeapi.log.BreezeLogger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -18,7 +18,7 @@ public class BreezeIndexLoader {
 
     private static final Path INDICES_PATH = Paths.get("META-INF/");
 
-    private final TreeLogger logger;
+    private final BreezeLogger logger;
 
     @Getter
     private final BreezeIndexRegistry registry = new BreezeIndexRegistry();

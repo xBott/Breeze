@@ -7,6 +7,7 @@ import me.bottdev.breezeapi.i18n.TranslationLoader;
 import me.bottdev.breezeapi.i18n.TranslationModule;
 import me.bottdev.breezeapi.i18n.TranslationModuleManager;
 import me.bottdev.breezeapi.i18n.types.SimpleI18n;
+import me.bottdev.breezeapi.log.platforms.SL4JLogPlatform;
 import me.bottdev.breezeapi.log.types.SimpleLogger;
 import me.bottdev.breezeapi.resource.ResourceTree;
 import me.bottdev.breezeapi.resource.annotations.ProvideResource;
@@ -38,7 +39,7 @@ public class I18nResourceTest {
 
     }
 
-    static final SimpleLogger logger = new SimpleLogger("I18nResourceTest");
+    static final SimpleLogger logger = SL4JLogPlatform.getFactory().simple("I18nResourceTest");
     static TranslationModuleManager translationModuleManager;
     static ProxyFactoryRegistry proxyFactory;
     static TranslationProvider translationProvider;

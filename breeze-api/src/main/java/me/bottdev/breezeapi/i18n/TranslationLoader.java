@@ -7,7 +7,7 @@ import me.bottdev.breezeapi.config.validation.rules.StructureRule;
 import me.bottdev.breezeapi.config.validation.types.RuleConfigValidator;
 import me.bottdev.breezeapi.i18n.translations.ConfigTranslation;
 import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.types.SimpleLogger;
+import me.bottdev.breezeapi.log.platforms.SL4JLogPlatform;
 import me.bottdev.breezeapi.resource.ResourceTree;
 import me.bottdev.breezeapi.resource.types.FileResource;
 import me.bottdev.breezeapi.serialization.Mapper;
@@ -19,7 +19,7 @@ import java.util.function.Supplier;
 
 public class TranslationLoader implements ConfigLoader<ConfigTranslation> {
 
-    private final BreezeLogger logger = new SimpleLogger("TranslationLoader");
+    private final BreezeLogger logger = SL4JLogPlatform.getFactory().simple("TranslationLoader");
     private final Mapper serializationStrategy;
     private final RuleConfigValidator configValidator;
 

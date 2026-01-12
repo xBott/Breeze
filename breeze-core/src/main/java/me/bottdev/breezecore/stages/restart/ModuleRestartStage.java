@@ -1,8 +1,7 @@
-package me.bottdev.breezecore.staged.stages.restart;
+package me.bottdev.breezecore.stages.restart;
 
 import me.bottdev.breezeapi.modules.ModuleManager;
 import me.bottdev.breezecore.StagedBreezeEngine;
-import me.bottdev.breezecore.staged.ProcessStage;
 
 public class ModuleRestartStage implements ProcessStage {
 

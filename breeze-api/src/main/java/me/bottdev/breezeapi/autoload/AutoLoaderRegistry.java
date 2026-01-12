@@ -1,17 +1,21 @@
 package me.bottdev.breezeapi.autoload;
 
-import lombok.RequiredArgsConstructor;
+import me.bottdev.breezeapi.di.annotations.Inject;
 import me.bottdev.breezeapi.log.BreezeLogger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-@RequiredArgsConstructor
 public class AutoLoaderRegistry {
 
     private final BreezeLogger logger;
     private final HashMap<Class<?>, AutoLoader> loaders = new HashMap<>();
+
+    @Inject
+    public AutoLoaderRegistry(BreezeLogger logger) {
+        this.logger = logger;
+    }
 
     public boolean isRegistered(Class<?> clazz) {
         return loaders.containsKey(clazz);

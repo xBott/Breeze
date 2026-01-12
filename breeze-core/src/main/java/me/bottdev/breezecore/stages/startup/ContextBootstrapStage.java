@@ -1,11 +1,10 @@
-package me.bottdev.breezecore.staged.stages.startup;
+package me.bottdev.breezecore.stages.startup;
 
 import me.bottdev.breezeapi.di.BreezeContext;
 import me.bottdev.breezeapi.di.ContextBootstrapper;
 import me.bottdev.breezeapi.index.BreezeIndexBucket;
 import me.bottdev.breezeapi.index.BreezeIndexLoader;
 import me.bottdev.breezecore.StagedBreezeEngine;
-import me.bottdev.breezecore.staged.ProcessStage;
 
 public class ContextBootstrapStage implements ProcessStage {
 

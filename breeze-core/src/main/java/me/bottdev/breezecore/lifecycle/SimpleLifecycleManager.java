@@ -1,16 +1,22 @@
-package me.bottdev.breezeapi.lifecycle;
+package me.bottdev.breezecore.lifecycle;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import me.bottdev.breezeapi.di.annotations.Inject;
+import me.bottdev.breezeapi.lifecycle.Lifecycle;
+import me.bottdev.breezeapi.lifecycle.LifecycleManager;
 import me.bottdev.breezeapi.log.BreezeLogger;
 
 import java.util.*;
 
-@RequiredArgsConstructor
 public class SimpleLifecycleManager implements LifecycleManager {
 
     @Getter
     private final BreezeLogger logger;
+
+    @Inject
+    SimpleLifecycleManager(BreezeLogger mainLogger) {
+        this.logger = mainLogger;
+    }
 
     @Getter
     private final Map<Class<? extends Lifecycle>, Lifecycle> lifecycles = new HashMap<>();

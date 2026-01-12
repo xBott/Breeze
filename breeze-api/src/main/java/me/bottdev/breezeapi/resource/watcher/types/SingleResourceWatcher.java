@@ -1,7 +1,7 @@
 package me.bottdev.breezeapi.resource.watcher.types;
 
 import me.bottdev.breezeapi.events.EventBus;
-import me.bottdev.breezeapi.log.types.SimpleLogger;
+import me.bottdev.breezeapi.log.platforms.SL4JLogPlatform;
 import me.bottdev.breezeapi.resource.watcher.AbstractResourceWatcher;
 import me.bottdev.breezeapi.resource.types.FileResource;
 import me.bottdev.breezeapi.commons.Debouncer;
@@ -19,7 +19,7 @@ public class SingleResourceWatcher extends AbstractResourceWatcher<FileResource>
                 new SingleWatchService(),
                 new Debouncer<>("single-resource-watcher-debouncer", 200),
                 eventBus,
-                new SimpleLogger("SingleResourceWatcher")
+                SL4JLogPlatform.getFactory().simple("SingleResourceWatcher")
         );
     }
 

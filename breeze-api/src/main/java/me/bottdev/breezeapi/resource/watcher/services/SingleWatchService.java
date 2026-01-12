@@ -2,7 +2,7 @@ package me.bottdev.breezeapi.resource.watcher.services;
 
 import lombok.Getter;
 import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.types.SimpleLogger;
+import me.bottdev.breezeapi.log.platforms.SL4JLogPlatform;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -10,7 +10,7 @@ import java.nio.file.*;
 public class SingleWatchService extends AbstractWatchService {
 
     @Getter
-    private final BreezeLogger logger = new SimpleLogger("SingleWatchService");
+    private final BreezeLogger logger = SL4JLogPlatform.getFactory().simple("SingleWatchService");
 
     public SingleWatchService() throws IOException {
         super();

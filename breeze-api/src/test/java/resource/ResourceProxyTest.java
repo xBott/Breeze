@@ -8,7 +8,8 @@ import me.bottdev.breezeapi.cache.proxy.annotations.CachePut;
 import me.bottdev.breezeapi.di.annotations.Proxy;
 import me.bottdev.breezeapi.di.proxy.ProxyFactoryRegistry;
 import me.bottdev.breezeapi.lifecycle.SimpleLifecycleManager;
-import me.bottdev.breezeapi.log.types.SimpleTreeLogger;
+import me.bottdev.breezeapi.log.BreezeLogger;
+import me.bottdev.breezeapi.log.platforms.SL4JLogPlatform;
 import me.bottdev.breezeapi.resource.ResourceTree;
 import me.bottdev.breezeapi.resource.annotations.sources.DriveSource;
 import me.bottdev.breezeapi.resource.annotations.sources.DummySource;
@@ -83,7 +84,7 @@ public class ResourceProxyTest {
 
     }
 
-    static final SimpleTreeLogger logger = new SimpleTreeLogger("ResourceProxyTest");
+    static final BreezeLogger logger = SL4JLogPlatform.getFactory().simple("ResourceProxyTest");
 
     static ProxyFactoryRegistry proxyFactory;
     static SimpleLifecycleManager lifecycleManager;
@@ -129,117 +130,101 @@ public class ResourceProxyTest {
     @Test
     void shouldReturnCorrectVersion() {
 
-        logger.withSection("Test read:", "", () -> {
+        Optional<SingleFileResource> versionOptional = provider.getVersion();
 
-            Optional<SingleFileResource> versionOptional = provider.getVersion();
+        String content = versionOptional
+                .flatMap(SingleFileResource::readTrimmed)
+                .orElse("Resource is empty!");
 
-            String content = versionOptional
-                    .flatMap(SingleFileResource::readTrimmed)
-                    .orElse("Resource is empty!");
+        logger.info(" Read content: {}", content);
 
-            logger.info(" Read content: {}", content);
-
-            assertEquals("Version is 0.2!", content);
-
-        });
+        assertEquals("Version is 0.2!", content);
 
     }
 
     @Test
     void shouldReadAndWrite() {
 
-        logger.withSection("Test read and write:", "", () -> {
+        Optional<SingleFileResource> versionOptional = provider.getMutableResource();
+        if (versionOptional.isEmpty()) return;
 
-            Optional<SingleFileResource> versionOptional = provider.getMutableResource();
-            if (versionOptional.isEmpty()) return;
+        SingleFileResource resource = versionOptional.get();
 
-            SingleFileResource resource = versionOptional.get();
+        String contentBefore = resource.readTrimmed().orElse("Resource is empty!");
+        logger.info(" (Before) Read content: {}", contentBefore);
 
-            String contentBefore = resource.readTrimmed().orElse("Resource is empty!");
-            logger.info(" (Before) Read content: {}", contentBefore);
+        assertEquals("Message to edit", contentBefore);
 
-            assertEquals("Message to edit", contentBefore);
+        resource.write("Updated data");
 
-            resource.write("Updated data");
+        String contentAfter = resource.readTrimmed().orElse("Resource is empty!");
+        logger.info(" (After) Read content: {}", contentAfter);
 
-            String contentAfter = resource.readTrimmed().orElse("Resource is empty!");
-            logger.info(" (After) Read content: {}", contentAfter);
+        assertEquals("Updated data", contentAfter);
 
-            assertEquals("Updated data", contentAfter);
-
-            resource.save();
-
-        });
+        resource.save();
 
     }
 
     @Test
     void shouldReadJarResource() {
 
-        logger.withSection("Test jar read:", "", () -> {
-            Optional<SingleFileResource> versionOptional = provider.getTestResource();
+        Optional<SingleFileResource> versionOptional = provider.getTestResource();
 
-            String content = versionOptional
-                    .flatMap(SingleFileResource::readTrimmed)
-                    .orElse("Resource is empty!");
+        String content = versionOptional
+                .flatMap(SingleFileResource::readTrimmed)
+                .orElse("Resource is empty!");
 
-            logger.info(" Read content: {}", content);
+        logger.info(" Read content: {}", content);
 
-            assertEquals("BreezeEngine is the best!", content);
-        });
+        assertEquals("BreezeEngine is the best!", content);
 
     }
 
     @Test
     void shouldReadJarAndDummy() {
 
-        logger.withSection("Test jar and dummy read:", "", () -> {
-            Optional<SingleFileResource> versionOptional = provider.getChainedResource();
+        Optional<SingleFileResource> versionOptional = provider.getChainedResource();
 
-            String content = versionOptional
-                    .flatMap(SingleFileResource::readTrimmed)
-                    .orElse("Resource is empty!");
+        String content = versionOptional
+                .flatMap(SingleFileResource::readTrimmed)
+                .orElse("Resource is empty!");
 
-            logger.info(" Read content: {}", content);
+        logger.info(" Read content: {}", content);
 
-            assertEquals("Dummy", content);
-        });
+        assertEquals("Dummy", content);
 
     }
 
     @Test
     void shouldReadJarTree() {
 
-        logger.withSection("Test jar tree read:", "", () -> {
-            ResourceTree<SingleFileResource> tree = provider.getTree();
+        ResourceTree<SingleFileResource> tree = provider.getTree();
 
-            tree.getData().forEach((key, resource) ->
-                    logger.info(key + ": " + resource.readTrimmed().orElse("Resource is empty!"))
-            );
+        tree.getData().forEach((key, resource) ->
+                logger.info(key + ": " + resource.readTrimmed().orElse("Resource is empty!"))
+        );
 
-            int size = tree.getSize();
-            logger.info("Read {} resources", size);
+        int size = tree.getSize();
+        logger.info("Read {} resources", size);
 
-            assertEquals(3, size);
-        });
+        assertEquals(3, size);
 
     }
 
     @Test
     void shouldReadDriveResource() {
-        logger.withSection("Test drive read:", "", () -> {
 
-            Optional<SingleFileResource> resourceOptional = provider.getDriveResource();
+        Optional<SingleFileResource> resourceOptional = provider.getDriveResource();
 
-            assertTrue(resourceOptional.isPresent());
+        assertTrue(resourceOptional.isPresent());
 
-            SingleFileResource resource = resourceOptional.get();
-            String content = resource.readTrimmed().orElse("Resource is empty!");
-            logger.info(" Read content: {}", content);
+        SingleFileResource resource = resourceOptional.get();
+        String content = resource.readTrimmed().orElse("Resource is empty!");
+        logger.info(" Read content: {}", content);
 
-            assertEquals("TEST", content);
-
-        });
+        assertEquals("TEST", content);
+        
     }
 
 }

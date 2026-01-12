@@ -1,11 +1,10 @@
-package me.bottdev.breezecore.staged.stages.startup;
+package me.bottdev.breezecore.stages.startup;
 
 import me.bottdev.breezeapi.cache.CacheManager;
 import me.bottdev.breezeapi.cache.proxy.CacheProxyHandlerFactory;
 import me.bottdev.breezeapi.di.BreezeContext;
 import me.bottdev.breezeapi.di.ContextBootstrapper;
 import me.bottdev.breezeapi.di.proxy.ProxyFactoryRegistry;
-import me.bottdev.breezeapi.log.TreeLogger;
 import me.bottdev.breezeapi.resource.proxy.ResourceProxyHandlerFactory;
 import me.bottdev.breezeapi.resource.source.ResourceSourceRegistry;
 import me.bottdev.breezeapi.resource.source.SourceType;
@@ -19,7 +18,6 @@ import me.bottdev.breezecore.di.readers.ComponentReader;
 import me.bottdev.breezecore.di.readers.ProxyReader;
 import me.bottdev.breezecore.di.readers.SupplierReader;
 import me.bottdev.breezecore.di.resolver.ComponentDependencyResolver;
-import me.bottdev.breezecore.staged.ProcessStage;
 
 import java.nio.file.Path;
 

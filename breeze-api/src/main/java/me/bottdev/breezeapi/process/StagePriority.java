@@ -1,4 +1,4 @@
-package me.bottdev.breezecore.staged;
+package me.bottdev.breezeapi.process;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

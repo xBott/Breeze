@@ -5,9 +5,7 @@ import me.bottdev.breezeapi.events.Listener;
 import me.bottdev.breezeapi.events.annotations.Listen;
 import me.bottdev.breezeapi.lifecycle.SimpleLifecycleManager;
 import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.TreeLogger;
-import me.bottdev.breezeapi.log.types.SimpleLogger;
-import me.bottdev.breezeapi.log.types.SimpleTreeLogger;
+import me.bottdev.breezeapi.log.platforms.SL4JLogPlatform;
 import me.bottdev.breezeapi.resource.ResourceTree;
 import me.bottdev.breezeapi.resource.types.FileResource;
 import me.bottdev.breezeapi.resource.watcher.ResourceWatchSubject;
@@ -26,7 +24,7 @@ public class TreeResourceWatchTest {
 
     public static class TestEventBus extends EventBus {
 
-        public TestEventBus(TreeLogger mainLogger) {
+        public TestEventBus(BreezeLogger mainLogger) {
             super(mainLogger);
         }
 
@@ -50,7 +48,7 @@ public class TreeResourceWatchTest {
 
     }
 
-    static final BreezeLogger logger = new SimpleLogger("ResourceWatchTest");
+    static final BreezeLogger logger = SL4JLogPlatform.getFactory().simple("ResourceWatchTest");
 
     static EventBus eventBus;
     static SimpleLifecycleManager lifecycleManager;
@@ -58,10 +56,10 @@ public class TreeResourceWatchTest {
 
     @BeforeAll
     static void setUp() {
-        eventBus = new TestEventBus(new SimpleTreeLogger("EventBus"));
+        eventBus = new TestEventBus(SL4JLogPlatform.getFactory().simple("EventBus"));
         eventBus.registerListeners(new TestListener());
 
-        lifecycleManager = new SimpleLifecycleManager(new SimpleLogger("LifecycleManager"));
+        lifecycleManager = new SimpleLifecycleManager(SL4JLogPlatform.getFactory().simple("LifecycleManager"));
         treeResourceWatcher = lifecycleManager.create(new ResourceWatcherBuilder.Tree(eventBus));
     }
 

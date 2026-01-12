@@ -1,7 +1,7 @@
 package me.bottdev.breezeapi.commons.file.temp;
 
 import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.types.SimpleTreeLogger;
+import me.bottdev.breezeapi.log.platforms.SL4JLogPlatform;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 
 public class TempFiles {
 
-    private static final BreezeLogger logger = new SimpleTreeLogger("TempFiles");
+    private static final BreezeLogger logger = SL4JLogPlatform.getFactory().simple("TempFiles");
     private static final Path tempDirectoryPath = Paths.get(System.getProperty("java.io.tmpdir")).resolve("breeze");
 
     private static Path resolvePath(Path filePath) {

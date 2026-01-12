@@ -1,11 +1,9 @@
 package me.bottdev.breezepaper.stages;
 
 import lombok.RequiredArgsConstructor;
-import me.bottdev.breezeapi.log.TreeLogger;
 import me.bottdev.breezeapi.modules.ModuleManager;
 import me.bottdev.breezecore.StagedBreezeEngine;
 import me.bottdev.breezecore.modules.loaders.DependencyModuleLoader;
-import me.bottdev.breezecore.staged.ProcessStage;
 
 import java.nio.file.Path;
 

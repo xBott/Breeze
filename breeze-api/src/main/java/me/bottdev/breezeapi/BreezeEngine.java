@@ -1,27 +1,31 @@
 package me.bottdev.breezeapi;
 
-import me.bottdev.breezeapi.autoload.AutoLoaderRegistry;
 import me.bottdev.breezeapi.di.BreezeContext;
-import me.bottdev.breezeapi.di.ContextBootstrapper;
-import me.bottdev.breezeapi.index.BreezeIndexLoader;
-import me.bottdev.breezeapi.lifecycle.SimpleLifecycleManager;
-import me.bottdev.breezeapi.log.TreeLogger;
+import me.bottdev.breezeapi.log.BreezeLogPlatform;
+import me.bottdev.breezeapi.log.BreezeLogger;
+import me.bottdev.breezeapi.log.BreezeLoggerFactory;
+import me.bottdev.breezeapi.process.PipelineExecutor;
 
 import java.nio.file.Path;
 
 public interface BreezeEngine {
 
-    TreeLogger getLogger();
+    BreezeLogPlatform getLogPlatform();
 
-    SimpleLifecycleManager getLifecycleManager();
+    BreezeLoggerFactory getLoggerFactory();
+    BreezeLogger getLogger();
 
-    BreezeIndexLoader getIndexLoader();
+    PipelineExecutor getPipelineExecutor();
 
-    ContextBootstrapper getContextBootstrapper();
+//    SimpleLifecycleManager getLifecycleManager();
+//
+//    BreezeIndexLoader getIndexLoader();
+//
+//    ContextBootstrapper getContextBootstrapper();
 
     BreezeContext getContext();
 
-    AutoLoaderRegistry getAutoLoaderRegistry();
+//    AutoLoaderRegistry getAutoLoaderRegistry();
 
     Path getDataFolder();
 

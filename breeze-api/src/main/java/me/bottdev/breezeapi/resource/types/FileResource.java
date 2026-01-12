@@ -5,7 +5,7 @@ import me.bottdev.breezeapi.commons.file.input.BreezeFileReader;
 import me.bottdev.breezeapi.commons.file.output.BreezeFileWriter;
 import me.bottdev.breezeapi.commons.file.temp.TempFile;
 import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.types.SimpleLogger;
+import me.bottdev.breezeapi.log.platforms.SL4JLogPlatform;
 import me.bottdev.breezeapi.resource.Resource;
 import me.bottdev.breezeapi.resource.source.SourceType;
 
@@ -15,7 +15,7 @@ import java.util.Optional;
 
 public interface FileResource extends Resource {
 
-    BreezeLogger logger = new SimpleLogger("FileResource");
+    BreezeLogger logger = SL4JLogPlatform.getFactory().simple("FileResource");
 
     TempFile getTempFile();
     SourceType getSourceType();

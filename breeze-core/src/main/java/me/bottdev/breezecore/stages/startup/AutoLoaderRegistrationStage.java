@@ -1,4 +1,4 @@
-package me.bottdev.breezecore.staged.stages.startup;
+package me.bottdev.breezecore.stages.startup;
 
 import me.bottdev.breezeapi.autoload.AutoLoaderRegistry;
 import me.bottdev.breezeapi.components.bootstrap.Bootstrap;
@@ -8,7 +8,6 @@ import me.bottdev.breezeapi.events.EventBus;
 import me.bottdev.breezeapi.events.Listener;
 import me.bottdev.breezeapi.events.ListenerAutoLoader;
 import me.bottdev.breezecore.StagedBreezeEngine;
-import me.bottdev.breezecore.staged.ProcessStage;
 
 public class AutoLoaderRegistrationStage implements ProcessStage {
 

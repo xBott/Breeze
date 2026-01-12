@@ -1,7 +1,6 @@
-package me.bottdev.breezecore.staged.stages.startup;
+package me.bottdev.breezecore.stages.startup;
 
 import me.bottdev.breezecore.StagedBreezeEngine;
-import me.bottdev.breezecore.staged.ProcessStage;
 
 public class StartLifecycleStage implements ProcessStage {
 

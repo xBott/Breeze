@@ -1,7 +1,6 @@
-package me.bottdev.breezecore.staged.stages.shutdown;
+package me.bottdev.breezecore.stages.shutdown;
 
 import me.bottdev.breezecore.StagedBreezeEngine;
-import me.bottdev.breezecore.staged.ProcessStage;
 
 public class ShutdownLifecycleStage implements ProcessStage {
 

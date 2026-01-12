@@ -3,7 +3,7 @@ package me.bottdev.breezeapi.events;
 import me.bottdev.breezeapi.di.annotations.Inject;
 import me.bottdev.breezeapi.events.annotations.Listen;
 import me.bottdev.breezeapi.lifecycle.Lifecycle;
-import me.bottdev.breezeapi.log.TreeLogger;
+import me.bottdev.breezeapi.log.BreezeLogger;
 
 import java.lang.reflect.Method;
 import java.util.*;
@@ -12,10 +12,10 @@ public abstract class EventBus extends Lifecycle {
 
     private final Map<Class<? extends Event>, ListenerContainer> containers = new HashMap<>();
 
-    private final TreeLogger mainLogger;
+    private final BreezeLogger mainLogger;
 
     @Inject
-    public EventBus(TreeLogger mainLogger) {
+    public EventBus(BreezeLogger mainLogger) {
         this.mainLogger = mainLogger;
     }
 
@@ -58,28 +58,25 @@ public abstract class EventBus extends Lifecycle {
     public void registerListeners(Listener listener) {
 
         String className = listener.getClass().getSimpleName();
-        mainLogger.withSection("Registering listeners from object " + className, "Event Registration", () -> {
 
-            for (Method method : listener.getClass().getDeclaredMethods()) {
-                if (!method.isAnnotationPresent(Listen.class)) continue;
+        for (Method method : listener.getClass().getDeclaredMethods()) {
+            if (!method.isAnnotationPresent(Listen.class)) continue;
 
-                String name = method.getName();
+            String name = method.getName();
 
-                Class<?>[] params = method.getParameterTypes();
-                if (params.length != 1 || !Event.class.isAssignableFrom(params[0])) {
-                    mainLogger.warn("Could not register listener \"{}\". Listener method must have only one Event parameter!", name);
-                }
-
-                Class<? extends Event> eventType = (Class<? extends Event>) params[0];
-                Listen annotation = method.getAnnotation(Listen.class);
-                method.setAccessible(true);
-
-                ListenerWrapper methodWrapper = new ListenerWrapper(listener, method, annotation.priority());
-                registerListener(eventType, methodWrapper);
-
+            Class<?>[] params = method.getParameterTypes();
+            if (params.length != 1 || !Event.class.isAssignableFrom(params[0])) {
+                mainLogger.warn("Could not register listener \"{}\". Listener method must have only one Event parameter!", name);
             }
 
-        });
+            Class<? extends Event> eventType = (Class<? extends Event>) params[0];
+            Listen annotation = method.getAnnotation(Listen.class);
+            method.setAccessible(true);
+
+            ListenerWrapper methodWrapper = new ListenerWrapper(listener, method, annotation.priority());
+            registerListener(eventType, methodWrapper);
+
+        }
 
         mainLogger.info("Registered listeners from object \"{}\"!", className);
 

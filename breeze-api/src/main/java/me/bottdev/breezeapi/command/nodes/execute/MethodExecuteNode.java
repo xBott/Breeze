@@ -7,7 +7,7 @@ import me.bottdev.breezeapi.command.exceptions.UnsupportedParameterException;
 import me.bottdev.breezeapi.command.nodes.CommandExecuteNode;
 import me.bottdev.breezeapi.command.scheme.CommandScheme;
 import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.types.SimpleLogger;
+import me.bottdev.breezeapi.log.platforms.SL4JLogPlatform;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -15,7 +15,7 @@ import java.lang.reflect.Method;
 @Getter
 public class MethodExecuteNode implements CommandExecuteNode {
 
-    private final BreezeLogger logger = new SimpleLogger("CommandExecuteNode");
+    private final BreezeLogger logger = SL4JLogPlatform.getFactory().simple("CommandExecuteNode");
 
     private final Object commandInstance;
     private final Method method;

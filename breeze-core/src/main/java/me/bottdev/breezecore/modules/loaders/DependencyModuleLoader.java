@@ -5,7 +5,6 @@ import me.bottdev.breezeapi.BreezeEngine;
 import me.bottdev.breezeapi.index.BreezeIndexBucket;
 import me.bottdev.breezeapi.index.BreezeIndexBucketContainer;
 import me.bottdev.breezeapi.index.types.BreezeModuleIndex;
-import me.bottdev.breezeapi.log.TreeLogger;
 import me.bottdev.breezeapi.modules.*;
 import me.bottdev.breezeapi.modules.Module;
 import me.bottdev.breezeapi.modules.annotations.ModuleInfo;

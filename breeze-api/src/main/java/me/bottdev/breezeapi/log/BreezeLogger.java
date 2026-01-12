@@ -1,8 +1,12 @@
 package me.bottdev.breezeapi.log;
 
-import java.util.function.Supplier;
+import me.bottdev.breezeapi.log.trace.TraceEvent;
+import me.bottdev.breezeapi.log.trace.TraceListener;
+import me.bottdev.breezeapi.log.trace.events.*;
 
-public interface BreezeLogger {
+import java.util.Arrays;
+
+public interface BreezeLogger extends TraceListener {
 
     LogLevel getLogLevel();
     String getName();
@@ -26,5 +30,21 @@ public interface BreezeLogger {
 
     void debug(String message);
     void debug(String message, Object... args);
+
+    @Override
+    default void onTraceEvent(TraceEvent event) {
+
+        String indent = "   ".repeat(event.depth());
+
+        switch (event) {
+            case TraceStart start -> info(indent + start.name() + ":");
+            case TraceEnd end -> info(indent + end.name() + "<green> (" + end.durationMs() + "ms)");
+            case TraceInfo info -> info(indent + info.message(), info.args());
+            case TraceWarn warn -> warn(indent + warn.message(), warn.args());
+            case TraceError error -> error(indent + error.name() + " faced an Error", error.error());
+            default -> {}
+        }
+
+    }
 
 }

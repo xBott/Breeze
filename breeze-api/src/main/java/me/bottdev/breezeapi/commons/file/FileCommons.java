@@ -3,7 +3,7 @@ package me.bottdev.breezeapi.commons.file;
 import me.bottdev.breezeapi.commons.file.input.BreezeFileReader;
 import me.bottdev.breezeapi.commons.file.output.BreezeFileWriter;
 import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.types.SimpleTreeLogger;
+import me.bottdev.breezeapi.log.platforms.SL4JLogPlatform;
 
 import java.io.*;
 import java.nio.file.FileAlreadyExistsException;
@@ -13,7 +13,7 @@ import java.util.function.Consumer;
 
 public class FileCommons {
 
-    private static final BreezeLogger logger = new SimpleTreeLogger("FileCommons");
+    private static final BreezeLogger logger = SL4JLogPlatform.getFactory().simple("FileCommons");
 
     public static void createDirectoryIfNotExists(File directory) {
         if (directory.exists()) return;

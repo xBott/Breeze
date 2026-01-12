@@ -3,7 +3,6 @@ package me.bottdev.breezepaper.stages;
 import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.command.Command;
 import me.bottdev.breezecore.StagedBreezeEngine;
-import me.bottdev.breezecore.staged.ProcessStage;
 import me.bottdev.breezepaper.autoloaders.PaperCommandAutoLoader;
 
 @RequiredArgsConstructor

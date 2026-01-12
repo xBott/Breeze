@@ -1,8 +1,7 @@
-package me.bottdev.breezecore.staged.stages.shutdown;
+package me.bottdev.breezecore.stages.shutdown;
 
 import me.bottdev.breezeapi.commons.file.temp.TempFiles;
 import me.bottdev.breezecore.StagedBreezeEngine;
-import me.bottdev.breezecore.staged.ProcessStage;
 
 public class DeleteTempFilesStage implements ProcessStage {
 

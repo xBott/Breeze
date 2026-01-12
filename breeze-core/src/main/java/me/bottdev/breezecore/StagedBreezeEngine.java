@@ -3,20 +3,13 @@ package me.bottdev.breezecore;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.BreezeEngine;
-import me.bottdev.breezeapi.autoload.AutoLoaderRegistry;
 import me.bottdev.breezeapi.di.BreezeContext;
-import me.bottdev.breezeapi.di.ContextBootstrapper;
-import me.bottdev.breezeapi.index.BreezeIndexLoader;
-import me.bottdev.breezeapi.lifecycle.SimpleLifecycleManager;
-import me.bottdev.breezeapi.log.TreeLogger;
-import me.bottdev.breezeapi.log.types.SimpleTreeLogger;
-import me.bottdev.breezecore.di.LifecycleBreezeContext;
-import me.bottdev.breezecore.staged.EngineProcess;
-import me.bottdev.breezecore.staged.StagePriority;
-import me.bottdev.breezecore.staged.stages.restart.ModuleRestartStage;
-import me.bottdev.breezecore.staged.stages.shutdown.DeleteTempFilesStage;
-import me.bottdev.breezecore.staged.stages.shutdown.ShutdownLifecycleStage;
-import me.bottdev.breezecore.staged.stages.startup.*;
+import me.bottdev.breezeapi.log.BreezeLogPlatform;
+import me.bottdev.breezeapi.log.BreezeLogger;
+import me.bottdev.breezeapi.log.BreezeLoggerFactory;
+import me.bottdev.breezeapi.process.*;
+import me.bottdev.breezeapi.process.executors.SequentialPipelineExecutor;
+import me.bottdev.breezecore.di.SimpleBreezeContext;
 
 import java.nio.file.Path;
 
@@ -24,58 +17,71 @@ import java.nio.file.Path;
 @RequiredArgsConstructor
 public class StagedBreezeEngine implements BreezeEngine {
 
-    private final TreeLogger logger = new SimpleTreeLogger("StagedBreezeEngine");
-    private final SimpleLifecycleManager lifecycleManager = new SimpleLifecycleManager(logger);
-    private final BreezeIndexLoader indexLoader = new BreezeIndexLoader(logger);
-    private final ContextBootstrapper contextBootstrapper = new ContextBootstrapper();
-    private final BreezeContext context = new LifecycleBreezeContext(logger, lifecycleManager);
-    private final AutoLoaderRegistry autoLoaderRegistry = new AutoLoaderRegistry(logger);
-
-    private final EngineProcess startupProcess = new EngineProcess("startup")
-            .addStage(new SupplierRegistrationStage(), StagePriority.HIGHEST)
-            .addStage(new AutoLoaderRegistrationStage(), StagePriority.HIGH)
-            .addStage(new ConstructHookRegistrationStage(), StagePriority.NORMAL)
-            .addStage(new ContextReaderRegistrationStage(), StagePriority.NORMAL)
-            .addStage(new ContextBootstrapStage(), StagePriority.LOW)
-            .addStage(new StartLifecycleStage(), StagePriority.LOWEST);
-
-    private final EngineProcess restartProcess = new EngineProcess("restart")
-            .addStage(new ModuleRestartStage(), StagePriority.HIGHEST);
-
-    private final EngineProcess shutdownProcess = new EngineProcess("shutdown")
-            .addStage(new ShutdownLifecycleStage(), StagePriority.HIGHEST)
-            .addStage(new DeleteTempFilesStage(), StagePriority.HIGH);
-
     private final Path dataFolder;
+    private final BreezeLogPlatform logPlatform;
+    private final BreezeLoggerFactory loggerFactory;
+    private final BreezeLogger logger;
+    private final PipelineExecutor pipelineExecutor;
+    private final BreezeContext context;
+
+    private final ProcessPipeline startupPipeline = ProcessPipeline.of(
+            PipelineNode.of(scope -> {}), //Supplier Registration
+            PipelineNode.of(scope -> {}), //AutoLoader Setup
+            PipelineNode.of(scope -> {}), //Construct Hook Registration
+            PipelineNode.of(scope -> {}), //ContextReader Registration
+            PipelineNode.of(scope -> {}), //Context Bootstrap
+            PipelineNode.of(scope -> {})  //Start Lifecycles
+    );
+
+    public StagedBreezeEngine(Path dataFolder, BreezeLogPlatform logPlatform) {
+        this.dataFolder = dataFolder;
+        this.logPlatform = logPlatform;
+        this.loggerFactory = new BreezeLoggerFactory(logPlatform);
+        this.logger = loggerFactory.simple("BreezeEngine");
+        this.pipelineExecutor = new SequentialPipelineExecutor(logger);
+        this.context = new SimpleBreezeContext(logger);
+    }
+
+//    private final SimpleLifecycleManager lifecycleManager = new SimpleLifecycleManager(logger);
+//    private final BreezeIndexLoader indexLoader = new BreezeIndexLoader(logger);
+//    private final ContextBootstrapper contextBootstrapper = new ContextBootstrapper();
+//    private final BreezeContext context = new LifecycleBreezeContext(logger, lifecycleManager);
+//    private final AutoLoaderRegistry autoLoaderRegistry = new AutoLoaderRegistry(logger);
 
     @Override
     public void start() {
-        logger.info("Starting engine....");
+//        logger.info("Starting engine....");
+//
+//        addShutdownHook();
+//        logger.withSection("BreezeEngine Startup", "", () -> {
+//            startupProcess.process(this);
+//        });
+//
+//        logger.info("Successfully started engine.");
 
         addShutdownHook();
-        logger.withSection("BreezeEngine Startup", "", () -> {
-            startupProcess.process(this);
-        });
 
-        logger.info("Successfully started engine.");
+        PipelineContext pipelineContext = new PipelineContext();
+        pipelineContext.put(PipelineContextKey.of("breezeEngine", BreezeEngine.class), this);
+        pipelineExecutor.execute(startupPipeline, pipelineContext);
     }
 
     @Override
     public void restart() {
-        logger.info("Restating engine....");
-        logger.withSection("Breeze Engine Restart", "", () ->
-                restartProcess.process(this)
-        );
-        logger.info("Successfully restarted engine.");
+//        logger.info("Restating engine....");
+//        logger.withSection("Breeze Engine Restart", "", () ->
+//                restartProcess.process(this)
+//        );
+//        logger.info("Successfully restarted engine.");
     }
 
     @Override
     public void shutdown() {
-        logger.info("Stopping engine....");
-        logger.withSection("Breeze Engine Stop", "", () ->
-                shutdownProcess.process(this)
-        );
-        logger.info("Successfully stopped engine.");
+//        logger.info("Stopping engine....");
+//        logger.withSection("Breeze Engine Stop", "", () ->
+//                shutdownProcess.process(this)
+//        );
+//        logger.info("Successfully stopped engine.");
     }
 
     private void addShutdownHook() {
