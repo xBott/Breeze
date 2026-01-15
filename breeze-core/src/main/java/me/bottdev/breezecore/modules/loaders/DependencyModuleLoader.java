@@ -2,13 +2,14 @@ package me.bottdev.breezecore.modules.loaders;
 
 import lombok.Getter;
 import me.bottdev.breezeapi.BreezeEngine;
-import me.bottdev.breezeapi.index.BreezeIndexBucket;
-import me.bottdev.breezeapi.index.BreezeIndexBucketContainer;
-import me.bottdev.breezeapi.index.types.BreezeModuleIndex;
+import me.bottdev.breezeapi.index.IndexMap;
+import me.bottdev.breezeapi.index.IndexMapContainer;
+import me.bottdev.breezeapi.index.types.ModuleIndex;
+import me.bottdev.breezeapi.log.BreezeLogger;
 import me.bottdev.breezeapi.modules.*;
 import me.bottdev.breezeapi.modules.Module;
 import me.bottdev.breezeapi.modules.annotations.ModuleInfo;
-import me.bottdev.breezecore.di.resolver.IndexBucketDependencyResolver;
+import me.bottdev.breezecore.di.resolver.IndexMapDependencyResolver;
 import me.bottdev.breezecore.modules.ChildFirstClassLoader;
 
 import java.io.*;
@@ -23,8 +24,8 @@ import java.util.function.Supplier;
 
 public class DependencyModuleLoader implements ModuleLoader {
 
-    private final TreeLogger logger;
-    private final IndexBucketDependencyResolver bucketDependencyResolver;
+    private final BreezeLogger logger;
+    private final IndexMapDependencyResolver bucketDependencyResolver;
 
     @Getter
     private final ClassLoader parentClassLoader;
@@ -35,7 +36,7 @@ public class DependencyModuleLoader implements ModuleLoader {
 
 
     public DependencyModuleLoader(
-            TreeLogger logger,
+            BreezeLogger logger,
             ClassLoader parentClassLoader,
             BreezeEngine engine,
             Path targetDirectory
@@ -44,7 +45,7 @@ public class DependencyModuleLoader implements ModuleLoader {
         this.parentClassLoader = parentClassLoader;
         this.engine = engine;
         this.targetDirectory = targetDirectory;
-        this.bucketDependencyResolver = new IndexBucketDependencyResolver(logger);
+        this.bucketDependencyResolver = new IndexMapDependencyResolver(logger);
     }
 
     private void createDirectoryIfNotExists() {
@@ -59,12 +60,12 @@ public class DependencyModuleLoader implements ModuleLoader {
         createDirectoryIfNotExists();
 
         List<Path> jarPaths = getJarPaths();
-        List<BreezeIndexBucket> buckets = getIndexBuckets(jarPaths);
-        BreezeIndexBucketContainer container = BreezeIndexBucketContainer.builder()
+        List<IndexMap> buckets = getIndexBuckets(jarPaths);
+        IndexMapContainer container = IndexMapContainer.builder()
                 .dependents(buckets)
                 .build();
 
-        List<BreezeIndexBucket> sortedBuckets = getSortedBuckets(container);
+        List<IndexMap> sortedBuckets = getSortedBuckets(container);
 
         return sortedBuckets.stream()
                 .map(this::loadBucket)
@@ -94,9 +95,9 @@ public class DependencyModuleLoader implements ModuleLoader {
         return results;
     }
 
-    private List<BreezeIndexBucket> getIndexBuckets(List<Path> paths) {
+    private List<IndexMap> getIndexBuckets(List<Path> paths) {
 
-        List<BreezeIndexBucket> results = new ArrayList<>();
+        List<IndexMap> results = new ArrayList<>();
 
         paths.forEach(jarPath -> {
             try {
@@ -105,7 +106,7 @@ public class DependencyModuleLoader implements ModuleLoader {
 
                 URLClassLoader loader = new ChildFirstClassLoader(new URL[]{jarUrl}, parentClassLoader);
 
-                BreezeIndexBucket bucket = getEngine().getIndexLoader().loadFromClassloader(loader);
+                IndexMap bucket = getEngine().getIndexLoader().loadFromClassloader(loader);
 
                 results.add(bucket);
 
@@ -117,22 +118,22 @@ public class DependencyModuleLoader implements ModuleLoader {
         return results;
     }
 
-    private List<BreezeIndexBucket> getSortedBuckets(BreezeIndexBucketContainer container) {
+    private List<IndexMap> getSortedBuckets(IndexMapContainer container) {
         return bucketDependencyResolver.resolve(container);
     }
 
     @SuppressWarnings("unchecked")
-    private Optional<ModulePreLoad> loadBucket(BreezeIndexBucket bucket) {
+    private Optional<ModulePreLoad> loadBucket(IndexMap bucket) {
 
         ClassLoader classLoader = bucket.getClassLoader();
 
-        Optional<BreezeModuleIndex> moduleIndexOptional = bucket.getModuleIndex();
+        Optional<ModuleIndex> moduleIndexOptional = bucket.getModuleIndex();
         if (moduleIndexOptional.isEmpty()) {
             logger.warn("Bucket doesn't contain Module Index.", classLoader);
             return Optional.empty();
         }
 
-        BreezeModuleIndex moduleIndex = moduleIndexOptional.get();
+        ModuleIndex moduleIndex = moduleIndexOptional.get();
         String moduleClassPath = moduleIndex.getClassPath();
 
         try {
