@@ -4,27 +4,27 @@ import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.commons.reflection.ReflectionCommons;
 import me.bottdev.breezeapi.di.*;
 import me.bottdev.breezeapi.di.proxy.ProxyFactoryRegistry;
-import me.bottdev.breezeapi.di.suppliers.SingletonSupplier;
-import me.bottdev.breezeapi.index.types.BreezeProxyIndex;
+import me.bottdev.breezeapi.index.types.ProxyIndex;
 import me.bottdev.breezeapi.log.BreezeLogger;
 
 import java.util.Optional;
 
+@Deprecated
 @RequiredArgsConstructor
-public class ProxyReader implements ContextIndexReader<BreezeProxyIndex> {
+public class ProxyReader implements ContextIndexReader<ProxyIndex> {
 
     private final BreezeLogger logger;
     private final ProxyFactoryRegistry factoryRegistry;
 
     @Override
-    public Class<BreezeProxyIndex> getIndexClass() {
-        return BreezeProxyIndex.class;
+    public Class<ProxyIndex> getIndexClass() {
+        return ProxyIndex.class;
     }
 
     @Override
-    public void readIndex(BreezeContext context, ClassLoader classLoader, BreezeProxyIndex index) {
+    public void read(BreezeContext context, ClassLoader classLoader, ProxyIndex index) {
 
-        for (BreezeProxyIndex.Entry entry : index.getEntries()) {
+        for (ProxyIndex.Entry entry : index.getEntries()) {
 
             try {
 
@@ -36,11 +36,11 @@ public class ProxyReader implements ContextIndexReader<BreezeProxyIndex> {
 
                 Object proxy = proxyOptional.get();
 
-                context.applyConstructHooks(proxy);
+                //context.applyConstructHooks(proxy);
 
                 String name = ReflectionCommons.asFieldName(clazz);
 
-                context.addObjectSupplier(name, new SingletonSupplier(proxy));
+                //context.addObjectSupplier(name, new SingletonSupplier(proxy));
                 logger.info("Proxy class {} has been created.", name);
 
             } catch (Exception ex) {
