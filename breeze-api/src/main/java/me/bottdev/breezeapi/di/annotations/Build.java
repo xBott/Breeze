@@ -1,6 +1,6 @@
 package me.bottdev.breezeapi.di.annotations;
 
-import me.bottdev.breezeapi.di.SupplyType;
+import me.bottdev.breezeapi.di.BeanScope;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -9,6 +9,6 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface Supply {
-    SupplyType type() default SupplyType.SINGLETON;
+public @interface Build {
+    BeanScope type() default BeanScope.SINGLETON;
 }
