@@ -1,60 +1,76 @@
 package me.bottdev.breezeapi.di;
 
-import me.bottdev.breezeapi.commons.reflection.ReflectionCommons;
-import me.bottdev.breezeapi.log.BreezeLogger;
+import me.bottdev.breezeapi.di.exceptions.ContextInjectionException;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 public interface BreezeContext {
 
-    BreezeLogger getLogger();
+    Map<BindingKey<?>, Bean<?>> getBindings();
 
-    Map<String, ObjectSupplier> getSuppliers();
+    default void registerUnchecked(
+            BindingKey<?> key,
+            Supplier<?> supplier,
+            BeanScope type
+    ) {
 
-    List<ConstructHook> getConstructHooks();
+        Bean<?> bean = BeanFactory.create(supplier, type);
+        getBindings().put(key, bean);
 
-    void addSupplier(Object object);
-
-    void addObjectSupplier(String key, ObjectSupplier supplier);
-
-    <T> Optional<T> get(Class<T> clazz, String key);
-
-    default <T> Optional<T> get(Class<T> clazz) {
-        String key = ReflectionCommons.asFieldName(clazz);
-        return get(clazz, key);
     }
 
-    <T> Optional<T> injectConstructor(Class<T> clazz);
-
-    default <T> Optional<T> injectConstructorAndApplyHooks(Class<T> clazz) {
-        Optional<T> optional = injectConstructor(clazz);
-        optional.ifPresent(this::applyConstructHooks);
-        return optional;
+    default <T> void registerTypeSafe(
+            BindingKey<T> key,
+            Supplier<T> supplier,
+            BeanScope type
+    ) {
+        registerUnchecked(key, supplier, type);
     }
 
-    void registerConstructHook(ConstructHook constructHook);
+    default <T> void registerImplementation(
+            BindingKey<T> key,
+            Class<? extends T> implementation,
+            BeanScope type
+    ) throws ContextInjectionException {
 
-    default void applyConstructHooks(Object object) {
-        getConstructHooks().forEach(constructHook -> constructHook.accept(object));
+        try {
+
+            T instance = createObjectWithHooks(implementation);
+            registerTypeSafe(key, () -> instance, type);
+
+        } catch (ContextInjectionException ex) {
+            throw new ContextInjectionException("Failed to register bean " + implementation.getName(), ex);
+
+        }
+
     }
 
-    void injectFields(Object object);
-
-    default <T> boolean createComponent(String name, SupplyType type, Class<T> clazz) {
-
-        Optional<?> optionalInjectedObject = injectConstructor(clazz);
-        if (optionalInjectedObject.isEmpty()) return false;
-
-        ObjectSupplier supplier = SupplierFactory.create(
-                type,
-                () -> injectConstructorAndApplyHooks(clazz).orElseThrow()
-        );
-
-        addObjectSupplier(name, supplier);
-
-        return true;
+    default <T> BindingBuilder<T> bind(Class<T> type) {
+        return new BindingBuilder<>(this, type);
     }
+
+    <T> T get(BindingKey<T> key);
+
+    <T> T get(Class<T> type);
+
+    <T> T get(Class<T> type, String qualifier);
+
+    <T> Optional<T> find(BindingKey<T> key);
+
+    <T> Optional<T> find(Class<T> type);
+
+    <T> Optional<T> find(Class<T> type, String qualifier);
+
+    default <T> T createObjectWithHooks(Class<T> implementation) throws ContextInjectionException {
+        T instance = createObject(implementation);
+        if (instance instanceof PostConstructHook postConstructHook) {
+            postConstructHook.onPostConstruct();
+        }
+        return instance;
+    }
+
+    <T> T createObject(Class<T> implementation) throws ContextInjectionException;
 
 }
