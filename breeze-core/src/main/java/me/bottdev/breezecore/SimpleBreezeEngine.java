@@ -4,28 +4,37 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.BreezeEngine;
 import me.bottdev.breezeapi.di.BreezeContext;
+import me.bottdev.breezeapi.di.ContextBootstrap;
+import me.bottdev.breezeapi.index.IndexLoader;
+import me.bottdev.breezeapi.index.IndexRegistry;
+import me.bottdev.breezeapi.lifecycle.LifecycleManager;
+import me.bottdev.breezecore.di.SimpleContextBootstrap;
+import me.bottdev.breezecore.index.SimpleBreezeIndexLoader;
 import me.bottdev.breezeapi.log.BreezeLogPlatform;
 import me.bottdev.breezeapi.log.BreezeLogger;
 import me.bottdev.breezeapi.log.BreezeLoggerFactory;
 import me.bottdev.breezeapi.process.*;
 import me.bottdev.breezeapi.process.executors.SequentialPipelineExecutor;
-import me.bottdev.breezecore.di.SimpleBreezeContext;
+import me.bottdev.breezecore.di.LocalContext;
+import me.bottdev.breezecore.stages.startup.BeanRegistrationStage;
 
 import java.nio.file.Path;
 
 @Getter
 @RequiredArgsConstructor
-public class StagedBreezeEngine implements BreezeEngine {
+public class SimpleBreezeEngine implements BreezeEngine {
 
     private final Path dataFolder;
     private final BreezeLogPlatform logPlatform;
     private final BreezeLoggerFactory loggerFactory;
     private final BreezeLogger logger;
     private final PipelineExecutor pipelineExecutor;
+    private final IndexLoader indexLoader;
+    private final ContextBootstrap contextBootstrap;
     private final BreezeContext context;
 
     private final ProcessPipeline startupPipeline = ProcessPipeline.of(
-            PipelineNode.of(scope -> {}), //Supplier Registration
+            PipelineNode.of(new BeanRegistrationStage()), //Supplier Registration
             PipelineNode.of(scope -> {}), //AutoLoader Setup
             PipelineNode.of(scope -> {}), //Construct Hook Registration
             PipelineNode.of(scope -> {}), //ContextReader Registration
@@ -33,20 +42,26 @@ public class StagedBreezeEngine implements BreezeEngine {
             PipelineNode.of(scope -> {})  //Start Lifecycles
     );
 
-    public StagedBreezeEngine(Path dataFolder, BreezeLogPlatform logPlatform) {
+    public SimpleBreezeEngine(Path dataFolder, BreezeLogPlatform logPlatform) {
         this.dataFolder = dataFolder;
         this.logPlatform = logPlatform;
         this.loggerFactory = new BreezeLoggerFactory(logPlatform);
         this.logger = loggerFactory.simple("BreezeEngine");
-        this.pipelineExecutor = new SequentialPipelineExecutor(logger);
-        this.context = new SimpleBreezeContext(logger);
+        this.pipelineExecutor = new SequentialPipelineExecutor(
+                loggerFactory.simple("SequentialPipelineExecutor")
+        );
+        this.indexLoader = new SimpleBreezeIndexLoader(
+                new IndexRegistry(),
+                loggerFactory.simple("SimpleBreezeIndexRegistry")
+        );
+        this.contextBootstrap = new SimpleContextBootstrap();
+        this.context = new LocalContext();
     }
 
-//    private final SimpleLifecycleManager lifecycleManager = new SimpleLifecycleManager(logger);
-//    private final BreezeIndexLoader indexLoader = new BreezeIndexLoader(logger);
-//    private final ContextBootstrapper contextBootstrapper = new ContextBootstrapper();
-//    private final BreezeContext context = new LifecycleBreezeContext(logger, lifecycleManager);
-//    private final AutoLoaderRegistry autoLoaderRegistry = new AutoLoaderRegistry(logger);
+    @Override
+    public LifecycleManager getLifecycleManager() {
+        return null;
+    }
 
     @Override
     public void start() {
