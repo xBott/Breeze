@@ -1,6 +1,9 @@
 package me.bottdev.breezeapi;
 
 import me.bottdev.breezeapi.di.BreezeContext;
+import me.bottdev.breezeapi.di.ContextBootstrap;
+import me.bottdev.breezeapi.index.IndexLoader;
+import me.bottdev.breezeapi.lifecycle.LifecycleManager;
 import me.bottdev.breezeapi.log.BreezeLogPlatform;
 import me.bottdev.breezeapi.log.BreezeLogger;
 import me.bottdev.breezeapi.log.BreezeLoggerFactory;
@@ -10,6 +13,8 @@ import java.nio.file.Path;
 
 public interface BreezeEngine {
 
+    Path getDataFolder();
+
     BreezeLogPlatform getLogPlatform();
 
     BreezeLoggerFactory getLoggerFactory();
@@ -17,17 +22,13 @@ public interface BreezeEngine {
 
     PipelineExecutor getPipelineExecutor();
 
-//    SimpleLifecycleManager getLifecycleManager();
-//
-//    BreezeIndexLoader getIndexLoader();
-//
-//    ContextBootstrapper getContextBootstrapper();
+    IndexLoader getIndexLoader();
+
+    ContextBootstrap getContextBootstrap();
 
     BreezeContext getContext();
 
-//    AutoLoaderRegistry getAutoLoaderRegistry();
-
-    Path getDataFolder();
+    LifecycleManager getLifecycleManager();
 
     void start();
 
