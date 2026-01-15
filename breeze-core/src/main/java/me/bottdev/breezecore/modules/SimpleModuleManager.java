@@ -1,10 +1,11 @@
 package me.bottdev.breezecore.modules;
 
 import me.bottdev.breezeapi.BreezeEngine;
-import me.bottdev.breezeapi.di.ContextBootstrapper;
+import me.bottdev.breezeapi.di.ContextBootstrap;
 import me.bottdev.breezeapi.di.BreezeContext;
 import me.bottdev.breezeapi.di.annotations.Inject;
 import me.bottdev.breezeapi.log.BreezeLogger;
+import me.bottdev.breezeapi.log.BreezeLoggerFactory;
 import me.bottdev.breezeapi.modules.*;
 import me.bottdev.breezeapi.modules.Module;
 
@@ -18,12 +19,12 @@ public class SimpleModuleManager extends ModuleManager {
     private final Map<Class<? extends Module>, Module> loadedModules = new HashMap<>();
 
     private final BreezeEngine breezeEngine;
-    private final BreezeLogger mainLogger;
+    private final BreezeLogger logger;
 
     @Inject
-    public SimpleModuleManager(BreezeEngine breezeEngine, BreezeLogger mainLogger) {
+    public SimpleModuleManager(BreezeEngine breezeEngine, BreezeLoggerFactory loggerFactory) {
         this.breezeEngine = breezeEngine;
-        this.mainLogger = mainLogger;
+        this.logger = loggerFactory.simple("SimpleModuleManager");
     }
 
     @Override
@@ -61,44 +62,32 @@ public class SimpleModuleManager extends ModuleManager {
     @Override
     public void unload(Class<? extends Module> moduleClass) {
         String moduleName = moduleClass.getSimpleName();
-        mainLogger.withSection("Unloading module " + moduleName, "", () -> {
 
-            if (!isModuleLoaded(moduleClass)) {
-                mainLogger.info("Could not unloaded module {}, because it is not loaded.", moduleClass.getSimpleName());
-                mainLogger.pop();
-                return;
-            }
-            Module module = loadedModules.remove(moduleClass);
-            mainLogger.info("Successfully unloaded module {}.", moduleClass.getSimpleName());
-            disable(module);
+        if (!isModuleLoaded(moduleClass)) {
+            logger.info("Could not unloaded module {}, because it is not loaded.", moduleName);
+            return;
+        }
+        Module module = loadedModules.remove(moduleClass);
+        logger.info("Successfully unloaded module {}.", moduleName);
+        disable(module);
 
-        });
     }
 
     @Override
     public void unloadAll() {
-        mainLogger.withSection("Unloading all modules", "", () -> {
-
-            loadedModules.values().forEach(this::disable);
-            loadedModules.clear();
-            mainLogger.info("Successfully unloaded all modules");
-
-        });
+        loadedModules.values().forEach(this::disable);
+        loadedModules.clear();
+        logger.info("Successfully unloaded all modules");
     }
 
     private void loadContextFromModule(ModulePreLoad modulePreLoad) {
 
-        String moduleName = modulePreLoad.getModuleClass().getSimpleName();
-        mainLogger.withSection("Loading context from module " +  moduleName, "", () -> {
+        BreezeContext context = breezeEngine.getContext();
+        ContextBootstrap contextBootstrap = breezeEngine.getContextBootstrap();
 
-            BreezeContext context = breezeEngine.getContext();
-            ContextBootstrapper contextBootstrapper = breezeEngine.getContextBootstrapper();
+        ClassLoader classLoader = modulePreLoad.getClassLoader();
 
-            ClassLoader classLoader = modulePreLoad.getClassLoader();
-
-            contextBootstrapper.bootstrap(context, classLoader, modulePreLoad.getIndexBucket());
-
-        });
+        contextBootstrap.bootstrap(context, classLoader, modulePreLoad.getIndexBucket());
 
     }
 
@@ -106,7 +95,7 @@ public class SimpleModuleManager extends ModuleManager {
         String moduleName = modulePreLoad.getModuleClass().getSimpleName();
 
         if (isModuleLoaded(modulePreLoad.getModuleClass())) {
-            mainLogger.info("Module {} is already loaded. Unloading previously loaded module...", moduleName);
+            logger.info("Module {} is already loaded. Unloading previously loaded module...", moduleName);
             return Optional.empty();
         }
 
@@ -116,14 +105,14 @@ public class SimpleModuleManager extends ModuleManager {
 
         Optional<Module> moduleOptional = supplier.get();
         if (moduleOptional.isEmpty()) {
-            mainLogger.info("Could not load Module, supplier is empty.");
+            logger.info("Could not load Module, supplier is empty.");
             return Optional.empty();
         }
 
         Module module = moduleOptional.get();
-        breezeEngine.getContext().injectFields(module);
+        //breezeEngine.getContext().injectFields(module);
 
-        mainLogger.info("Loading module {}...", moduleName);
+        logger.info("Loading module {}...", moduleName);
         Class<? extends Module> moduleClass = module.getClass();
 
         loadedModules.put(moduleClass, module);
@@ -135,14 +124,11 @@ public class SimpleModuleManager extends ModuleManager {
     public void load(ModulePreLoad modulePreLoad) {
 
         String moduleName = modulePreLoad.getModuleClass().getSimpleName();
-        mainLogger.withSection("Loading module " + moduleName, "", () -> {
 
-            Optional<Module> moduleOptional = handleModulePreLoad(modulePreLoad);
-            moduleOptional.ifPresent(module -> {
-                mainLogger.info("Successfully loaded module {}.", moduleName);
-                enable(module);
-            });
-
+        Optional<Module> moduleOptional = handleModulePreLoad(modulePreLoad);
+        moduleOptional.ifPresent(module -> {
+            logger.info("Successfully loaded module {}.", moduleName);
+            enable(module);
         });
 
     }
@@ -150,34 +136,30 @@ public class SimpleModuleManager extends ModuleManager {
     @Override
     public void loadAll() {
 
-        mainLogger.withSection("Loading modules from module loaders", "", () -> {
+        Set<ModuleLoader> loaders = getModuleLoaders();
+        if (loaders.isEmpty()) {
+            logger.warn("No module loaders found.");
+            return;
+        }
 
-            Set<ModuleLoader> loaders = getModuleLoaders();
-            if (loaders.isEmpty()) {
-                mainLogger.warn("No module loaders found.");
-                mainLogger.pop();
-                return;
-            }
+        loadedModules.clear();
 
-            loadedModules.clear();
+        for (ModuleLoader loader : loaders) {
 
-            for (ModuleLoader loader : loaders) {
+            String loaderName = loader.getClass().getSimpleName();
+            List<ModulePreLoad> modulePreLoads = loader.load();
 
-                String loaderName = loader.getClass().getSimpleName();
-                List<ModulePreLoad> modulePreLoads = loader.load();
-
-                for (ModulePreLoad modulePreLoad : modulePreLoads) {
-                    String moduleName = modulePreLoad.getModuleClass().getSimpleName();
-                    boolean loaded = loadSingleModuleFromLoader(modulePreLoad);
-                    if (loaded) {
-                        mainLogger.info("Successfully loaded module {} from module loader {}.", moduleName, loaderName);
-                    }
+            for (ModulePreLoad modulePreLoad : modulePreLoads) {
+                String moduleName = modulePreLoad.getModuleClass().getSimpleName();
+                boolean loaded = loadSingleModuleFromLoader(modulePreLoad);
+                if (loaded) {
+                    logger.info("Successfully loaded module {} from module loader {}.", moduleName, loaderName);
                 }
-
             }
 
-            mainLogger.info("Successfully loaded {}x from module loaders.", loadedModules.size());
-        });
+        }
+
+        logger.info("Successfully loaded {}x from module loaders.", loadedModules.size());
 
         enableAll();
 
@@ -187,13 +169,8 @@ public class SimpleModuleManager extends ModuleManager {
 
         AtomicBoolean loaded = new AtomicBoolean(false);
 
-        String moduleName = modulePreLoad.getModuleClass().getSimpleName();
-        mainLogger.withSection("Loading module " + moduleName + " from loader", "", () -> {
-
-            Optional<Module> moduleOptional = handleModulePreLoad(modulePreLoad);
-            moduleOptional.ifPresent(module -> loaded.set(true));
-
-        });
+        Optional<Module> moduleOptional = handleModulePreLoad(modulePreLoad);
+        moduleOptional.ifPresent(module -> loaded.set(true));
 
         return loaded.get();
     }
@@ -202,99 +179,86 @@ public class SimpleModuleManager extends ModuleManager {
     public void enable(Module module) {
 
         String moduleName = module.getClass().getSimpleName();
-        mainLogger.withSection("Enabling module " + moduleName, "", () -> {
 
-            if (module.getStatus() == ModuleStatus.RUNNING) {
-                mainLogger.info("Could not enable module {}, because it's already enabled.", moduleName);
-                return;
-            }
+        if (module.getStatus() == ModuleStatus.RUNNING) {
+            logger.info("Could not enable module {}, because it's already enabled.", moduleName);
+            return;
+        }
 
-            module.setStatus(ModuleStatus.ENABLING);
+        module.setStatus(ModuleStatus.ENABLING);
 
-            try {
-                module.onEnable();
-                module.setStatus(ModuleStatus.RUNNING);
-                mainLogger.info("Successfully enabled module {}.", moduleName);
-            } catch (Exception ex) {
-                module.setStatus(ModuleStatus.ERROR);
-                mainLogger.error("Could not enable module: ", ex);
-            }
-
-        });
+        try {
+            module.onEnable();
+            module.setStatus(ModuleStatus.RUNNING);
+            logger.info("Successfully enabled module {}.", moduleName);
+        } catch (Exception ex) {
+            module.setStatus(ModuleStatus.ERROR);
+            logger.error("Could not enable module: ", ex);
+        }
 
     }
 
     @Override
     public void enableAll() {
-        mainLogger.withSection("Enabling modules", "", () -> {
-            loadedModules.values().forEach(this::enable);
-        });
+        loadedModules.values().forEach(this::enable);
     }
 
     @Override
     public void disable(Module module) {
 
         String moduleName = module.getClass().getSimpleName();
-        mainLogger.withSection("Disabling module " + moduleName, "", () -> {
 
-            if (module.getStatus() != ModuleStatus.RUNNING) {
-                mainLogger.info("Could not disable module {}, because it's not enabled.", moduleName);
-                return;
-            }
+        if (module.getStatus() != ModuleStatus.RUNNING) {
+            logger.info("Could not disable module {}, because it's not enabled.", moduleName);
+            return;
+        }
 
-            module.setStatus(ModuleStatus.DISABLING);
+        module.setStatus(ModuleStatus.DISABLING);
 
-            try {
-                module.onDisable();
-                module.setStatus(ModuleStatus.DISABLED);
-                mainLogger.info("Successfully disabled module {}.", moduleName);
-            } catch (Exception ex) {
-                module.setStatus(ModuleStatus.ERROR);
-                mainLogger.error("Could not disable module: ", ex);
-            }
+        try {
+            module.onDisable();
+            module.setStatus(ModuleStatus.DISABLED);
+            logger.info("Successfully disabled module {}.", moduleName);
 
-        });
+        } catch (Exception ex) {
+            module.setStatus(ModuleStatus.ERROR);
+            logger.error("Could not disable module: ", ex);
+
+        }
 
     }
 
     @Override
     public void disableAll() {
-        mainLogger.withSection("Disabling modules", "", () -> {
-            loadedModules.values().forEach(this::disable);
-        });
+        loadedModules.values().forEach(this::disable);
     }
 
     @Override
     public void restart(Module module) {
 
         String moduleName = module.getClass().getSimpleName();
-        mainLogger.withSection("Restarting module " + moduleName, "", () -> {
 
-            if (module.getStatus() != ModuleStatus.RUNNING) {
-                mainLogger.info("Could not restart module {}, because it's not enabled.", module.getClass().getSimpleName());
-                return;
-            }
+        if (module.getStatus() != ModuleStatus.RUNNING) {
+            logger.info("Could not restart module {}, because it's not enabled.", module.getClass().getSimpleName());
+            return;
+        }
 
-            module.setStatus(ModuleStatus.RESTARTING);
+        module.setStatus(ModuleStatus.RESTARTING);
 
-            try {
-                module.onRestart();
-                module.setStatus(ModuleStatus.RUNNING);
-                mainLogger.info("Successfully restarted module {}.", moduleName);
-            } catch (Exception ex) {
-                module.setStatus(ModuleStatus.ERROR);
-                mainLogger.error("Could not restart module: ", ex);
-            }
-
-        });
+        try {
+            module.onRestart();
+            module.setStatus(ModuleStatus.RUNNING);
+            logger.info("Successfully restarted module {}.", moduleName);
+        } catch (Exception ex) {
+            module.setStatus(ModuleStatus.ERROR);
+            logger.error("Could not restart module: ", ex);
+        }
 
     }
 
     @Override
     public void restartAll() {
-        mainLogger.withSection("Restarting all modules", "", () -> {
-            loadedModules.values().forEach(this::restart);
-        });
+        loadedModules.values().forEach(this::restart);
     }
 
 }

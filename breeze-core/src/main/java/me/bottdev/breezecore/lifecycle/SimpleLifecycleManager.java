@@ -5,6 +5,7 @@ import me.bottdev.breezeapi.di.annotations.Inject;
 import me.bottdev.breezeapi.lifecycle.Lifecycle;
 import me.bottdev.breezeapi.lifecycle.LifecycleManager;
 import me.bottdev.breezeapi.log.BreezeLogger;
+import me.bottdev.breezeapi.log.BreezeLoggerFactory;
 
 import java.util.*;
 
@@ -14,8 +15,8 @@ public class SimpleLifecycleManager implements LifecycleManager {
     private final BreezeLogger logger;
 
     @Inject
-    SimpleLifecycleManager(BreezeLogger mainLogger) {
-        this.logger = mainLogger;
+    SimpleLifecycleManager(BreezeLoggerFactory loggerFactory) {
+        this.logger = loggerFactory.simple("SimpleLifecycleManager");
     }
 
     @Getter
