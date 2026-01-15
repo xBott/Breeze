@@ -1,6 +1,6 @@
 package me.bottdev.breezeapi.di;
 
-public enum SupplyType {
+public enum BeanScope {
     SINGLETON,
     PROTOTYPE
 }
