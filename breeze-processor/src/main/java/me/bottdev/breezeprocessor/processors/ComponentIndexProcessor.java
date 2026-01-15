@@ -1,28 +1,34 @@
 package me.bottdev.breezeprocessor.processors;
 
 import com.google.auto.service.AutoService;
-import me.bottdev.breezeapi.di.SupplyType;
+import me.bottdev.breezeapi.di.BeanScope;
 import me.bottdev.breezeapi.di.annotations.Component;
 import me.bottdev.breezeapi.di.annotations.Inject;
-import me.bottdev.breezeapi.index.processors.AbstractIndexProcessor;
-import me.bottdev.breezeapi.index.processors.ClassIndexProcessor;
-import me.bottdev.breezeapi.index.types.BreezeComponentIndex;
+import me.bottdev.breezeprocessor.*;
+import me.bottdev.breezeapi.index.types.ComponentIndex;
+import me.bottdev.breezeprocessor.rounds.ClassIndexRound;
+import me.bottdev.breezeprocessor.rounds.StaticProcessingRound;
 
+import javax.annotation.processing.Messager;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
+import javax.tools.Diagnostic;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("unused")
 @AutoService(Processor.class)
 @SupportedAnnotationTypes("me.bottdev.breezeapi.di.annotations.Component")
 @SupportedSourceVersion(SourceVersion.RELEASE_21)
-public class BreezeComponentIndexProcessor extends AbstractIndexProcessor<BreezeComponentIndex> implements ClassIndexProcessor {
+public class ComponentIndexProcessor extends AbstractIndexProcessor<ComponentIndex> {
 
+    private static final ComponentDependencyResolver dependencyResolver = new ComponentDependencyResolver();
+    private final ComponentDependencyContainer dependencyContainer = new ComponentDependencyContainer();
 
     @Override
     protected String getOutputFileName() {
@@ -35,37 +41,74 @@ public class BreezeComponentIndexProcessor extends AbstractIndexProcessor<Breeze
     }
 
     @Override
-    protected BreezeComponentIndex createIndex() {
-        return new BreezeComponentIndex();
+    protected ComponentIndex createIndex() {
+        return new ComponentIndex();
     }
 
     @Override
-    protected void processElement(Element element) {
-        processClass(element);
+    protected void configureRounds() {
+
+        ProcessingRoundManager roundManager = getRoundManager();
+        Messager messager = getContext().getMessager();
+
+        roundManager.add(new ClassIndexRound(
+                messager,
+                "Component Index",
+                this::addDependency
+        ));
+
+        roundManager.add(new StaticProcessingRound(
+                messager,
+                "Dependency resolvation",
+                this::resolveDependencies
+        ));
+
     }
 
-    @Override
-    public void extractDataFromClass(TypeElement typeElement) {
+    private void addDependency(TypeElement typeElement) {
+
+        Messager messager = getContext().getMessager();
+
         String classPath = typeElement.getQualifiedName().toString();
         Component annotation = (Component) typeElement.getAnnotation(getAnnotationType());
-
-        BreezeComponentIndex index = getIndex();
-
-        SupplyType supplyType = annotation.type();
+        BeanScope scope = annotation.type();
 
         List<VariableElement> dependencies = getInjectedDependencies(typeElement);
-        List<String> stringDependencies = dependencies.stream().map(dependency ->
+        List<String> dependencyPaths = dependencies.stream().map(dependency ->
                 dependency.asType().toString()
         ).toList();
 
-        BreezeComponentIndex.Entry entry = BreezeComponentIndex.Entry.builder()
+        ComponentIndex.Entry entry = ComponentIndex.Entry.builder()
                 .classPath(classPath)
-                .supplyType(supplyType)
-                .dependencies(stringDependencies)
+                .scope(scope)
                 .build();
 
-        index.addEntry(entry);
+        ComponentDependent dependent = new ComponentDependent(entry);
+        dependent.addDependencies(dependencyPaths);
 
+        dependencyPaths.forEach(dependencyPath ->
+                messager.printMessage(Diagnostic.Kind.NOTE, "  Depends on: " + dependencyPath)
+        );
+
+        dependencyContainer.add(dependent);
+
+    }
+
+    private void resolveDependencies() {
+
+        Messager messager = getContext().getMessager();
+
+        messager.printMessage(Diagnostic.Kind.NOTE, "Resolving component dependencies...");
+        List<ComponentDependent> resolved = dependencyResolver.resolve(dependencyContainer);
+
+        messager.printMessage(Diagnostic.Kind.NOTE, "Successfully resolved component dependencies!");
+        messager.printMessage(Diagnostic.Kind.NOTE, "Order of components is:");
+
+        ComponentIndex index = getIndex();
+        resolved.forEach(dependent -> {
+            messager.printMessage(Diagnostic.Kind.NOTE, "- " + dependent.getDependentId());
+            index.addEntry(dependent.getEntry());
+        });
     }
 
     protected List<VariableElement> getInjectedDependencies(TypeElement typeElement) {
@@ -105,7 +148,7 @@ public class BreezeComponentIndexProcessor extends AbstractIndexProcessor<Breeze
                 for (VariableElement param : constructor.getParameters()) {
 
                     TypeMirror typeMirror = param.asType();
-                    Element fieldTypeElement = getTypeUtils().asElement(typeMirror);
+                    Element fieldTypeElement = getContext().getTypeUtils().asElement(typeMirror);
 
                     if (fieldTypeElement != null && fieldTypeElement.getAnnotation(Component.class) != null) {
                         injectedParams.add(param);
