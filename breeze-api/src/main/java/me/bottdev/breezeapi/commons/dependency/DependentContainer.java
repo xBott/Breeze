@@ -1,4 +1,4 @@
-package me.bottdev.breezeapi.di.dependency;
+package me.bottdev.breezeapi.commons.dependency;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
