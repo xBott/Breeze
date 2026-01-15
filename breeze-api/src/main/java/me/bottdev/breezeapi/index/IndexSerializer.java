@@ -4,11 +4,11 @@ import me.bottdev.breezeapi.serialization.mappers.JsonMapper;
 
 import java.util.Optional;
 
-public class BreezeIndexSerializer {
+public class IndexSerializer {
 
     public final JsonMapper jsonMapper;
 
-    public BreezeIndexSerializer() {
+    public IndexSerializer() {
         this.jsonMapper = new JsonMapper();
     }
 
