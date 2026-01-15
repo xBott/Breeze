@@ -11,7 +11,7 @@ import me.bottdev.breezeapi.command.CommandNode;
 import me.bottdev.breezeapi.command.nodes.CommandRootNode;
 import me.bottdev.breezeapi.di.annotations.Inject;
 import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.platforms.SL4JLogPlatform;
+import me.bottdev.breezeapi.log.platforms.SLF4JLogPlatform;
 import me.bottdev.breezepaper.BreezePaper;
 import me.bottdev.breezepaper.command.context.PaperCommandContextFactory;
 
@@ -21,7 +21,7 @@ import java.util.Optional;
 
 public class PaperCommandRegistrar {
 
-    private final BreezeLogger logger = SL4JLogPlatform.getFactory().simple("PaperCommandRegistrar");
+    private final BreezeLogger logger = SLF4JLogPlatform.getFactory().simple("PaperCommandRegistrar");
     private final Map<Class<? extends CommandNode>, PaperCommandNodeFactory> factories = new HashMap<>();
 
     private final BreezePaper breezePaper;

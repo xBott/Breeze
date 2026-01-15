@@ -5,7 +5,7 @@ import me.bottdev.breezeapi.di.PostConstructHook;
 import me.bottdev.breezeapi.di.BeanScope;
 import me.bottdev.breezeapi.di.annotations.Inject;
 import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.platforms.SL4JLogPlatform;
+import me.bottdev.breezeapi.log.platforms.SLF4JLogPlatform;
 import me.bottdev.breezeapi.log.trace.LogTrace;
 import me.bottdev.breezeapi.log.trace.TraceScope;
 import me.bottdev.breezecore.di.LocalContext;
@@ -67,7 +67,7 @@ public class LocalContextTest {
 
     @BeforeAll
     static void setupGlobal() {
-        logger = SL4JLogPlatform.getFactory().simple("LocalContextTest");
+        logger = SLF4JLogPlatform.getFactory().simple("LocalContextTest");
     }
 
     @BeforeEach

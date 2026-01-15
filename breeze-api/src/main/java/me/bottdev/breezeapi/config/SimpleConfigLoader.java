@@ -6,8 +6,7 @@ import me.bottdev.breezeapi.config.validation.ConfigValidator;
 import me.bottdev.breezeapi.config.validation.ValidationResult;
 import me.bottdev.breezeapi.config.validation.ValidationStatus;
 import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.platforms.SL4JLogPlatform;
-import me.bottdev.breezeapi.log.types.SimpleLogger;
+import me.bottdev.breezeapi.log.platforms.SLF4JLogPlatform;
 import me.bottdev.breezeapi.resource.types.FileResource;
 import me.bottdev.breezeapi.serialization.Mapper;
 import me.bottdev.breezeapi.serialization.ObjectNode;
@@ -18,7 +17,7 @@ import java.util.function.Supplier;
 @RequiredArgsConstructor
 public class SimpleConfigLoader<T extends Configuration> implements ConfigLoader<T> {
 
-    private final BreezeLogger logger = SL4JLogPlatform.getFactory().simple("SimpleConfigLoader");
+    private final BreezeLogger logger = SLF4JLogPlatform.getFactory().simple("SimpleConfigLoader");
     @Getter
     private final Class<T> targetClass;
     private final Mapper serializationStrategy;

@@ -2,7 +2,7 @@ package me.bottdev.breezeapi.serialization.polymorphic;
 
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.platforms.SL4JLogPlatform;
+import me.bottdev.breezeapi.log.platforms.SLF4JLogPlatform;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,7 +16,7 @@ public class PolymorphicType<T> {
 
     public PolymorphicType(Class<T> baseClass) {
         this.baseClass = baseClass;
-        this.logger = SL4JLogPlatform.getFactory().simple("PolymorphicRegistry-%s".formatted(baseClass.getSimpleName()));
+        this.logger = SLF4JLogPlatform.getFactory().simple("PolymorphicRegistry-%s".formatted(baseClass.getSimpleName()));
     }
 
     private final Map<String, Class<? extends T>> registeredClasses = new HashMap<>();

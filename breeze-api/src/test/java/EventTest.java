@@ -6,7 +6,7 @@ import me.bottdev.breezeapi.events.EventBus;
 import me.bottdev.breezeapi.events.Listener;
 import me.bottdev.breezeapi.events.annotations.Listen;
 import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.platforms.SL4JLogPlatform;
+import me.bottdev.breezeapi.log.platforms.SLF4JLogPlatform;
 import org.junit.jupiter.api.Test;
 
 public class EventTest {
@@ -60,7 +60,7 @@ public class EventTest {
     @Test
     public void testEventBus() {
 
-        EventBus eventBus = new TestEventBus(SL4JLogPlatform.getFactory().simple("EventBus"));
+        EventBus eventBus = new TestEventBus(SLF4JLogPlatform.getFactory().simple("EventBus"));
 
         JoinListener listener = new JoinListener();
         eventBus.registerListeners(listener);

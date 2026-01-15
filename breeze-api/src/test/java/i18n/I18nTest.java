@@ -3,7 +3,7 @@ package i18n;
 import me.bottdev.breezeapi.i18n.*;
 import me.bottdev.breezeapi.i18n.translations.SimpleTranslation;
 import me.bottdev.breezeapi.i18n.types.SimpleI18n;
-import me.bottdev.breezeapi.log.platforms.SL4JLogPlatform;
+import me.bottdev.breezeapi.log.platforms.SLF4JLogPlatform;
 import me.bottdev.breezeapi.log.types.SimpleLogger;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class I18nTest {
 
-    static final SimpleLogger logger = SL4JLogPlatform.getFactory().simple("I18nTest");
+    static final SimpleLogger logger = SLF4JLogPlatform.getFactory().simple("I18nTest");
     static TranslationModuleManager translationModuleManager;
 
     @BeforeAll

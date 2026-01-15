@@ -1,7 +1,7 @@
 import me.bottdev.breezeapi.log.BreezeLogPlatform;
 import me.bottdev.breezeapi.log.BreezeLogger;
 import me.bottdev.breezeapi.log.BreezeLoggerFactory;
-import me.bottdev.breezeapi.log.platforms.SL4JLogPlatform;
+import me.bottdev.breezeapi.log.platforms.SLF4JLogPlatform;
 import me.bottdev.breezeapi.log.trace.LogTrace;
 import me.bottdev.breezeapi.log.trace.TraceScope;
 import org.junit.jupiter.api.BeforeAll;
@@ -17,7 +17,7 @@ public class LogTest {
 
     @BeforeAll
     static void setup() {
-        platform = new SL4JLogPlatform();
+        platform = new SLF4JLogPlatform();
         loggerFactory = new BreezeLoggerFactory(platform);
     }
 

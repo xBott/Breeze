@@ -7,12 +7,12 @@ import me.bottdev.breezeapi.log.LogLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SL4JLogPlatform implements BreezeLogPlatform {
+public class SLF4JLogPlatform implements BreezeLogPlatform {
 
     @Getter
-    private static final BreezeLoggerFactory factory = new BreezeLoggerFactory(new SL4JLogPlatform());
+    private static final BreezeLoggerFactory factory = new BreezeLoggerFactory(new SLF4JLogPlatform());
 
-    private final Logger slf4jLogger = LoggerFactory.getLogger(SL4JLogPlatform.class);
+    private final Logger slf4jLogger = LoggerFactory.getLogger(SLF4JLogPlatform.class);
 
     @Override
     public void log(LogLevel level, String message, Throwable throwable) {

@@ -2,7 +2,7 @@ package me.bottdev.breezeapi.resource;
 
 import me.bottdev.breezeapi.commons.file.temp.TempFile;
 import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.platforms.SL4JLogPlatform;
+import me.bottdev.breezeapi.log.platforms.SLF4JLogPlatform;
 import me.bottdev.breezeapi.resource.source.SourceType;
 import me.bottdev.breezeapi.resource.types.FileResource;
 
@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public class ResourceConverter {
 
-    public static final BreezeLogger logger = SL4JLogPlatform.getFactory().simple("ResourceConverter");
+    public static final BreezeLogger logger = SLF4JLogPlatform.getFactory().simple("ResourceConverter");
 
     public static <T extends Resource> Optional<T> convertSingle(
             Class<T> clazz,

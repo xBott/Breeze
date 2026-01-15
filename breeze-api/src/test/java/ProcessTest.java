@@ -1,6 +1,6 @@
 import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.platforms.SL4JLogPlatform;
+import me.bottdev.breezeapi.log.platforms.SLF4JLogPlatform;
 import me.bottdev.breezeapi.process.*;
 import me.bottdev.breezeapi.process.executors.SequentialPipelineExecutor;
 import org.junit.jupiter.api.BeforeAll;
@@ -58,7 +58,7 @@ public class ProcessTest {
 
     @BeforeAll
     static void setup() {
-        logger = SL4JLogPlatform.getFactory().simple("ProcessTest");
+        logger = SLF4JLogPlatform.getFactory().simple("ProcessTest");
         pipelineExecutor = new SequentialPipelineExecutor(logger);
     }
 

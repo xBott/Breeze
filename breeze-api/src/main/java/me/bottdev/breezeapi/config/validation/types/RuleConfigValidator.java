@@ -3,14 +3,14 @@ package me.bottdev.breezeapi.config.validation.types;
 import lombok.Getter;
 import me.bottdev.breezeapi.config.validation.*;
 import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.platforms.SL4JLogPlatform;
+import me.bottdev.breezeapi.log.platforms.SLF4JLogPlatform;
 import me.bottdev.breezeapi.serialization.ObjectNode;
 
 import java.util.List;
 
 public class RuleConfigValidator implements ConfigValidator {
 
-    private final BreezeLogger logger = SL4JLogPlatform.getFactory().simple("RuleConfigValidator");
+    private final BreezeLogger logger = SLF4JLogPlatform.getFactory().simple("RuleConfigValidator");
 
     @Getter
     private final ValidationRuleRegistry ruleRegistry = new ValidationRuleRegistry();

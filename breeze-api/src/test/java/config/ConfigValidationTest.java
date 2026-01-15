@@ -12,7 +12,7 @@ import me.bottdev.breezeapi.config.validation.rules.MoreRule;
 import me.bottdev.breezeapi.config.validation.rules.RangeRule;
 import me.bottdev.breezeapi.config.validation.rules.StructureRule;
 import me.bottdev.breezeapi.config.validation.types.RuleConfigValidator;
-import me.bottdev.breezeapi.log.platforms.SL4JLogPlatform;
+import me.bottdev.breezeapi.log.platforms.SLF4JLogPlatform;
 import me.bottdev.breezeapi.log.types.SimpleLogger;
 import me.bottdev.breezeapi.serialization.ObjectNode;
 import me.bottdev.breezeapi.serialization.mappers.JsonMapper;
@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ConfigValidationTest {
 
-    public static SimpleLogger logger = SL4JLogPlatform.getFactory().simple("ConfigValidationTest");
+    public static SimpleLogger logger = SLF4JLogPlatform.getFactory().simple("ConfigValidationTest");
     public static JsonMapper jsonMapper = new JsonMapper();
 
     @Getter

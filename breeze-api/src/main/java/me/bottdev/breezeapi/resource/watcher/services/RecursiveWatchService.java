@@ -2,7 +2,7 @@ package me.bottdev.breezeapi.resource.watcher.services;
 
 import lombok.Getter;
 import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.platforms.SL4JLogPlatform;
+import me.bottdev.breezeapi.log.platforms.SLF4JLogPlatform;
 import me.bottdev.breezeapi.resource.watcher.WatchEventType;
 
 import java.io.IOException;
@@ -16,7 +16,7 @@ import java.util.stream.Stream;
 public class RecursiveWatchService extends AbstractWatchService {
 
     @Getter
-    private final BreezeLogger logger = SL4JLogPlatform.getFactory().simple("RecursiveWatchService");
+    private final BreezeLogger logger = SLF4JLogPlatform.getFactory().simple("RecursiveWatchService");
     private final ScheduledExecutorService delayedExecutor;
 
     public RecursiveWatchService() throws IOException {
