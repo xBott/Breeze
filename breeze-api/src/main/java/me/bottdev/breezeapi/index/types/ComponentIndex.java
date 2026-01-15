@@ -1,22 +1,26 @@
 package me.bottdev.breezeapi.index.types;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import me.bottdev.breezeapi.di.BeanScope;
 import me.bottdev.breezeapi.index.IndexEntry;
+import me.bottdev.breezeapi.index.MultipleIndex;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class BreezeProxyIndex implements MultipleBreezeIndex<BreezeProxyIndex.Entry> {
+public class ComponentIndex implements
+        MultipleIndex<ComponentIndex.Entry>
+{
 
     @Getter
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class Entry implements IndexEntry {
+
         private String classPath;
+        private BeanScope scope;
+
     }
 
     @Getter

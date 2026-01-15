@@ -5,11 +5,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import me.bottdev.breezeapi.index.IndexEntry;
+import me.bottdev.breezeapi.index.MultipleIndex;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class BreezeSupplierIndex implements MultipleBreezeIndex<BreezeSupplierIndex.Entry> {
+public class ProxyIndex implements MultipleIndex<ProxyIndex.Entry> {
 
     @Getter
     @Builder

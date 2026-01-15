@@ -1,34 +1,23 @@
 package me.bottdev.breezeapi.index.types;
 
-import lombok.*;
-import me.bottdev.breezeapi.di.dependency.Dependent;
-import me.bottdev.breezeapi.di.dependency.DependentContainer;
-import me.bottdev.breezeapi.di.SupplyType;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import me.bottdev.breezeapi.index.IndexEntry;
+import me.bottdev.breezeapi.index.MultipleIndex;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class BreezeComponentIndex implements
-        MultipleBreezeIndex<BreezeComponentIndex.Entry>,
-        DependentContainer<BreezeComponentIndex.Entry>
-{
+public class FactoryIndex implements MultipleIndex<FactoryIndex.Entry> {
 
     @Getter
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class Entry implements IndexEntry, Dependent {
-
+    public static class Entry implements IndexEntry {
         private String classPath;
-        private SupplyType supplyType;
-        @Singular("dependency")
-        private List<String> dependencies;
-
-        @Override
-        public String getDependentId() {
-            return classPath;
-        }
     }
 
     @Getter
@@ -50,11 +39,6 @@ public class BreezeComponentIndex implements
         for (Entry entry : entries) {
             addEntry(entry);
         }
-    }
-
-    @Override
-    public List<Entry> getDependents() {
-        return entries;
     }
 
 }

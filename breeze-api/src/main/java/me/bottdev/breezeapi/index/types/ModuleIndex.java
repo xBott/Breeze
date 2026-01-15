@@ -1,13 +1,14 @@
 package me.bottdev.breezeapi.index.types;
 
 import lombok.*;
-import me.bottdev.breezeapi.di.dependency.Dependent;
+import me.bottdev.breezeapi.commons.dependency.Dependent;
+import me.bottdev.breezeapi.index.SingleIndex;
 
 import java.util.List;
 
 @Getter
 @Setter
-public class BreezeModuleIndex implements SingleBreezeIndex, Dependent {
+public class ModuleIndex implements SingleIndex, Dependent {
 
     private String classPath;
     private String moduleName;
