@@ -108,7 +108,7 @@ public class BreezeCommand implements Command {
         sender.send("<white>List of all suppliers:");
         breezeEngine.getContext().getBindings().forEach((key, bean) -> {
             Object object = bean.get();
-            BeanScope scope = bean.get();
+            BeanScope scope = bean.getScope();
             String className = object.getClass().getSimpleName();
             sender.send("  <yellow>{} <gray>{}: <light_purple>{}", scope, key, className);
         });
