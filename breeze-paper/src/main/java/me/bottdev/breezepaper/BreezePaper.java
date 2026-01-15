@@ -1,10 +1,8 @@
 package me.bottdev.breezepaper;
 
 import lombok.Getter;
-import me.bottdev.breezecore.StagedBreezeEngine;
-import me.bottdev.breezepaper.stages.PaperCommandLoaderStage;
-import me.bottdev.breezepaper.stages.PaperModuleLoaderStage;
-import me.bottdev.breezepaper.stages.PaperSupplierRegistrationStage;
+import me.bottdev.breezeapi.log.platforms.SL4JLogPlatform;
+import me.bottdev.breezecore.SimpleBreezeEngine;
 import org.bukkit.plugin.java.JavaPlugin;
 
 @Getter
@@ -12,26 +10,26 @@ public class BreezePaper extends JavaPlugin {
 
     @Getter
     private static BreezePaper instance;
-    private StagedBreezeEngine engine;
+    private SimpleBreezeEngine engine;
 
     @Override
     public void onEnable() {
         instance = this;
 
-        engine = new StagedBreezeEngine(getDataPath().toAbsolutePath());
-        engine.getStartupPipeline()
-                .addStage(
-                        new PaperSupplierRegistrationStage(this),
-                        StagePriority.HIGHEST
-                )
-                .addStage(
-                        new PaperModuleLoaderStage(getClassLoader(), getDataFolder().toPath().resolve("modules")),
-                        StagePriority.HIGH
-                )
-                .addStage(
-                        new PaperCommandLoaderStage(),
-                        StagePriority.HIGH
-                );
+        engine = new SimpleBreezeEngine(getDataPath().toAbsolutePath(), new SL4JLogPlatform());
+//        engine.getStartupPipeline()
+//                .addStage(
+//                        new PaperSupplierRegistrationStage(this),
+//                        StagePriority.HIGHEST
+//                )
+//                .addStage(
+//                        new PaperModuleLoaderStage(getClassLoader(), getDataFolder().toPath().resolve("modules")),
+//                        StagePriority.HIGH
+//                )
+//                .addStage(
+//                        new PaperCommandLoaderStage(),
+//                        StagePriority.HIGH
+//                );
 
         engine.start();
     }
