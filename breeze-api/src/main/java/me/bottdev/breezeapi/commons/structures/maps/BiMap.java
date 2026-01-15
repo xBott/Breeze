@@ -1,4 +1,4 @@
-package me.bottdev.breezeapi.commons.structures;
+package me.bottdev.breezeapi.commons.structures.maps;
 
 import java.util.HashMap;
 import java.util.HashSet;
