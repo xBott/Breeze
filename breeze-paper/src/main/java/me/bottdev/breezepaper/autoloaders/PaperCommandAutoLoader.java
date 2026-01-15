@@ -5,12 +5,13 @@ import me.bottdev.breezeapi.command.Command;
 import me.bottdev.breezeapi.command.CommandTreeParser;
 import me.bottdev.breezeapi.command.nodes.CommandRootNode;
 import me.bottdev.breezeapi.di.annotations.Inject;
+import me.bottdev.breezeapi.log.platforms.SL4JLogPlatform;
 import me.bottdev.breezeapi.log.types.SimpleLogger;
 import me.bottdev.breezepaper.command.PaperCommandRegistrar;
 
 public class PaperCommandAutoLoader implements AutoLoader {
 
-    private final SimpleLogger logger = new SimpleLogger("PaperCommandAutoloader");
+    private final SimpleLogger logger = SL4JLogPlatform.getFactory().simple("PaperCommandAutoLoader");
 
     private final CommandTreeParser parser;
     private final PaperCommandRegistrar registrar;
