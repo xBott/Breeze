@@ -1,14 +1,14 @@
 package me.bottdev.breezeadmin.suppliers;
 
-import me.bottdev.breezeapi.di.annotations.Supplier;
-import me.bottdev.breezeapi.di.annotations.Supply;
+import me.bottdev.breezeapi.di.annotations.Factory;
+import me.bottdev.breezeapi.di.annotations.Build;
 
 import java.util.List;
 
-@Supplier
+@Factory
 public class AdminSupplier {
 
-    @Supply
+    @Build
     public List<String> adminNameList() {
         return List.of("_xBott", "OtherAdmin", "LastAdmin");
     }
