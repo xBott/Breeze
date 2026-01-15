@@ -1,43 +1,40 @@
 package me.bottdev.breezecore.di.readers;
 
-import lombok.RequiredArgsConstructor;
 import me.bottdev.breezeapi.commons.reflection.ReflectionCommons;
 import me.bottdev.breezeapi.di.*;
-import me.bottdev.breezeapi.index.types.BreezeComponentIndex;
-import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezecore.di.resolver.ComponentDependencyResolver;
+import me.bottdev.breezeapi.di.exceptions.ContextReadException;
+import me.bottdev.breezeapi.index.types.ComponentIndex;
 
-import java.util.List;
-import java.util.Optional;
-
-@RequiredArgsConstructor
-public class ComponentReader implements ContextIndexReader<BreezeComponentIndex> {
-
-    private final BreezeLogger logger;
-    private final ComponentDependencyResolver resolver;
+public class ComponentReader implements ContextIndexReader<ComponentIndex> {
 
     @Override
-    public Class<BreezeComponentIndex> getIndexClass() {
-        return BreezeComponentIndex.class;
+    public Class<ComponentIndex> getIndexClass() {
+        return ComponentIndex.class;
     }
 
     @Override
-    public void readIndex(BreezeContext context, ClassLoader classLoader, BreezeComponentIndex index) {
-        List<BreezeComponentIndex.Entry> resolvedDependencies = resolver.resolve(index);
+    public void read(BreezeContext context, ClassLoader classLoader, ComponentIndex index)
+            throws ContextReadException
+    {
 
-        for (BreezeComponentIndex.Entry dependency : resolvedDependencies) {
+        index.getEntries().forEach(entry -> {
             try {
-                String path = dependency.getClassPath();
-                SupplyType supplyType = dependency.getSupplyType();
+
+                String path = entry.getClassPath();
+                BeanScope scope = entry.getScope();
                 Class<?> clazz = classLoader.loadClass(path);
                 String name = ReflectionCommons.asFieldName(clazz);
 
-                context.createComponent(name, supplyType, clazz);
+                context.bind(clazz)
+                        .scope(scope)
+                        .qualified(name)
+                        .self();
 
             } catch (Exception ex) {
-                logger.error("Could not find component class " + dependency, ex);
+                throw new ContextReadException("Could not bind component: " + entry.getClassPath(), ex);
             }
-        }
+        });
+
     }
 }
 
