@@ -1,23 +1,17 @@
 package me.bottdev.breezepaper.stages;
 
 import lombok.RequiredArgsConstructor;
-import me.bottdev.breezeapi.command.Command;
-import me.bottdev.breezecore.StagedBreezeEngine;
-import me.bottdev.breezepaper.autoloaders.PaperCommandAutoLoader;
+import me.bottdev.breezeapi.process.PipelineNodeScope;
+import me.bottdev.breezecore.stages.EngineProcessStage;
 
 @RequiredArgsConstructor
-public class PaperCommandLoaderStage implements ProcessStage {
+public class PaperCommandLoaderStage implements EngineProcessStage {
 
     @Override
-    public String getName() {
-        return "Paper command loader";
-    }
-
-    @Override
-    public void process(StagedBreezeEngine engine) {
-        engine.getContext().injectConstructor(PaperCommandAutoLoader.class).ifPresent(autoLoader ->
-                engine.getAutoLoaderRegistry().register(Command.class, autoLoader)
-        );
+    public void apply(PipelineNodeScope scope) {
+//        getEngine(scope).getContext().injectConstructor(PaperCommandAutoLoader.class).ifPresent(autoLoader ->
+//                engine.getAutoLoaderRegistry().register(Command.class, autoLoader)
+//        );
     }
 
 }
