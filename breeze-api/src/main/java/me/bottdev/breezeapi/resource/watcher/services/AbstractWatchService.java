@@ -1,6 +1,6 @@
 package me.bottdev.breezeapi.resource.watcher.services;
 
-import me.bottdev.breezeapi.commons.structures.BiMap;
+import me.bottdev.breezeapi.commons.structures.maps.BiMap;
 import me.bottdev.breezeapi.log.BreezeLogger;
 import me.bottdev.breezeapi.resource.watcher.WatchEventType;
 
