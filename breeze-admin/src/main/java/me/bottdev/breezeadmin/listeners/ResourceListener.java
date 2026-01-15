@@ -7,14 +7,14 @@ import me.bottdev.breezeapi.di.annotations.Inject;
 import me.bottdev.breezeapi.events.Listener;
 import me.bottdev.breezeapi.events.annotations.Listen;
 import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.types.SimpleLogger;
+import me.bottdev.breezeapi.log.platforms.SLF4JLogPlatform;
 import me.bottdev.breezeapi.resource.watcher.events.ResourceModifyEvent;
 import me.bottdev.breezeapi.resource.watcher.ResourceWatchSubject;
 
 @Component
 public class ResourceListener implements Listener {
 
-    private final BreezeLogger logger = new SimpleLogger("SettingsListener");
+    private final BreezeLogger logger = SLF4JLogPlatform.getFactory().simple("ResourceListener");
     private final AdminConfigLoader adminConfigLoader;
     private final AdminTranslationLoader adminTranslationLoader;
 

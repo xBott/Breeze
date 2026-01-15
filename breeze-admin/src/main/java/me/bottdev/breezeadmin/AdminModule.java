@@ -6,7 +6,7 @@ import me.bottdev.breezeadmin.translation.AdminTranslationLoader;
 import me.bottdev.breezeapi.di.annotations.Inject;
 import me.bottdev.breezeapi.i18n.TranslationModule;
 import me.bottdev.breezeapi.log.BreezeLogger;
-import me.bottdev.breezeapi.log.types.SimpleLogger;
+import me.bottdev.breezeapi.log.platforms.SLF4JLogPlatform;
 import me.bottdev.breezeapi.modules.Module;
 import me.bottdev.breezeapi.modules.ModuleDescriptor;
 import me.bottdev.breezeapi.modules.ModuleStatus;
@@ -19,7 +19,7 @@ import java.io.File;
 public class AdminModule extends Module {
 
     @Getter
-    private final BreezeLogger logger = new SimpleLogger("BreezeAdmin");
+    private final BreezeLogger logger = SLF4JLogPlatform.getFactory().simple("AdminLogger");
 
     private ModuleStatus moduleStatus = ModuleStatus.DISABLED;
 
