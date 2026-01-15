@@ -1,19 +1,24 @@
-package me.bottdev.breezeapi.di;
+package me.bottdev.breezecore.di;
 
 import me.bottdev.breezeapi.commons.structures.priority.PriorityList;
+import me.bottdev.breezeapi.di.BreezeContext;
+import me.bottdev.breezeapi.di.ContextBootstrap;
+import me.bottdev.breezeapi.di.ContextIndexReader;
 import me.bottdev.breezeapi.index.BreezeIndex;
-import me.bottdev.breezeapi.index.BreezeIndexBucket;
+import me.bottdev.breezeapi.index.IndexMap;
 
-public class ContextBootstrapper {
+public class SimpleContextBootstrap implements ContextBootstrap {
 
     private final PriorityList<ContextIndexReader<?>> readers = new PriorityList<>();
 
-    public ContextBootstrapper addReader(ContextIndexReader<?> reader, int priority) {
+    @Override
+    public SimpleContextBootstrap addReader(ContextIndexReader<?> reader, int priority) {
         readers.add(reader, priority);
         return this;
     }
 
-    public void bootstrap(BreezeContext context, ClassLoader classLoader, BreezeIndexBucket bucket) {
+    @Override
+    public void bootstrap(BreezeContext context, ClassLoader classLoader, IndexMap bucket) {
         readers.stream().forEach(reader ->
                 bucket.getIndices().stream()
                         .filter(index -> reader.getIndexClass().isAssignableFrom(index.getClass()))
@@ -28,7 +33,7 @@ public class ContextBootstrapper {
             BreezeIndex index
     ) {
         T typedIndex = reader.getIndexClass().cast(index);
-        reader.readIndex(context, classLoader, typedIndex);
+        reader.read(context, classLoader, typedIndex);
     }
 
 }
